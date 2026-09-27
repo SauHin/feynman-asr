@@ -12,7 +12,8 @@ const STOP_FLUSH_MS = 500
 // Heuristik leksikal seperti backend: "jadi" sebagai kata sambung ikut terhitung (PLAN 7.1).
 const FILLERS = new Set(['eee', 'jadi', 'gitu'])
 
-export type ScheduledMessage = { at: number; msg: ServerMessage }
+// flush: teks final dari partial saat ini, dikirim sebagai confirmed bila stop() dipanggil.
+export type ScheduledMessage = { at: number; msg: ServerMessage; flush?: string }
 
 export function buildSchedule(script: Utterance[]): ScheduledMessage[] {
   const words = script.flatMap((u) => {
@@ -44,10 +45,8 @@ export function buildSchedule(script: Utterance[]): ScheduledMessage[] {
 
   for (let t = 1; t <= lastTick; t++) {
     const newly = words.filter((w) => inTick(w.confirmAt, t))
-    const partial = words
-      .filter((w) => w.partialAt <= t && w.confirmAt > t)
-      .map((w) => w.partial)
-      .join(' ')
+    const pending = words.filter((w) => w.partialAt <= t && w.confirmAt > t)
+    const partial = pending.map((w) => w.partial).join(' ')
     if (newly.length || partial !== prevPartial) {
       out.push({
         at: t,
@@ -58,6 +57,7 @@ export function buildSchedule(script: Utterance[]): ScheduledMessage[] {
           t,
           latency_ms: 400 + ((t * 137) % 500),
         },
+        flush: pending.map((w) => w.final).join(' '),
       })
     }
     prevPartial = partial
@@ -95,16 +95,31 @@ const BACKPROP_SCHEDULE = buildSchedule(BACKPROP_SCRIPT)
 export class MockTranscriptSource implements TranscriptSource {
   private handlers = new Set<(msg: ServerMessage) => void>()
   private timers: ReturnType<typeof setTimeout>[] = []
+  private pending = { text: '', t: 0 }
 
   async start() {
     this.clearTimers()
-    this.timers = BACKPROP_SCHEDULE.map(({ at, msg }) => setTimeout(() => this.emit(msg), at * 1000))
+    this.pending = { text: '', t: 0 }
+    this.timers = BACKPROP_SCHEDULE.map(({ at, msg, flush }) =>
+      setTimeout(() => {
+        if (flush !== undefined) this.pending = { text: flush, t: at }
+        this.emit(msg)
+      }, at * 1000),
+    )
   }
 
+  // Tiru flush backend: sisa partial jadi confirmed, lalu sesi selesai.
   stop() {
     this.clearTimers()
+    const { text, t } = this.pending
+    this.pending = { text: '', t: 0 }
     this.emit({ type: 'status', state: 'processing' })
-    this.timers.push(setTimeout(() => this.emit({ type: 'status', state: 'idle' }), STOP_FLUSH_MS))
+    this.timers.push(
+      setTimeout(() => {
+        if (text) this.emit({ type: 'transcript', confirmed: text, partial: '', t, latency_ms: STOP_FLUSH_MS })
+        this.emit({ type: 'status', state: 'idle' })
+      }, STOP_FLUSH_MS),
+    )
   }
 
   onMessage(handler: (msg: ServerMessage) => void) {

@@ -29,6 +29,22 @@ test('confirmed digabung sama dengan naskah setelah koreksi', async () => {
   expect(confirmed).not.toMatch(/\bcen rul\b/)
 })
 
+test('stop di tengah sesi mengubah sisa partial jadi confirmed', async () => {
+  vi.useFakeTimers()
+  const src = new MockTranscriptSource()
+  const msgs: ServerMessage[] = []
+  src.onMessage((m) => msgs.push(m))
+  await src.start()
+  vi.advanceTimersByTime(45_500) // detik 45: partial "cen rul"
+  src.stop()
+  vi.advanceTimersByTime(1_000)
+  expect(msgs.slice(-3)).toEqual([
+    { type: 'status', state: 'processing' },
+    { type: 'transcript', confirmed: 'chain rule', partial: '', t: 45, latency_ms: 500 },
+    { type: 'status', state: 'idle' },
+  ])
+})
+
 test('status akhir: 4 konsep dijelaskan, learning-rate hanya disebut', async () => {
   const msgs = await runFullSession()
   const final: Record<string, string> = {}
