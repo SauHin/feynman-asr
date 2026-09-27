@@ -59,6 +59,15 @@ Jika fine-tuning diwajibkan, jalur cadangannya ada di bagian 12 (Risiko).
 
 Satu sesi terdiri dari empat tahap: siapkan topik, jelaskan secara lisan, terima feedback, lalu ulangi.
 
+**Panduan dalam aplikasi**
+
+User tidak perlu penjelasan panjang dari orang lain. Aplikasi sendiri memberi panduan singkat supaya user tahu apa aplikasi ini dan cara memakainya:
+
+- Saat pertama dibuka, aplikasi menjelaskan tujuannya dalam satu atau dua kalimat (latihan menjelaskan konsep secara lisan dengan metode Feynman) dan menunjukkan empat tahap sesi.
+- Setiap tahap menyebut apa yang harus dilakukan user sekarang dan apa yang terjadi berikutnya. Contoh: di layar live, sebelum Start, ada instruksi izin mic, ajakan bicara seolah menjelaskan ke teman, dan arti tiga status checklist.
+- Panduan menyebut apa yang diproses lokal (audio) dan apa yang dikirim ke Gemini (teks transkrip dan materi).
+- Panduan singkat dan tidak menghalangi user yang sudah paham.
+
 **Tahap 1 — Setup topik**
 
 1. User mengetik topik (misalnya "Backpropagation").
@@ -97,6 +106,7 @@ Satu sesi terdiri dari empat tahap: siapkan topik, jelaskan secara lisan, terima
 | Upload materi + ekstraksi konsep + review user | MVP |
 | Hotwords dari materi | MVP (eksperimen inti) |
 | Checklist konsep live (dua status) | MVP |
+| Panduan dalam aplikasi (apa aplikasi ini, cara pakai tiap tahap) | MVP (dibutuhkan user testing) |
 | Indikator live (speech rate, filler, jeda) | Should-have |
 | Iterasi dan perbandingan sesi | Should-have |
 | Riwayat sesi tersimpan | Nice-to-have |
@@ -404,19 +414,21 @@ Target minimal 5 peserta, idealnya 6–8 sebagai cadangan, semuanya mahasiswa CS
 
 **Prosedur per sesi:**
 
+Peneliti hanya menyampaikan tugas, misalnya "jelaskan satu topik dari mata kuliahmu". Peneliti tidak menjelaskan cara pakai aplikasi. Peserta harus memahami aplikasi dari panduan di dalamnya (bagian 4).
+
 1. **Informed consent** (tertulis): audio direkam untuk evaluasi, transkrip dikirim ke Gemini free tier yang dapat dipakai Google untuk meningkatkan produknya, data dipakai hanya untuk tugas kuliah, dan peserta boleh berhenti kapan saja.
 2. **Pre-questionnaire** singkat: pengalaman belajar dan tingkat percaya diri terhadap topik (skala 1–5).
 3. **Task 1:** bacakan naskah pendek 1–2 menit (menghasilkan data set A).
 4. **Task 2:** pilih satu topik dari mata kuliah yang sedang diambil, upload materinya, tinjau daftar konsep, lalu jelaskan 2–4 menit.
 5. **Task 3:** baca feedback, lalu jelaskan ulang topik yang sama.
-6. **Observasi** selama task: kebingungan UI, apakah peserta melihat layar saat bicara, reaksi terhadap checklist, dan error yang terlihat. Catat dengan lembar observasi terstruktur.
+6. **Observasi** selama task: kebingungan UI, apakah peserta bisa memulai sesi dari panduan saja tanpa bertanya, apakah peserta melihat layar saat bicara, reaksi terhadap checklist, dan error yang terlihat. Catat dengan lembar observasi terstruktur.
 7. **Post-questionnaire** dan wawancara singkat 5–10 menit.
 
 **Kuesioner (skala 1–5):**
 
 | Aspek | Contoh pernyataan |
 | --- | --- |
-| Ease of use | Aplikasi mudah dipakai tanpa penjelasan panjang. |
+| Ease of use | Panduan di aplikasi cukup untuk membuat saya paham apa aplikasi ini dan cara memakainya. |
 | Responsiveness | Transkrip muncul cukup cepat saat saya bicara. |
 | Transcription quality | Transkrip, termasuk istilah teknis, cukup akurat. |
 | Checklist usefulness | Checklist konsep membantu saya tahu apa yang belum dijelaskan. |
@@ -500,7 +512,7 @@ Fase 0–4 sudah memenuhi semua syarat wajib guideline; fase 5–6 menambah nila
 | 6. User testing | Sesi dengan 5+ peserta, iterasi kecil bila ada bug kritis | Data kuesioner, observasi, dan wawancara lengkap | 1–1,5 minggu |
 | 7. Laporan | Tulis bab 1–8, AI Usage Log, deklarasi, screenshot, persiapan demo | Laporan lengkap sesuai struktur guideline | 2 minggu |
 
-Fitur should-have (indikator live, iterasi sesi) dikerjakan di sela fase 4–5 bila waktu cukup. Jangan menambah fitur setelah user testing dimulai, kecuali perbaikan bug.
+Panduan dalam aplikasi (bagian 4) wajib selesai sebelum user testing dimulai. Fitur should-have (indikator live, iterasi sesi) dikerjakan di sela fase 4–5 bila waktu cukup. Jangan menambah fitur setelah user testing dimulai, kecuali perbaikan bug.
 
 ## 12. Risiko dan mitigasi
 
