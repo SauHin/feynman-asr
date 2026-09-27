@@ -19,3 +19,12 @@ export type Feedback = {
   improvements: string[]
   simplicity_note: string
 }
+
+// Metrik kelancaran lokal (PLAN 7.1), dihitung di laptop setelah Stop. Waktu dalam detik.
+// next_concept_id: konsep yang dijelaskan tepat setelah jeda, untuk lokasi seperti "sebelum chain rule".
+export type FluencyReport = {
+  duration: number
+  wpm: number
+  filler_count: number
+  long_pauses: { start: number; duration: number; next_concept_id?: string }[]
+}

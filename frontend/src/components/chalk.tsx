@@ -29,6 +29,7 @@ const stroke = {
 }
 
 // Kotak kosong = belum, garis miring = disebut, centang = dijelaskan.
+// wrong (hanya di feedback) = silang: dijelaskan, tetapi keliru.
 // Tanda baru di dalam kotak di-mount ulang lewat key, jadi goresannya tergambar saat status naik.
 // bare: hanya tanda di dalam kotak, untuk garis waktu.
 export function ChalkMark({
@@ -36,7 +37,7 @@ export function ChalkMark({
   bare = false,
   className = '',
 }: {
-  status: MarkStatus
+  status: MarkStatus | 'wrong'
   bare?: boolean
   className?: string
 }) {
@@ -54,6 +55,9 @@ export function ChalkMark({
         )}
         {status === 'explained' && (
           <path key="e" className="chalk-draw" pathLength={1} strokeWidth={2.8} d="M9.6 16.9l4.6 4.8 9.6-12.3" />
+        )}
+        {status === 'wrong' && (
+          <path key="w" className="chalk-draw" pathLength={1} strokeWidth={2.7} d="M10.8 10.6l10.6 11.2M21.6 10.4 10.6 21.9" />
         )}
       </g>
     </svg>
@@ -109,6 +113,109 @@ export function MoonIcon({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={1.8}>
       <path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1Z" />
+    </svg>
+  )
+}
+
+export function ArrowLeftIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.6}>
+      <path d="M19 12H5.5M11 5.5 4.5 12l6.5 6.5" />
+    </svg>
+  )
+}
+
+export function PencilIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
+      <path d="M4.5 19.5l1-4.5L16 4.5a2.1 2.1 0 0 1 3 3L8.5 18Z" />
+      <path d="M14 6.5l3 3" />
+    </svg>
+  )
+}
+
+export function TrashIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
+      <path d="M4.5 7h15M9.5 7V4.8h5V7M6.5 7l1 12.5h9l1-12.5M10.2 10.5v6M13.8 10.5v6" />
+    </svg>
+  )
+}
+
+export function PlusIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.6}>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  )
+}
+
+export function UploadIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
+      <path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z" />
+      <path d="M14 3.5v5h5M12 17v-6M9.3 13.5 12 10.8l2.7 2.7" />
+    </svg>
+  )
+}
+
+export function ClipboardIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
+      <path d="M8.5 5.5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-11a2 2 0 0 0-2-2h-1.5" />
+      <rect x="8.5" y="3.5" width="7" height="4" rx="1.5" />
+      <path d="M8.5 12h7M8.5 15.5h5" />
+    </svg>
+  )
+}
+
+export function SkipIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.4}>
+      <path d="M5 6.5 11 12l-6 5.5M12.5 6.5l6 5.5-6 5.5" />
+    </svg>
+  )
+}
+
+export function MicIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
+      <rect x="9" y="3.5" width="6" height="11" rx="3" />
+      <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" />
+    </svg>
+  )
+}
+
+export function LaptopIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
+      <rect x="5" y="5" width="14" height="10" rx="1.5" />
+      <path d="M2.5 18.5h19" />
+    </svg>
+  )
+}
+
+export function CloudIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
+      <path d="M7 18.5a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.3A3.9 3.9 0 0 1 17 18.5Z" />
+    </svg>
+  )
+}
+
+export function RetryIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.4}>
+      <path d="M19 12a7 7 0 1 1-2.1-5M19 4.5V9h-4.5" />
+    </svg>
+  )
+}
+
+export function ClockIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
     </svg>
   )
 }

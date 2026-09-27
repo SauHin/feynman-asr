@@ -10,7 +10,7 @@ const PAUSE_THRESHOLD = 2
 const FLUENCY_EVERY = 5
 const STOP_FLUSH_MS = 500
 // Heuristik leksikal seperti backend: "jadi" sebagai kata sambung ikut terhitung (PLAN 7.1).
-const FILLERS = new Set(['eee', 'jadi', 'gitu'])
+export const FILLERS = new Set(['eee', 'jadi', 'gitu'])
 
 // flush: teks final dari partial saat ini, dikirim sebagai confirmed bila stop() dipanggil.
 export type ScheduledMessage = { at: number; msg: ServerMessage; flush?: string }

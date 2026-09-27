@@ -19,6 +19,9 @@
   --wood-dark: #9a6230;
   --wood-light: #e0a868;
   --outline: #44586c;
+  /* Kertas adalah benda seperti papan: tetap terang di malam hari, hanya sedikit redup. */
+  --paper: #fffdf6;
+  --paper-grid: #dcebf8;
   --wallpaper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='%23D6E9F9'%3E%3Crect x='12.5' y='8' width='3' height='11' rx='1.5'/%3E%3Crect x='8.5' y='12' width='11' height='3' rx='1.5'/%3E%3Ccircle cx='42' cy='42' r='2.2'/%3E%3C/g%3E%3C/svg%3E");
 }
 
@@ -35,6 +38,8 @@
   --wood-dark: #633e1d;
   --wood-light: #a87244;
   --outline: #0c1620;
+  --paper: #ebe5d5;
+  --paper-grid: #cfdce6;
   --wallpaper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='%231B2B3E'%3E%3Crect x='12.5' y='8' width='3' height='11' rx='1.5'/%3E%3Crect x='8.5' y='12' width='11' height='3' rx='1.5'/%3E%3Ccircle cx='42' cy='42' r='2.2'/%3E%3C/g%3E%3C/svg%3E");
 }
 
@@ -50,6 +55,15 @@
   --color-wood-dark: var(--wood-dark);
   --color-wood-light: var(--wood-light);
   --color-outline: var(--outline);
+  --color-paper: var(--paper);
+  /* Tinta di atas kertas sama di kedua mode, karena kertasnya tetap terang. */
+  --color-paper-ink: #1e2b3a;
+  --color-paper-ink-2: #4f5f70;
+  --color-paper-margin: #f59c92;
+  /* Tanda status di atas kertas: versi pekat dari warna kapur, supaya kontras dengan krem. */
+  --color-mark-none: #a9700f;
+  --color-mark-explained: #1d8a57;
+  --color-mark-wrong: #d23f33;
   /* Kapur dan tombol sama di kedua mode, karena papan selalu hijau. */
   --color-chalk: #f4f7f0;
   --color-chalk-dim: #b9d3c4;
@@ -130,6 +144,22 @@
     background: var(--surface);
     color: var(--ink);
   }
+  /* Kolom isian sebagai stiker: garis luar 3px dan tepi bawah tebal, seperti chip. */
+  .field {
+    width: 100%;
+    border: 3px solid var(--outline);
+    border-bottom-width: 5px;
+    border-radius: 16px;
+    background: var(--surface);
+    color: var(--ink);
+    padding: 0.65rem 0.95rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+  }
+  .field::placeholder {
+    color: var(--ink-2);
+    opacity: 1;
+  }
   /* Chip dengan gaya yang sama dengan ilustrasi: garis luar 3px dan tepi bawah tebal. */
   .chip {
     border: 3px solid var(--outline);
@@ -137,6 +167,82 @@
     border-radius: 16px;
     background: var(--surface);
   }
+}
+
+/* Kertas buku catatan: kotak-kotak biru pucat. */
+.paper-grid {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
+  background-size: 26px 26px;
+  background-position: -1px -1px;
+}
+
+/* Stabilo di belakang judul: warna kapur, hanya di separuh bawah huruf. */
+.highlight {
+  background-image: linear-gradient(transparent 55%, var(--hl, var(--color-chalk-yellow)) 55%, var(--hl, var(--color-chalk-yellow)) 92%, transparent 92%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 0.12em;
+}
+
+/* Filler di transkrip: garis bawah bergelombang merah muda, beda bentuk dengan garis istilah. */
+.chalk-filler {
+  text-decoration: underline wavy var(--color-chalk-pink);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+/* Baris konsep tertulis satu per satu dari kiri, seperti kapur di papan. */
+@keyframes write-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+.write-in {
+  animation: write-in 520ms var(--ease-out-expo) calc(var(--i, 0) * 140ms) both;
+}
+
+/* Garis tulisan yang terus digores ulang saat Si Kapur masih menulis. */
+@keyframes scribble {
+  0% {
+    stroke-dashoffset: 1;
+  }
+  70%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+.scribble {
+  stroke-dasharray: 1;
+  animation: scribble 1.8s var(--ease-out-expo) infinite;
+}
+
+/* Tiga titik saat Si Kapur membaca atau menulis. */
+@keyframes dot {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+.dots i {
+  display: inline-block;
+  width: 0.4em;
+  height: 0.4em;
+  margin-left: 0.2em;
+  border-radius: 999px;
+  background: currentColor;
+  animation: dot 1.2s ease-in-out infinite;
+}
+.dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dots i:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
 /* Goresan kapur menggambar dirinya sendiri saat status berubah. */
@@ -291,7 +397,10 @@
   .kapur,
   .kapur-eyes,
   .kapur-wave-arm,
-  .bubble {
+  .bubble,
+  .write-in,
+  .scribble,
+  .dots i {
     animation: none;
   }
   .kapur-actor {

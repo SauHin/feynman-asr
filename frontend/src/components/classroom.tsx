@@ -4,7 +4,10 @@
 
 const INKED = { stroke: 'currentColor', strokeWidth: 2.8, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
 
-export function ClassroomWall({ elapsed }: { elapsed: number }) {
+// elapsed: waktu sesi untuk jam dinding. Tanpa sesi, jam menunjukkan waktu sekarang.
+export function ClassroomWall({ elapsed }: { elapsed?: number }) {
+  const d = new Date()
+  const clockTime = elapsed ?? d.getMinutes() * 60 + d.getSeconds()
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden text-outline">
       {/* Cahaya hangat lampu di malam hari */}
@@ -17,7 +20,7 @@ export function ClassroomWall({ elapsed }: { elapsed: number }) {
       {/* Hiasan hanya tampil kalau ada dinding di samping papan (lebar 1340px ke atas).
           Dinding kiri hanya berisi jam, supaya ada ruang kosong untuk Si Kapur saat mencentang. */}
       <div className="absolute left-[max(0.75rem,calc((100%-68rem)/2-7.25rem))] top-5 hidden w-24 flex-col items-center min-[1340px]:flex">
-        <WallClock elapsed={elapsed} />
+        <WallClock elapsed={clockTime} />
       </div>
       <div className="absolute right-[max(0.75rem,calc((100%-68rem)/2-7.75rem))] top-0 hidden w-28 flex-col items-center gap-3 min-[1340px]:flex">
         <PendantLamp />

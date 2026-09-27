@@ -31,3 +31,13 @@ test('jeda disisipkan di posisi offset-nya', () => {
     { kind: 'text', text: ' kita pakai' },
   ])
 })
+
+test('filler ditandai terpisah dari istilah konsep', () => {
+  expect(buildSegments('loss, eee, gitu', [], concepts, ['eee', 'gitu'])).toEqual([
+    { kind: 'text', text: 'loss', conceptId: 'loss-function' },
+    { kind: 'text', text: ', ' },
+    { kind: 'text', text: 'eee', filler: true },
+    { kind: 'text', text: ', ' },
+    { kind: 'text', text: 'gitu', filler: true },
+  ])
+})

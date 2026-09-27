@@ -16,17 +16,17 @@ import {
   ChalkMark,
   CloseIcon,
   FillerIcon,
-  MoonIcon,
   PauseIcon,
   SpeedIcon,
-  SunIcon,
   type MarkStatus,
 } from '../components/chalk'
+import { Board, PausePill, Panel, PanelTitle } from '../components/board'
 import { ClassroomWall } from '../components/classroom'
 import { Kapur } from '../components/kapur'
+import { ThemeToggle } from '../components/app-bar'
+import { clock, decimal } from '../lib/format'
 import { KAPUR_HAND, kapurSays } from '../lib/kapur'
 import { initialLiveState, liveReducer, type LiveState } from '../lib/live-state'
-import { useTheme } from '../lib/theme'
 import type { TranscriptSource } from '../lib/transcript-source'
 import { buildSegments, type Segment } from '../lib/transcript-segments'
 import { BACKPROP_CONCEPTS, BACKPROP_TOPIC } from '../mocks/backprop'
@@ -57,8 +57,6 @@ const DUST = [
 // Lama Si Kapur berada di baris agenda saat mencentang, sebelum kembali ke baki.
 const WRITE_SECONDS = 1.3
 
-const decimal = (n: number) => n.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
-const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 
 export default function LiveScreen() {
   // ponytail: sumber dan konsep masih mock; Fase 1 ganti ke WebSocket, Fase 4 ke daftar konsep dari setup.
@@ -172,19 +170,19 @@ export default function LiveScreen() {
       <div className="relative flex flex-1 flex-col px-3 pb-4 md:min-h-0 md:px-8 md:pb-5">
         <ClassroomWall elapsed={elapsed} />
         <div className="relative z-10 mx-auto flex w-full max-w-[68rem] flex-1 flex-col md:min-h-0 2xl:max-w-[80rem]">
-          <Board
-            left={agenda}
-            right={
-              <>
+          <Board className="flex-1 md:min-h-0">
+            <div className="flex flex-1 flex-col gap-3 md:min-h-0 md:flex-row">
+              <Panel className="md:w-[36%] md:max-w-[27rem] md:shrink-0">{agenda}</Panel>
+              <Panel className="min-h-[45vh] flex-1 md:min-h-0">
                 {started ? (
                   <Transcript state={state} concepts={concepts.filter((c) => statusOf(c.id) !== 'none')} />
                 ) : (
                   <Guidance />
                 )}
                 {kapur}
-              </>
-            }
-          />
+              </Panel>
+            </div>
+          </Board>
         </div>
       </div>
 
@@ -210,7 +208,6 @@ function TopBar({
   elapsed: number
   sessionDone: boolean
 }) {
-  const [theme, setTheme] = useTheme()
   const explained = concepts.filter((c) => state.concepts[c.id] === 'explained').length
   const mentioned = concepts.filter((c) => state.concepts[c.id] === 'mentioned').length
 
@@ -232,7 +229,7 @@ function TopBar({
   return (
     <header className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 md:gap-x-5 md:px-8 md:py-3">
       <Link
-        to="/"
+        to="/setup"
         aria-label="Ganti topik"
         className="chip grid size-11 place-items-center text-ink transition-transform duration-100 active:translate-y-0.5"
       >
@@ -268,104 +265,8 @@ function TopBar({
           {state.latencyMs === null ? '–' : `${decimal(state.latencyMs / 1000)} dtk`}
         </span>
       </p>
-      <div role="radiogroup" aria-label="Tema" className="chip flex gap-1 p-1">
-        {(['light', 'dark'] as const).map((t) => (
-          <button
-            key={t}
-            role="radio"
-            aria-checked={theme === t}
-            onClick={() => setTheme(t)}
-            className={`flex items-center gap-1.5 rounded-[10px] border-2 px-3 py-1 font-display text-sm transition-colors duration-150 ${
-              theme === t ? 'border-outline bg-chalk-yellow text-go-ink' : 'border-transparent text-ink-2 hover:text-ink'
-            }`}
-          >
-            {t === 'light' ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />}
-            <span className="max-sm:sr-only">{t === 'light' ? 'Siang' : 'Malam'}</span>
-          </button>
-        ))}
-      </div>
+      <ThemeToggle />
     </header>
-  )
-}
-
-// Papan tulis sebagai benda: bingkai kayu bergaris luar, dua panel hijau yang dipisah kayu
-// (agenda di kiri, penjelasan di kanan), dan baki kapur di bawah.
-function Board({ left, right }: { left: ReactNode; right: ReactNode }) {
-  return (
-    <div className="wood-grain flex flex-1 flex-col rounded-[28px] border-[3px] border-outline bg-wood p-3 shadow-[inset_0_3px_0_var(--wood-light),0_6px_0_rgba(0,0,0,0.15)] md:min-h-0">
-      <div className="flex flex-1 flex-col gap-3 md:min-h-0 md:flex-row">
-        <Panel className="md:w-[36%] md:max-w-[27rem] md:shrink-0">{left}</Panel>
-        <Panel className="min-h-[45vh] flex-1 md:min-h-0">{right}</Panel>
-      </div>
-      <Tray />
-    </div>
-  )
-}
-
-function Panel({ className = '', children }: { className?: string; children: ReactNode }) {
-  return (
-    <div
-      className={`relative flex flex-col rounded-[16px] border-[3px] border-outline bg-board p-5 shadow-[inset_0_5px_0_rgba(0,0,0,0.18)] md:min-h-0 md:px-7 md:py-6 ${className}`}
-    >
-      <BoardHaze />
-      <div className="relative flex flex-1 flex-col md:min-h-0">{children}</div>
-    </div>
-  )
-}
-
-// Baki kapur dengan batang kapur berwarna dan penghapus, dalam gaya yang sama dengan Si Kapur.
-function Tray() {
-  return (
-    <div className="relative mt-3 h-4 rounded-full border-[3px] border-outline bg-wood-dark">
-      <svg viewBox="0 0 156 30" aria-hidden="true" className="absolute -top-[23px] right-4 h-[30px] w-[156px] text-outline">
-        <g stroke="currentColor" strokeWidth="2.6" strokeLinejoin="round">
-          <rect x="4" y="15" width="34" height="12" rx="6" fill="#9bd8ff" />
-          <ellipse cx="33" cy="21" rx="4" ry="6" fill="#d4efff" />
-          <rect x="44" y="15" width="28" height="12" rx="6" fill="#ffb3d1" />
-          <ellipse cx="67" cy="21" rx="4" ry="6" fill="#ffe0ec" />
-          <rect x="88" y="4" width="62" height="23" rx="6" fill="#e0a868" />
-          <rect x="88" y="16" width="62" height="11" rx="5" fill="#3a4656" />
-        </g>
-        <path d="M96 9h20" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" opacity="0.5" />
-      </svg>
-    </div>
-  )
-}
-
-// Bekas hapusan dan tulisan lama yang samar di permukaan papan.
-function BoardHaze() {
-  const id = useId()
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-[13px]">
-      <svg viewBox="0 0 1000 600" preserveAspectRatio="none" className="size-full">
-        <filter id={id}>
-          <feGaussianBlur stdDeviation="16" />
-        </filter>
-        <g filter={`url(#${id})`} fill="none" stroke="#fff" strokeLinecap="round">
-          <path d="M70 480C250 410 420 530 650 450" strokeWidth="80" opacity="0.055" />
-          <path d="M560 110C700 60 860 140 960 80" strokeWidth="64" opacity="0.05" />
-          <path d="M130 160C220 130 300 200 380 160" strokeWidth="44" opacity="0.04" />
-        </g>
-        <g fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.05">
-          <path d="M600 520q12-14 24 0t24 0 24 0M700 505h40M760 520q10-12 20 0t20 0M600 548h120" />
-          <path d="M800 180l40-40M840 180l-40-40M870 160h50" />
-        </g>
-      </svg>
-    </div>
-  )
-}
-
-function PanelTitle({ id, children, note }: { id?: string; children: ReactNode; note?: string }) {
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
-      <div>
-        <h2 id={id} className="chalk-letter font-display text-2xl font-semibold text-chalk">
-          {children}
-        </h2>
-        <span aria-hidden="true" className="chalk-rule mt-1 block h-3 w-24" />
-      </div>
-      {note && <p className="text-sm text-chalk-dim">{note}</p>}
-    </div>
   )
 }
 
@@ -490,13 +391,7 @@ function Transcript({ state, concepts }: { state: LiveState; concepts: Concept[]
           {empty && <span className="text-chalk-dim">Mendengarkan… mulai jelaskan kapan saja.</span>}
           {segments.map(({ seg, key }) =>
             seg.kind === 'pause' ? (
-              <span
-                key={key}
-                className="mx-1 inline-flex items-center gap-1 whitespace-nowrap rounded-full border-2 border-chalk-blue/70 px-2 align-[0.1em] font-display text-base text-chalk-blue"
-              >
-                <PauseIcon className="size-4" />
-                jeda {decimal(seg.duration)} dtk
-              </span>
+              <PausePill key={key} duration={seg.duration} />
             ) : (
               <span key={key} className={seg.conceptId ? 'chalk-term' : undefined}>
                 {seg.text}
