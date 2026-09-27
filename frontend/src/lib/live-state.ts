@@ -1,4 +1,7 @@
-import type { ConceptStatus, FluencyMessage, ServerMessage, StatusMessage } from '../types/server-message'
+import type { ConceptStatus, ServerMessage, StatusMessage } from '../types/server-message'
+
+// offset: panjang teks confirmed saat jeda dilaporkan, untuk menandai jeda di transkrip.
+export type Pause = { start: number; duration: number; offset: number }
 
 export type LiveState = {
   status: StatusMessage['state']
@@ -6,9 +9,12 @@ export type LiveState = {
   partial: string
   latencyMs: number | null
   concepts: Record<string, ConceptStatus>
+  conceptEvents: { id: string; status: ConceptStatus; t: number }[]
   wpm: number
   fillerCount: number
-  pauses: NonNullable<FluencyMessage['long_pause']>[]
+  // Satu entri per filler baru, pada waktu pesan fluency yang melaporkannya.
+  fillerTicks: number[]
+  pauses: Pause[]
 }
 
 export type LiveAction = ServerMessage | { type: 'reset' }
@@ -19,8 +25,10 @@ export const initialLiveState: LiveState = {
   partial: '',
   latencyMs: null,
   concepts: {},
+  conceptEvents: [],
   wpm: 0,
   fillerCount: 0,
+  fillerTicks: [],
   pauses: [],
 }
 
@@ -37,16 +45,27 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
         partial: action.partial,
         latencyMs: action.latency_ms,
       }
-    case 'concept':
+    case 'concept': {
+      const current = state.concepts[action.concept_id]
       // Status hanya naik: konsep yang sudah dijelaskan tidak turun lagi jadi disebut.
-      if (state.concepts[action.concept_id] === 'explained') return state
-      return { ...state, concepts: { ...state.concepts, [action.concept_id]: action.status } }
-    case 'fluency':
+      if (current === 'explained' || current === action.status) return state
+      return {
+        ...state,
+        concepts: { ...state.concepts, [action.concept_id]: action.status },
+        conceptEvents: [...state.conceptEvents, { id: action.concept_id, status: action.status, t: action.t }],
+      }
+    }
+    case 'fluency': {
+      const added = Math.max(0, action.filler_count - state.fillerCount)
       return {
         ...state,
         wpm: action.wpm,
         fillerCount: action.filler_count,
-        pauses: action.long_pause ? [...state.pauses, action.long_pause] : state.pauses,
+        fillerTicks: added ? [...state.fillerTicks, ...Array<number>(added).fill(action.t)] : state.fillerTicks,
+        pauses: action.long_pause
+          ? [...state.pauses, { ...action.long_pause, offset: state.confirmed.length }]
+          : state.pauses,
       }
+    }
   }
 }

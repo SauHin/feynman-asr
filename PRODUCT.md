@@ -58,6 +58,11 @@ Speech adalah inti, LLM hanya pendukung. Semua yang bisa dihitung dari sinyal su
 - Nama kerja: Feynman Speech Coach. Judul final project belum ditetapkan (PLAN.md bagian 10).
 - Nada: santai tetapi tegas, menyapa user dengan "kamu". Jujur dan lugas soal kesalahan dan gap. Tetap memuji hal yang sudah bagus, tetapi tidak berlebihan.
 - Belum ada logo atau aset brand.
+- Batasan visual dari user: tidak memakai font serif, dan tidak memakai teks kapital penuh (label, judul, dan tombol memakai huruf kalimat biasa).
+- Rasa aplikasi edukasi seperti Duolingo: ceria, berwarna, penuh ilustrasi, dan ramah. Tampilan yang kalem dan minimalis sudah ditolak karena membosankan.
+- Maskot: **Si Kapur**, batang kapur hidup yang menulis dan mencentang agenda di papan, dan bereaksi terhadap penjelasan user.
+- Progres ringan boleh: bar progres konsep dan perayaan kecil saat konsep dijelaskan. Tidak ada XP, streak, nyawa, atau badge.
+- Aplikasi punya mode terang dan gelap dengan toggle, karena dipakai malam hari, siang hari, dan di proyektor saat demo.
 
 ## Evidence on Hand
 

@@ -14,21 +14,27 @@ test('confirmed ditambahkan, partial diganti', () => {
   expect(s.latencyMs).toBe(700)
 })
 
-test('status konsep tidak turun dari dijelaskan ke disebut', () => {
+test('status konsep tidak turun, dan event hanya dicatat saat status naik', () => {
   const s = run([
     { type: 'concept', concept_id: 'a', status: 'mentioned', t: 1 },
-    { type: 'concept', concept_id: 'a', status: 'explained', t: 2 },
-    { type: 'concept', concept_id: 'a', status: 'mentioned', t: 3 },
+    { type: 'concept', concept_id: 'a', status: 'mentioned', t: 2 },
+    { type: 'concept', concept_id: 'a', status: 'explained', t: 3 },
+    { type: 'concept', concept_id: 'a', status: 'mentioned', t: 4 },
   ])
   expect(s.concepts).toEqual({ a: 'explained' })
+  expect(s.conceptEvents).toEqual([
+    { id: 'a', status: 'mentioned', t: 1 },
+    { id: 'a', status: 'explained', t: 3 },
+  ])
 })
 
-test('jeda panjang dikumpulkan, reset mengosongkan sesi', () => {
+test('jeda menyimpan posisinya di transkrip, filler baru jadi tick, reset mengosongkan sesi', () => {
   const s = run([
-    { type: 'fluency', wpm: 90, filler_count: 2, t: 5 },
+    { type: 'transcript', confirmed: 'habis itu', partial: '', t: 39, latency_ms: 500 },
+    { type: 'fluency', wpm: 90, filler_count: 2, t: 40 },
     { type: 'fluency', wpm: 95, filler_count: 3, long_pause: { start: 37, duration: 4 }, t: 41 },
   ])
-  expect(s.pauses).toEqual([{ start: 37, duration: 4 }])
-  expect(s.fillerCount).toBe(3)
+  expect(s.pauses).toEqual([{ start: 37, duration: 4, offset: 'habis itu'.length }])
+  expect(s.fillerTicks).toEqual([40, 40, 41])
   expect(liveReducer(s, { type: 'reset' })).toBe(initialLiveState)
 })

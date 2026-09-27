@@ -1,0 +1,779 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-27T12:15:36+00:00",
+  "title": "Design System: Feynman Speech Coach",
+  "extensions": {
+    "colorMeta": {
+      "wall": {
+        "role": "neutral",
+        "displayName": "Dinding Langit",
+        "canonical": "#eaf5ff",
+        "tonalRamp": [
+          "#050c12",
+          "#1e262d",
+          "#3a434b",
+          "#59636b",
+          "#7a848d",
+          "#9ca6b0",
+          "#c0cbd4",
+          "#e5f0fa"
+        ]
+      },
+      "wall-malam": {
+        "role": "neutral",
+        "displayName": "Dinding Malam",
+        "canonical": "#152231",
+        "tonalRamp": [
+          "#020c19",
+          "#192635",
+          "#354354",
+          "#546374",
+          "#748497",
+          "#96a7ba",
+          "#bacbdf",
+          "#e4f0fe"
+        ],
+        "theme": "dark"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#1e2b3a",
+        "tonalRamp": [
+          "#030c19",
+          "#192635",
+          "#354353",
+          "#546374",
+          "#758496",
+          "#97a7ba",
+          "#bacbdf",
+          "#e3f0ff"
+        ]
+      },
+      "ink-malam": {
+        "role": "neutral",
+        "displayName": "Tinta Malam",
+        "canonical": "#eef4fa",
+        "tonalRamp": [
+          "#080c0f",
+          "#21262a",
+          "#3e4347",
+          "#5d6267",
+          "#7e8388",
+          "#a0a6ab",
+          "#c4cad0",
+          "#e9eff5"
+        ],
+        "theme": "dark"
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Tinta Sekunder",
+        "canonical": "#56677a",
+        "tonalRamp": [
+          "#020c1a",
+          "#172636",
+          "#344455",
+          "#526376",
+          "#738498",
+          "#95a7bc",
+          "#b8cbe1",
+          "#e3f0fe"
+        ]
+      },
+      "ink-2-malam": {
+        "role": "neutral",
+        "displayName": "Tinta Sekunder Malam",
+        "canonical": "#a3b4c6",
+        "tonalRamp": [
+          "#020c18",
+          "#192634",
+          "#354453",
+          "#546373",
+          "#748495",
+          "#96a7b9",
+          "#bacbde",
+          "#e3f0fe"
+        ],
+        "theme": "dark"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Permukaan",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "surface-malam": {
+        "role": "neutral",
+        "displayName": "Permukaan Malam",
+        "canonical": "#1e3044",
+        "tonalRamp": [
+          "#000b1d",
+          "#15263a",
+          "#314459",
+          "#4f637a",
+          "#70859c",
+          "#92a7c0",
+          "#b5cce5",
+          "#e4f0fe"
+        ],
+        "theme": "dark"
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Garis Tegas",
+        "canonical": "#bccddd",
+        "tonalRamp": [
+          "#020c17",
+          "#192632",
+          "#364451",
+          "#546371",
+          "#758493",
+          "#97a7b7",
+          "#bbcbdb",
+          "#e2f1fe"
+        ]
+      },
+      "line-strong-malam": {
+        "role": "neutral",
+        "displayName": "Garis Tegas Malam",
+        "canonical": "#0e1824",
+        "tonalRamp": [
+          "#040c17",
+          "#1b2633",
+          "#384351",
+          "#566271",
+          "#778493",
+          "#99a6b7",
+          "#bdcbdc",
+          "#e4f0fe"
+        ],
+        "theme": "dark"
+      },
+      "track": {
+        "role": "neutral",
+        "displayName": "Jalur Progres",
+        "canonical": "#cfdfee",
+        "tonalRamp": [
+          "#030c16",
+          "#1a2631",
+          "#374450",
+          "#556370",
+          "#768492",
+          "#98a7b5",
+          "#bccbda",
+          "#e1f1ff"
+        ]
+      },
+      "track-malam": {
+        "role": "neutral",
+        "displayName": "Jalur Progres Malam",
+        "canonical": "#3a5775",
+        "tonalRamp": [
+          "#000c1c",
+          "#0a2641",
+          "#284461",
+          "#466483",
+          "#6785a6",
+          "#89a9ca",
+          "#accdf0",
+          "#e3f0fe"
+        ],
+        "theme": "dark"
+      },
+      "outline": {
+        "role": "neutral",
+        "displayName": "Garis Luar",
+        "canonical": "#44586c",
+        "tonalRamp": [
+          "#000c1b",
+          "#142738",
+          "#314457",
+          "#4f6478",
+          "#70859a",
+          "#92a8be",
+          "#b5cce3",
+          "#e3f0fe"
+        ]
+      },
+      "outline-malam": {
+        "role": "neutral",
+        "displayName": "Garis Luar Malam",
+        "canonical": "#0c1620",
+        "tonalRamp": [
+          "#040c15",
+          "#1c2631",
+          "#38434f",
+          "#57636f",
+          "#778491",
+          "#99a7b5",
+          "#bdcbd9",
+          "#e3f0fe"
+        ],
+        "theme": "dark"
+      },
+      "board": {
+        "role": "primary",
+        "displayName": "Hijau Papan",
+        "canonical": "#245a45",
+        "tonalRamp": [
+          "#000f08",
+          "#032d1f",
+          "#154d39",
+          "#386e58",
+          "#5a9078",
+          "#7cb39b",
+          "#a0d8be",
+          "#c5fee3"
+        ]
+      },
+      "board-malam": {
+        "role": "primary",
+        "displayName": "Hijau Papan Malam",
+        "canonical": "#1f4f3c",
+        "tonalRamp": [
+          "#000f08",
+          "#012d1e",
+          "#1c4c39",
+          "#3d6d58",
+          "#5e8e79",
+          "#81b29b",
+          "#a4d7bf",
+          "#c9fce4"
+        ],
+        "theme": "dark"
+      },
+      "wood": {
+        "role": "primary",
+        "displayName": "Kayu Bingkai",
+        "canonical": "#c98a4b",
+        "tonalRamp": [
+          "#150800",
+          "#391e00",
+          "#5f3706",
+          "#8c5102",
+          "#b07332",
+          "#d59657",
+          "#fcba7a",
+          "#ffebd9"
+        ]
+      },
+      "wood-malam": {
+        "role": "primary",
+        "displayName": "Kayu Bingkai Malam",
+        "canonical": "#8a5a30",
+        "tonalRamp": [
+          "#160700",
+          "#391d02",
+          "#623505",
+          "#84552b",
+          "#a8764c",
+          "#cd996e",
+          "#f3bd91",
+          "#feeadb"
+        ],
+        "theme": "dark"
+      },
+      "wood-dark": {
+        "role": "primary",
+        "displayName": "Kayu Baki",
+        "canonical": "#9a6230",
+        "tonalRamp": [
+          "#160700",
+          "#391d02",
+          "#623503",
+          "#89521f",
+          "#ad7442",
+          "#d29664",
+          "#f9ba88",
+          "#feeadb"
+        ]
+      },
+      "wood-dark-malam": {
+        "role": "primary",
+        "displayName": "Kayu Baki Malam",
+        "canonical": "#633e1d",
+        "tonalRamp": [
+          "#160700",
+          "#3a1c00",
+          "#5d3817",
+          "#7e5837",
+          "#a27957",
+          "#c69b78",
+          "#ecbf9b",
+          "#ffeada"
+        ],
+        "theme": "dark"
+      },
+      "wood-light": {
+        "role": "primary",
+        "displayName": "Kilap Kayu",
+        "canonical": "#e0a868",
+        "tonalRamp": [
+          "#140800",
+          "#361f01",
+          "#5e3901",
+          "#875407",
+          "#ab7635",
+          "#d09959",
+          "#f6bd7c",
+          "#feebd6"
+        ]
+      },
+      "wood-light-malam": {
+        "role": "primary",
+        "displayName": "Kilap Kayu Malam",
+        "canonical": "#a87244",
+        "tonalRamp": [
+          "#160700",
+          "#3a1d01",
+          "#623503",
+          "#875324",
+          "#ab7547",
+          "#d09769",
+          "#f6bb8c",
+          "#feeadb"
+        ],
+        "theme": "dark"
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Kapur Putih",
+        "canonical": "#f4f7f0",
+        "tonalRamp": [
+          "#0a0c08",
+          "#242621",
+          "#41433d",
+          "#60625c",
+          "#81837d",
+          "#a3a6a0",
+          "#c7cac4",
+          "#edf0e9"
+        ]
+      },
+      "chalk-dim": {
+        "role": "neutral",
+        "displayName": "Kapur Samar",
+        "canonical": "#b9d3c4",
+        "tonalRamp": [
+          "#000f06",
+          "#152a1f",
+          "#32483c",
+          "#50685b",
+          "#71897b",
+          "#93ac9e",
+          "#b7d1c2",
+          "#dbf6e7"
+        ]
+      },
+      "chalk-yellow": {
+        "role": "tertiary",
+        "displayName": "Kapur Kuning",
+        "canonical": "#ffe27a",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2e2400",
+          "#4f4107",
+          "#745f03",
+          "#9a8011",
+          "#bfa337",
+          "#e4c85f",
+          "#feefb7"
+        ]
+      },
+      "chalk-blue": {
+        "role": "tertiary",
+        "displayName": "Kapur Biru",
+        "canonical": "#9bd8ff",
+        "tonalRamp": [
+          "#000d17",
+          "#01283d",
+          "#004768",
+          "#2c688a",
+          "#4f8aae",
+          "#71add3",
+          "#95d2f9",
+          "#def2ff"
+        ]
+      },
+      "chalk-pink": {
+        "role": "tertiary",
+        "displayName": "Kapur Merah Muda",
+        "canonical": "#ffb3d1",
+        "tonalRamp": [
+          "#1d000d",
+          "#450828",
+          "#672945",
+          "#8a4965",
+          "#af6986",
+          "#d58ca9",
+          "#fbafcd",
+          "#ffe7f0"
+        ]
+      },
+      "chalk-mint": {
+        "role": "tertiary",
+        "displayName": "Kapur Mint",
+        "canonical": "#9ee8c0",
+        "tonalRamp": [
+          "#000f06",
+          "#002e1b",
+          "#084f33",
+          "#26714f",
+          "#4b936f",
+          "#6eb791",
+          "#93dcb5",
+          "#c5fede"
+        ]
+      },
+      "go": {
+        "role": "secondary",
+        "displayName": "Hijau Mulai",
+        "canonical": "#3ccb7f",
+        "tonalRamp": [
+          "#001005",
+          "#002e17",
+          "#094f2d",
+          "#047442",
+          "#149b5b",
+          "#2fc277",
+          "#5fe89a",
+          "#c5ffd8"
+        ]
+      },
+      "go-ink": {
+        "role": "secondary",
+        "displayName": "Tinta Hijau Mulai",
+        "canonical": "#0e3b22",
+        "tonalRamp": [
+          "#001005",
+          "#032e17",
+          "#214c32",
+          "#416c51",
+          "#628e71",
+          "#84b293",
+          "#a8d7b7",
+          "#ccfcdb"
+        ]
+      },
+      "stop": {
+        "role": "secondary",
+        "displayName": "Koral Berhenti",
+        "canonical": "#ff7a6e",
+        "tonalRamp": [
+          "#1f0001",
+          "#4d0103",
+          "#810009",
+          "#ab2c28",
+          "#d35249",
+          "#fb776b",
+          "#feb3aa",
+          "#ffe9e6"
+        ]
+      },
+      "stop-ink": {
+        "role": "secondary",
+        "displayName": "Tinta Koral Berhenti",
+        "canonical": "#3b0d0e",
+        "tonalRamp": [
+          "#1f0002",
+          "#421313",
+          "#63312f",
+          "#86504e",
+          "#aa716e",
+          "#cf9490",
+          "#f5b7b3",
+          "#fee9e7"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Judul panduan di papan, kapur kuning."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Nama topik dan judul panel papan."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Nama konsep di agenda."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Semua tombol."
+      },
+      "speech": {
+        "displayName": "Speech",
+        "purpose": "Gelembung bicara Si Kapur."
+      },
+      "body-transcript": {
+        "displayName": "Body transcript",
+        "purpose": "Transkrip di papan, maksimal 68ch."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraf panduan, maksimal 56ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Catatan panel, label status, subjudul, teks privasi."
+      }
+    },
+    "shadows": [
+      {
+        "name": "button-edge",
+        "value": "0 4px 0 var(--outline)",
+        "purpose": "Tepi bawah tombol. Saat ditekan menjadi 0 0 0 dan tombol turun 4px."
+      },
+      {
+        "name": "chip-edge",
+        "value": "border: 3px solid var(--outline); border-bottom-width: 5px",
+        "purpose": "Tepi bawah chip, pill rekam, tombol keluar, dan grup tema."
+      },
+      {
+        "name": "board-frame",
+        "value": "inset 0 3px 0 var(--wood-light), 0 6px 0 rgba(0,0,0,0.15)",
+        "purpose": "Kilap kayu di atas dan bayangan datar di bawah bingkai papan."
+      },
+      {
+        "name": "panel-recess",
+        "value": "inset 0 5px 0 rgba(0,0,0,0.18)",
+        "purpose": "Permukaan papan yang cekung."
+      },
+      {
+        "name": "object-drop",
+        "value": "fill rgba(0,0,0,0.12), offset 4-6px ke bawah",
+        "purpose": "Bayangan datar benda kelas di dinding."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 3px solid #9bd8ff; outline-offset: 3px; border-radius: 12px",
+        "purpose": "Cincin fokus untuk semua elemen."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Easing utama untuk tanda, garis bawah, Si Kapur, dan gelembung."
+      },
+      {
+        "name": "press",
+        "value": "80ms ease-out",
+        "purpose": "Tombol turun saat ditekan."
+      },
+      {
+        "name": "chalk-draw",
+        "value": "300ms ease-out-expo",
+        "purpose": "Tanda kapur menggambar dirinya sendiri saat status naik."
+      },
+      {
+        "name": "underline-draw",
+        "value": "420ms ease-out-expo",
+        "purpose": "Garis bawah kuning pada istilah konsep."
+      },
+      {
+        "name": "dust",
+        "value": "750ms ease-out",
+        "purpose": "Debu kapur saat konsep dijelaskan."
+      },
+      {
+        "name": "kapur-reach",
+        "value": "480ms ease-out-expo",
+        "purpose": "Si Kapur berpindah ke baris agenda."
+      },
+      {
+        "name": "draw-delay",
+        "value": "380ms",
+        "purpose": "Tanda dan debu menunggu tangan Si Kapur tiba."
+      },
+      {
+        "name": "progress-fill",
+        "value": "500ms ease-out",
+        "purpose": "Isi bar progres bergeser lewat scaleX."
+      },
+      {
+        "name": "progress-bounce",
+        "value": "420ms ease-out-expo",
+        "purpose": "Bar memantul saat satu konsep lagi dijelaskan."
+      },
+      {
+        "name": "kapur-idle",
+        "value": "bob 2.6s ease-in-out infinite, blink 4.2s",
+        "purpose": "Si Kapur bergoyang dan berkedip saat diam."
+      },
+      {
+        "name": "kapur-hop",
+        "value": "560ms ease-out-expo",
+        "purpose": "Lompatan senang (sekali) atau bersorak (tiga kali)."
+      },
+      {
+        "name": "bubble-in",
+        "value": "260ms ease-out-expo",
+        "purpose": "Gelembung bicara muncul."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Semua animasi mati, debu disembunyikan, Si Kapur mencentang dari baki."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "decor",
+        "value": "1340px"
+      },
+      {
+        "name": "2xl",
+        "value": "1536px"
+      }
+    ],
+    "themes": {
+      "mechanism": "data-theme=\"light|dark\" pada <html>, dipasang sebelum render di index.html dari localStorage lalu prefers-color-scheme.",
+      "labels": {
+        "light": "Siang",
+        "dark": "Malam"
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "Tombol Mulai",
+      "kind": "button",
+      "refersTo": "button-go",
+      "description": "Tombol utama untuk memulai sesi dan membuka feedback.",
+      "html": "<button class=\"ds-btn ds-btn-go\">Mulai</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:16px;padding:.8rem 1.6rem;font-family:'Fredoka Variable','Nunito Variable',system-ui,sans-serif;font-size:1.15rem;font-weight:600;border:3px solid var(--outline,#44586c);box-shadow:0 4px 0 var(--outline,#44586c);cursor:pointer;transition:transform 80ms ease-out,box-shadow 80ms ease-out,filter 150ms ease-out;}.ds-btn:hover{filter:brightness(1.04);}.ds-btn:active{transform:translateY(4px);box-shadow:0 0 0 var(--outline,#44586c);}.ds-btn:focus-visible{outline:3px solid #9bd8ff;outline-offset:3px;}.ds-btn:disabled{cursor:not-allowed;filter:saturate(.4);}.ds-btn-go{background:#3ccb7f;color:#0e3b22;}"
+    },
+    {
+      "name": "Tombol Berhenti",
+      "kind": "button",
+      "refersTo": "button-stop",
+      "description": "Menghentikan rekaman. Versi disabled untuk Memproses.",
+      "html": "<button class=\"ds-btn ds-btn-stop\">Berhenti</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:16px;padding:.8rem 1.6rem;font-family:'Fredoka Variable','Nunito Variable',system-ui,sans-serif;font-size:1.15rem;font-weight:600;border:3px solid var(--outline,#44586c);box-shadow:0 4px 0 var(--outline,#44586c);cursor:pointer;transition:transform 80ms ease-out,box-shadow 80ms ease-out,filter 150ms ease-out;}.ds-btn:hover{filter:brightness(1.04);}.ds-btn:active{transform:translateY(4px);box-shadow:0 0 0 var(--outline,#44586c);}.ds-btn:focus-visible{outline:3px solid #9bd8ff;outline-offset:3px;}.ds-btn:disabled{cursor:not-allowed;filter:saturate(.4);}.ds-btn-stop{background:#ff7a6e;color:#3b0d0e;padding:.8rem 2rem;}"
+    },
+    {
+      "name": "Tombol Biasa",
+      "kind": "button",
+      "refersTo": "button-plain",
+      "description": "Aksi sekunder seperti Ulangi dari awal.",
+      "html": "<button class=\"ds-btn ds-btn-plain\">Ulangi dari awal</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:16px;padding:.8rem 1.6rem;font-family:'Fredoka Variable','Nunito Variable',system-ui,sans-serif;font-size:1.15rem;font-weight:600;border:3px solid var(--outline,#44586c);box-shadow:0 4px 0 var(--outline,#44586c);cursor:pointer;transition:transform 80ms ease-out,box-shadow 80ms ease-out,filter 150ms ease-out;}.ds-btn:hover{filter:brightness(1.04);}.ds-btn:active{transform:translateY(4px);box-shadow:0 0 0 var(--outline,#44586c);}.ds-btn:focus-visible{outline:3px solid #9bd8ff;outline-offset:3px;}.ds-btn:disabled{cursor:not-allowed;filter:saturate(.4);}.ds-btn-plain{background:var(--surface,#fff);color:var(--ink,#1e2b3a);}"
+    },
+    {
+      "name": "Chip statistik",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Chip stiker untuk statistik, pill rekam, dan tombol keluar.",
+      "html": "<div class=\"ds-chip\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"#56677a\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 16a8 8 0 1 1 16 0\"/><path d=\"M12 16l4.2-5\"/><circle cx=\"12\" cy=\"16\" r=\"1.4\" fill=\"#56677a\"/></svg><strong class=\"ds-chip-value\">98</strong><span class=\"ds-chip-label\">kata/menit</span></div>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:8px;border:3px solid var(--outline,#44586c);border-bottom-width:5px;border-radius:16px;background:var(--surface,#fff);color:var(--ink,#1e2b3a);padding:6px 12px;font-family:'Fredoka Variable','Nunito Variable',system-ui,sans-serif;}.ds-chip-value{font-size:1.125rem;font-weight:600;font-variant-numeric:tabular-nums;}.ds-chip-label{font-family:'Nunito Variable',system-ui,sans-serif;font-size:.875rem;color:var(--ink-2,#56677a);}"
+    },
+    {
+      "name": "Pilihan tema",
+      "kind": "nav",
+      "refersTo": "theme-toggle-active",
+      "description": "Grup radio Siang dan Malam di bilah atas.",
+      "html": "<div class=\"ds-chip ds-theme\" role=\"radiogroup\" aria-label=\"Tema\"><button role=\"radio\" aria-checked=\"true\" class=\"ds-seg ds-seg-on\">Siang</button><button role=\"radio\" aria-checked=\"false\" class=\"ds-seg\">Malam</button></div>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:8px;border:3px solid var(--outline,#44586c);border-bottom-width:5px;border-radius:16px;background:var(--surface,#fff);color:var(--ink,#1e2b3a);padding:6px 12px;font-family:'Fredoka Variable','Nunito Variable',system-ui,sans-serif;}.ds-theme{padding:4px;gap:4px;}.ds-seg{border:2px solid transparent;border-radius:10px;padding:4px 12px;background:none;color:var(--ink-2,#56677a);font:inherit;font-size:.875rem;cursor:pointer;transition:color 150ms;}.ds-seg:hover{color:var(--ink,#1e2b3a);}.ds-seg:focus-visible{outline:3px solid #9bd8ff;outline-offset:3px;}.ds-seg-on{background:#ffe27a;border-color:var(--outline,#44586c);color:#0e3b22;}"
+    },
+    {
+      "name": "Gelembung bicara",
+      "kind": "custom",
+      "refersTo": "speech-bubble",
+      "description": "Ucapan Si Kapur, dengan ekor di kiri.",
+      "html": "<p class=\"ds-bubble\">Yes! Chain rule sudah jelas.<span class=\"ds-bubble-tail\"></span></p>",
+      "css": ".ds-bubble{position:relative;display:inline-block;max-width:26rem;margin:0 0 0 12px;border:3px solid var(--outline,#44586c);border-radius:16px;background:var(--surface,#fff);color:var(--ink,#1e2b3a);padding:12px 16px;font-family:'Fredoka Variable','Nunito Variable',system-ui,sans-serif;font-size:1.05rem;line-height:1.375;animation:ds-bubble-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;}.ds-bubble-tail{position:absolute;left:-11px;bottom:16px;width:16px;height:16px;transform:rotate(45deg);border-left:3px solid var(--outline,#44586c);border-bottom:3px solid var(--outline,#44586c);background:var(--surface,#fff);}@keyframes ds-bubble-in{from{opacity:0;transform:translateY(6px) scale(.96);}}@media (prefers-reduced-motion: reduce){.ds-bubble{animation:none;}}"
+    },
+    {
+      "name": "Panel agenda",
+      "kind": "card",
+      "refersTo": "board-panel",
+      "description": "Panel papan hijau dengan tiga tanda status konsep dan label teks.",
+      "html": "<div class=\"ds-panel\"><h2 class=\"ds-panel-title\">Agenda</h2><ol class=\"ds-agenda\"><li><svg viewBox=\"0 0 32 32\" width=\"36\" height=\"36\" fill=\"none\" stroke=\"#9ee8c0\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path stroke-width=\"2.1\" d=\"M6.6 7.3C11.2 6.7 20.1 7 25.5 6.8c.3 5.3-.1 13.1.3 18.5-6.8.5-13.7.1-19.3.3.4-6.6-.1-13 .1-18.3Z\"/><path stroke-width=\"2.8\" d=\"M9.6 16.9l4.6 4.8 9.6-12.3\"/></svg><span class=\"ds-row ds-row-done\">Chain rule</span><small>dijelaskan</small></li><li><svg viewBox=\"0 0 32 32\" width=\"36\" height=\"36\" fill=\"none\" stroke=\"#f4f7f0\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path stroke-width=\"2.1\" d=\"M6.6 7.3C11.2 6.7 20.1 7 25.5 6.8c.3 5.3-.1 13.1.3 18.5-6.8.5-13.7.1-19.3.3.4-6.6-.1-13 .1-18.3Z\"/><path stroke-width=\"2.6\" d=\"M10.4 22.2 21.8 9.9\"/></svg><span class=\"ds-row ds-row-said\">Gradient descent</span><small>disebut</small></li><li><svg viewBox=\"0 0 32 32\" width=\"36\" height=\"36\" fill=\"none\" stroke=\"#ffe27a\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path stroke-width=\"2.1\" d=\"M6.6 7.3C11.2 6.7 20.1 7 25.5 6.8c.3 5.3-.1 13.1.3 18.5-6.8.5-13.7.1-19.3.3.4-6.6-.1-13 .1-18.3Z\"/></svg><span class=\"ds-row ds-row-open\">Learning rate</span><small>belum</small></li></ol></div>",
+      "css": ".ds-panel{background:#245a45;border:3px solid var(--outline,#44586c);border-radius:16px;padding:24px 28px;box-shadow:inset 0 5px 0 rgba(0,0,0,.18);color:#f4f7f0;}.ds-panel-title{margin:0 0 16px;font-family:'Fredoka Variable','Nunito Variable',system-ui,sans-serif;font-size:1.5rem;font-weight:600;}.ds-agenda{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}.ds-agenda li{display:flex;align-items:center;gap:12px;}.ds-agenda small{font-family:'Nunito Variable',system-ui,sans-serif;font-size:.875rem;color:#b9d3c4;}.ds-row{font-family:'Fredoka Variable','Nunito Variable',system-ui,sans-serif;font-size:1.45rem;line-height:1.25;}.ds-row-open{color:#ffe27a;font-weight:500;}.ds-row-said{color:#f4f7f0;font-weight:500;}.ds-row-done{color:#b9d3c4;font-weight:400;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Kelas Si Kapur",
+    "overview": "Aplikasi ini adalah ruang kelas yang terang. Papan tulis sungguhan tergantung di dinding: bingkai kayu bergaris luar, dua panel hijau yang dipisah kayu, dan baki kapur di bawahnya. Papan adalah benda yang digambar, bukan warna latar. Di atas baki berdiri Si Kapur, sebatang kapur hidup yang mendengarkan, bertanya, dan bersorak. Saat status konsep naik, ia berjalan ke baris agenda dan mencentang kotaknya dengan tangan, lalu tanda kapur menggambar dirinya sendiri dan debu kapur mengepul.\n\nRegisternya ceria dan penuh ilustrasi, seperti aplikasi edukasi Duolingo. Tampilan kalem dan minimalis (seluruh halaman sebagai satu warna papan yang datar) sudah ditolak user karena membosankan. Semua ilustrasi, dari Si Kapur sampai tombol, memakai satu gaya stiker: garis luar satu warna setebal kira-kira 3px, isian datar, dan tepi bawah tebal dalam warna garis luar. Kepadatannya rendah: user berbicara dan hanya melirik layar, jadi satu lirikan harus cukup untuk melihat konsep mana yang belum dibahas.\n\nAda dua mode, Siang dan Malam, dengan tombol pilihan di bilah atas. Tema awal dipasang di `index.html` sebelum render (dari `localStorage`, lalu `prefers-color-scheme`) supaya tidak berkedip. Malam adalah kelas yang sama setelah gelap: dinding navy, jendela berganti bulan dan bintang, lampu gantung menyala. Papan, kapur, dan tombol tidak berubah.",
+    "keyCharacteristics": [
+      "Papan tulis sebagai benda berbingkai kayu di dinding kelas, bukan latar halaman.",
+      "Satu gaya stiker untuk semua ilustrasi dan kontrol: garis luar 3px dan tepi bawah dalam warna garis luar.",
+      "Si Kapur, maskot SVG yang mengikuti lembar referensi user, bereaksi dan mencentang agenda.",
+      "Tiga status konsep dengan warna dan bentuk sekaligus, sama di agenda dan bar progres.",
+      "Semua ilustrasi adalah SVG yang ditulis di kode. Tidak ada aset raster yang ikut dikirim. Favicon juga SVG.",
+      "Progres ringan saja: bar progres konsep dan perayaan kecil."
+    ],
+    "rules": [
+      {
+        "name": "The Satu Garis Luar Rule",
+        "body": "Setiap benda dan kontrol memakai garis luar `outline` (Malam `outline-malam`) setebal kira-kira 3px. Ini berlaku untuk Si Kapur, papan, baki, benda kelas, chip, tombol, gelembung bicara, dan bar progres. Garis luar berwarna lain berarti benda itu belum masuk dunia ini.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tiga Tanda Rule",
+        "body": "Status konsep selalu memakai warna dan bentuk sekaligus. Belum: kuning dengan kotak kosong (hanya di agenda). Disebut: kapur putih dengan garis miring. Dijelaskan: mint dengan centang. Bar progres memakai warna dan tanda yang sama, dan setiap lingkaran kosong punya cincin dalam supaya tetap bisa dihitung. Warna saja tidak pernah cukup.",
+        "section": "colors"
+      },
+      {
+        "name": "The Papan Selalu Hijau Rule",
+        "body": "Warna kapur dan tombol sama di Siang dan Malam, karena papan selalu hijau. Tema mengubah dinding, permukaan, garis luar, dan benda kelas, bukan semantik kapur.",
+        "section": "colors"
+      },
+      {
+        "name": "The Huruf Kalimat Rule",
+        "body": "Semua teks memakai huruf kalimat biasa: judul, label, tombol, dan chip. Tidak ada teks kapital penuh dan tidak ada font serif, di mana pun. Ini batasan user.",
+        "section": "typography"
+      },
+      {
+        "name": "The Huruf Kapur Rule",
+        "body": "Judul di atas papan memakai filter `chalk-text` (tepi goyah dan bintik kosong) supaya terbaca sebagai tulisan kapur. Transkrip dan teks panjang tidak difilter, supaya tetap mudah dibaca.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tepi Bawah Rule",
+        "body": "Setiap bayangan jatuh lurus ke bawah dan tidak diblur. Tidak ada bayangan diagonal dan tidak ada bayangan lembut yang melayang. Satu-satunya cahaya lembut adalah pendar lampu di mode Malam.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** gambar setiap benda dan kontrol baru dengan garis luar `outline` sekitar 3px, isian datar, dan tepi bawah dalam warna garis luar.",
+      "**Do** tampilkan status konsep dengan warna dan bentuk sekaligus: kuning dengan kotak kosong, kapur putih dengan garis miring, mint dengan centang, plus label teks.",
+      "**Do** pakai Fredoka untuk judul, tombol, agenda, dan ucapan Si Kapur, dan Nunito untuk transkrip dan teks panjang.",
+      "**Do** buat ilustrasi sebagai SVG di kode dan uji kedua mode, Siang dan Malam.",
+      "**Do** sediakan versi diam untuk setiap gerakan di bawah `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "**Don't** pakai font serif atau teks kapital penuh, termasuk di label, judul, dan tombol.",
+      "**Don't** bedakan status konsep hanya lewat warna.",
+      "**Don't** tambahkan XP, streak, hati, atau lencana. Progres cukup lewat bar konsep dan perayaan kecil.",
+      "**Don't** kembali ke tampilan kalem dan minimalis, atau ke halaman yang seluruhnya satu warna papan datar.",
+      "**Don't** pakai bayangan blur, bayangan diagonal, atau garis luar dengan warna lain selain `outline`.",
+      "**Don't** kirim aset raster atau pakai emoji dan huruf sebagai ikon."
+    ]
+  }
+}

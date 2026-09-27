@@ -1,1 +1,5 @@
 project-guideline.md
+# Artefak tooling lokal
+.playwright-mcp/
+.impeccable/questions/
+.impeccable/review/
