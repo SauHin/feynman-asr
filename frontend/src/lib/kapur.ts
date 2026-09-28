@@ -90,7 +90,7 @@ export function kapurSays(input: {
 
   if (!started)
     return { mood: 'wave', text: 'Halo, aku Empur! Aku akan mencentang konsep yang sudah kamu jelaskan.' }
-  if (state.status === 'processing') return { mood: 'think', text: 'Sebentar, aku rapikan catatannya dulu.' }
+  if (state.status === 'processing') return { mood: 'think', text: 'Sebentar, aku siapkan feedback-nya dulu.' }
   if (state.status === 'idle') {
     if (allExplained) return { mood: 'cheer', text: 'Mantap! Semua konsep sudah kamu jelaskan.' }
     const open = concepts.find((c) => state.concepts[c.id] !== 'explained')!

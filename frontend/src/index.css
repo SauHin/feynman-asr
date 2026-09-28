@@ -1,16 +1,21 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/nunito';
-@import '@fontsource-variable/fredoka';
+@import '@fontsource-variable/lexend';
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
-/* Siang: kelas terang. Malam: kelas yang sama setelah gelap. */
+/* Arah A (terang dan bersih, rasa Brilliant). Siang: putih polos. Malam: hampir hitam.
+   bg: latar halaman; card: kartu abu muda tanpa garis; line: garis tipis untuk kartu putih dan pil. */
 :root,
 [data-theme='light'] {
   color-scheme: light;
+  --bg: #ffffff;
+  --card: #f5f5f7;
+  --card-2: #ececf0;
+  --line: #e7e7ec;
+  --ink-3: #8c8c9c;
   --wall: #eaf5ff;
-  --ink: #1e2b3a;
-  --ink-2: #56677a;
+  --ink: #16161d;
+  --ink-2: #5c5c6e;
   --surface: #ffffff;
   --line-strong: #bccddd;
   --track: #cfdfee;
@@ -27,10 +32,15 @@
 
 [data-theme='dark'] {
   color-scheme: dark;
+  --bg: #141414;
+  --card: #1f1f22;
+  --card-2: #2a2a2e;
+  --line: #34343a;
+  --ink-3: #7c7c88;
   --wall: #152231;
-  --ink: #eef4fa;
-  --ink-2: #a3b4c6;
-  --surface: #1e3044;
+  --ink: #f5f5f7;
+  --ink-2: #a8a8b3;
+  --surface: #1a1a1d;
   --line-strong: #0e1824;
   --track: #3a5775;
   --board: #1f4f3c;
@@ -44,6 +54,11 @@
 }
 
 @theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-line: var(--line);
+  --color-ink-3: var(--ink-3);
   --color-wall: var(--wall);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
@@ -71,18 +86,22 @@
   --color-chalk-blue: #9bd8ff;
   --color-chalk-pink: #ffb3d1;
   --color-chalk-mint: #9ee8c0;
-  --color-go: #3ccb7f;
+  --color-go: #22c55e;
+  --color-go-edge: #16994a;
   --color-go-ink: #0e3b22;
-  --color-stop: #ff7a6e;
+  --color-stop: #f04438;
+  --color-stop-edge: #b42318;
   --color-stop-ink: #3b0d0e;
-  --font-sans: 'Nunito Variable', system-ui, sans-serif;
-  --font-display: 'Fredoka Variable', 'Nunito Variable', system-ui, sans-serif;
+  --color-focus: #4b7bff;
+  /* Satu keluarga huruf untuk seluruh aplikasi: Lexend, dirancang untuk keterbacaan. */
+  --font-sans: 'Lexend Variable', system-ui, sans-serif;
+  --font-display: 'Lexend Variable', system-ui, sans-serif;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
   html {
-    background: var(--wall) var(--wallpaper);
+    background: var(--bg);
     color: var(--ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -96,26 +115,26 @@
     color: var(--color-go-ink);
   }
   :focus-visible {
-    outline: 3px solid var(--color-chalk-blue);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
     border-radius: 12px;
   }
 }
 
 @layer components {
-  /* Tombol tebal yang terasa bisa ditekan: tepi bawah lebih gelap, turun saat ditekan. */
+  /* Tombol pil yang terasa bisa ditekan: tepi bawah lebih gelap, turun saat ditekan. Tanpa garis luar. */
   .btn {
+    --edge: var(--line);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 16px;
-    padding: 0.8rem 1.6rem;
+    border-radius: 999px;
+    padding: 0.85rem 1.8rem;
     font-family: var(--font-display);
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    border: 3px solid var(--outline);
-    box-shadow: 0 4px 0 var(--outline);
+    box-shadow: 0 5px 0 var(--edge);
     transition:
       transform 80ms ease-out,
       box-shadow 80ms ease-out,
@@ -125,8 +144,8 @@
     filter: brightness(1.04);
   }
   .btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 0 0 var(--outline);
+    transform: translateY(5px);
+    box-shadow: 0 0 0 var(--edge);
   }
   /* Tombol nonaktif harus jelas beda dari tombol aktif: abu-abu, pudar, dan tidak bereaksi. */
   .btn:disabled {
@@ -139,41 +158,41 @@
   }
   .btn:disabled:active {
     transform: none;
-    box-shadow: 0 4px 0 var(--outline);
+    box-shadow: 0 5px 0 var(--edge);
   }
   .btn-go {
+    --edge: var(--color-go-edge);
     background: var(--color-go);
-    color: var(--color-go-ink);
+    color: #fff;
   }
   .btn-stop {
+    --edge: var(--color-stop-edge);
     background: var(--color-stop);
-    color: var(--color-stop-ink);
+    color: #fff;
   }
   .btn-plain {
-    background: var(--surface);
+    --edge: var(--card-2);
+    background: var(--card);
     color: var(--ink);
   }
-  /* Kolom isian sebagai stiker: garis luar 3px dan tepi bawah tebal, seperti chip. */
+  /* Kolom isian: garis tipis, sudut membulat, fokus ditandai cincin biru dari :focus-visible. */
   .field {
     width: 100%;
-    border: 3px solid var(--outline);
-    border-bottom-width: 5px;
+    border: 1.5px solid var(--line);
     border-radius: 16px;
     background: var(--surface);
     color: var(--ink);
-    padding: 0.65rem 0.95rem;
-    font-size: 1.125rem;
-    font-weight: 500;
+    padding: 0.7rem 1rem;
+    font-size: 1.0625rem;
   }
   .field::placeholder {
-    color: var(--ink-2);
+    color: var(--ink-3);
     opacity: 1;
   }
-  /* Chip dengan gaya yang sama dengan ilustrasi: garis luar 3px dan tepi bawah tebal. */
+  /* Pil bergaris tipis untuk kontrol kecil di bilah atas. */
   .chip {
-    border: 3px solid var(--outline);
-    border-bottom-width: 5px;
-    border-radius: 16px;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
     background: var(--surface);
   }
 }
