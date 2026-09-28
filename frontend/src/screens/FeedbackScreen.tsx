@@ -5,6 +5,7 @@ import { Board, Panel, PanelTitle, PausePill } from '../components/board'
 import {
   ChalkDefs,
   ChalkMark,
+  ChevronIcon,
   ClockIcon,
   FillerIcon,
   PauseIcon,
@@ -59,9 +60,8 @@ const CHIP_MARK: Record<Mark, string> = {
   wrong: 'text-mark-wrong dark:text-[#ff9a8f]',
 }
 
-// Gabungan nama dalam kalimat: "A", "A dan B", "A, B, dan C".
-const joinId = (xs: string[]) =>
-  xs.length < 2 ? (xs[0] ?? '') : xs.length === 2 ? `${xs[0]} dan ${xs[1]}` : `${xs.slice(0, -1).join(', ')}, dan ${xs.at(-1)}`
+// Penanda <details> bawaan disembunyikan, diganti ikon chevron yang berputar saat terbuka.
+const SUMMARY = 'cursor-pointer list-none [&::-webkit-details-marker]:hidden'
 
 export default function FeedbackScreen() {
   const view = useMockState(STATES)
@@ -113,10 +113,6 @@ export default function FeedbackScreen() {
               >
                 Ganti topik
               </Link>
-              <p className="mt-2 text-sm leading-relaxed text-ink-2">
-                Isi surat ditulis dengan bantuan Gemini dari teks transkrip, bukan dari suaramu. Kalau ada istilah yang
-                salah tulis di kutipan, itu kesalahan transkripsi, bukan kesalahanmu.
-              </p>
             </div>
           </aside>
         </div>
@@ -128,6 +124,7 @@ export default function FeedbackScreen() {
 }
 
 // Surat dari Si Kapur, di selembar kertas yang disobek dari buku catatan.
+// Urutannya: ringkasan, yang perlu diperbaiki, yang sudah bagus, lalu rincian.
 function Letter({
   view,
   concepts,
@@ -148,14 +145,12 @@ function Letter({
     const live = BACKPROP_LIVE_STATUS[id]
     return live ?? 'none'
   }
+  const mood = view === 'gagal' ? 'confused' : view === 'memuat' ? 'think' : 'proud'
 
   return (
     <article className="relative rounded-[20px] border-[3px] border-outline bg-paper px-6 pb-10 pt-10 text-paper-ink shadow-[0_6px_0_rgba(0,0,0,0.15)] md:px-12">
       {/* Si Kapur berdiri di tepi kiri surat: bangga, sedang menulis, atau bingung. */}
-      <Kapur
-        mood={view === 'gagal' ? 'confused' : view === 'memuat' ? 'think' : 'proud'}
-        className="absolute -left-28 top-24 z-20 hidden h-40 w-32 xl:block"
-      />
+      <Kapur mood={mood} className="absolute -left-28 top-24 z-20 hidden h-40 w-32 xl:block" />
       {/* Lubang spiral: halaman ini disobek dari buku catatan di beranda. */}
       <div aria-hidden="true" className="absolute inset-x-6 top-4 flex justify-between md:inset-x-12">
         {Array.from({ length: 14 }, (_, i) => (
@@ -163,14 +158,15 @@ function Letter({
         ))}
       </div>
 
-      <Greeting view={view} concepts={concepts} feedback={feedback} previous={previous} onRetry={onRetry} />
+      <Greeting view={view} onRetry={onRetry} />
+      {feedback && <Score marks={concepts.map((c) => markOf(c.id))} feedback={feedback} previous={previous} />}
 
       {view === 'memuat' && (
         <>
-          <Section title="Yang sudah bagus" hl="var(--color-chalk-mint)">
+          <Section title="Yang perlu diperbaiki dulu" hl="var(--color-chalk-yellow)">
             <Writing label="Si Kapur sedang menulis bagian ini" />
           </Section>
-          <Section title="Yang perlu diperbaiki dulu" hl="var(--color-chalk-yellow)">
+          <Section title="Yang sudah bagus" hl="var(--color-chalk-mint)">
             <Writing label="Si Kapur sedang menulis bagian ini" />
           </Section>
         </>
@@ -178,16 +174,6 @@ function Letter({
 
       {feedback && (
         <>
-          <Section title="Yang sudah bagus" hl="var(--color-chalk-mint)">
-            <ul className="flex flex-col gap-3 text-lg leading-relaxed">
-              {feedback.strengths.map((s) => (
-                <li key={s} className="flex gap-3">
-                  <Star className="mt-1 size-6 shrink-0" />
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </Section>
           <Section title="Yang perlu diperbaiki dulu" hl="var(--color-chalk-yellow)">
             <ol className="flex flex-col gap-3 text-lg leading-relaxed">
               {feedback.improvements.map((s, i) => (
@@ -200,44 +186,60 @@ function Letter({
               ))}
             </ol>
           </Section>
+          <Section title="Yang sudah bagus" hl="var(--color-chalk-mint)">
+            <ul className="flex flex-col gap-3 text-lg leading-relaxed">
+              {feedback.strengths.map((s) => (
+                <li key={s} className="flex gap-3">
+                  <Star className="mt-1 size-6 shrink-0" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </Section>
         </>
       )}
 
       <Section title="Cakupan konsep" hl="var(--color-chalk-blue)">
-        <p className="text-paper-ink-2">
+        <p className="max-w-[60ch] text-paper-ink-2">
           {feedback
-            ? 'Checklist live sudah diperiksa ulang oleh Gemini. Setiap penilaian disertai kutipan dari transkripmu.'
+            ? 'Diperiksa ulang oleh Gemini dari teks transkrip. Istilah yang salah tulis di kutipan adalah kesalahan transkripsi, bukan kesalahanmu.'
             : view === 'memuat'
               ? 'Ini hasil checklist live. Gemini sedang memeriksanya ulang.'
-              : 'Belum diperiksa Gemini. Ini hasil checklist live, jadi anggap sebagai perkiraan.'}
+              : 'Belum diperiksa Gemini, jadi anggap hasil checklist live ini sebagai perkiraan.'}
         </p>
-        <ul className="mt-5 flex flex-col gap-5">
+        <ul className="mt-4 flex flex-col gap-3">
           {concepts.map((c) => {
             const mark = markOf(c.id)
             const evidence = coverage?.find((x) => x.concept_id === c.id)?.evidence ?? []
+            const name = (
+              <>
+                <span className="font-display text-xl font-semibold">{c.name}</span>
+                <span className="text-paper-ink-2">{MARK_TEXT[mark]}</span>
+              </>
+            )
             return (
               <li key={c.id} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
                 <ChalkMark status={mark} className={`size-9 ${PAPER_MARK[mark]}`} />
-                <div className="pt-1">
-                  <p className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="font-display text-xl font-semibold">{c.name}</span>
-                    <span className="text-paper-ink-2">{MARK_TEXT[mark]}</span>
-                  </p>
-                  {evidence.map((e) => (
-                    <Quote key={e}>{e}</Quote>
-                  ))}
-                </div>
+                {evidence.length > 0 ? (
+                  // Kutipan konsep yang sudah benar dilipat. Yang baru disebut atau keliru langsung terbuka.
+                  <details open={mark !== 'explained'} className="group pt-1">
+                    <summary className={`flex flex-wrap items-baseline gap-x-2 rounded-lg ${SUMMARY}`}>
+                      {name}
+                      <span className="ml-auto flex items-center gap-1 self-center font-display text-sm text-paper-ink-2">
+                        kutipan
+                        <ChevronIcon className="size-4 transition-transform group-open:rotate-90" />
+                      </span>
+                    </summary>
+                    {evidence.map((e) => (
+                      <Quote key={e}>{e}</Quote>
+                    ))}
+                  </details>
+                ) : (
+                  <p className="flex flex-wrap items-baseline gap-x-2 pt-1">{name}</p>
+                )}
               </li>
             )
           })}
-        </ul>
-        <ul aria-label="Arti tanda" className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-paper-ink-2">
-          {(['none', 'mentioned', 'explained', 'wrong'] as const).map((m) => (
-            <li key={m} className="flex items-center gap-1.5">
-              <ChalkMark status={m} className={`size-6 ${PAPER_MARK[m]}`} />
-              {MARK_TEXT[m]}
-            </li>
-          ))}
         </ul>
       </Section>
 
@@ -253,7 +255,7 @@ function Letter({
             <Section title="Yang keliru" hl="var(--color-chalk-pink)">
               <div className="flex flex-col gap-7">
                 {feedback.factual_errors.map((e) => (
-                  <div key={e.statement} className="flex flex-col gap-4">
+                  <div key={e.statement} className="flex flex-col gap-3">
                     <div className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
                       <ChalkMark status="wrong" className={`size-9 ${PAPER_MARK.wrong}`} />
                       <div className="pt-1">
@@ -276,13 +278,15 @@ function Letter({
 
           {feedback.unexplained_jargon.length > 0 && (
             <Section title="Istilah yang belum kamu jelaskan" hl="var(--color-chalk-yellow)">
-              <ul className="flex flex-col gap-5">
+              <ul className="flex flex-col gap-3">
                 {feedback.unexplained_jargon.map((j) => (
-                  <li key={j.term}>
-                    <span className="inline-block rounded-xl border-[2.5px] border-outline bg-white px-3 py-0.5 font-display text-lg font-semibold">
+                  <li key={j.term} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="rounded-xl border-[2.5px] border-outline bg-white px-3 py-0.5 font-display text-lg font-semibold">
                       {j.term}
                     </span>
-                    <Quote>{j.evidence}</Quote>
+                    <span className="text-paper-ink-2">
+                      <span className="sr-only">Kutipan dari transkripmu: </span>“{j.evidence}”
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -297,7 +301,7 @@ function Letter({
 
       {/* Penutup dengan tanda tangan Si Kapur */}
       <div className="mt-12 flex items-end gap-4">
-        <Kapur mood={view === 'gagal' ? 'confused' : view === 'memuat' ? 'think' : 'proud'} className="-mb-3 h-32 w-24 shrink-0" />
+        <Kapur mood={mood} className="-mb-3 h-32 w-24 shrink-0" />
         <div className="pb-1">
           <p className="max-w-[44ch] text-lg leading-relaxed">
             {view === 'gagal'
@@ -317,36 +321,22 @@ function Letter({
   )
 }
 
-function Greeting({
-  view,
-  concepts,
-  feedback,
-  previous,
-  onRetry,
-}: {
-  view: View
-  concepts: Concept[]
-  feedback: Feedback | null
-  previous: typeof BACKPROP_PREVIOUS | null
-  onRetry: () => void
-}) {
+function Greeting({ view, onRetry }: { view: View; onRetry: () => void }) {
   if (view === 'memuat')
     return (
       <div className="mt-6" role="status">
         <h2 className="font-display text-[2rem] font-semibold leading-tight">Aku masih menulis catatannya.</h2>
         <p className="mt-3 max-w-[58ch] text-lg leading-relaxed">
-          Kelancaran dan checklist live sudah siap karena dihitung di laptopmu. Analisis isinya sedang dikerjakan Gemini
-          dari teks transkrip.
+          Kelancaran dan checklist live sudah siap. Gemini sedang menganalisis isi transkripmu.
         </p>
       </div>
     )
-  if (view === 'gagal' || !feedback)
+  if (view === 'gagal')
     return (
       <div className="mt-6" role="alert">
         <h2 className="font-display text-[2rem] font-semibold leading-tight">Maaf, catatan isinya belum bisa aku tulis.</h2>
         <p className="mt-3 max-w-[58ch] text-lg leading-relaxed">
-          Gemini tidak membalas karena batas pemakaian gratis sedang tercapai. Yang di bawah ini tetap ada karena
-          dihitung di laptopmu: checklist live, kelancaran, dan transkrip.
+          Batas pemakaian gratis Gemini sedang tercapai. Checklist live, kelancaran, dan transkrip tetap ada.
         </p>
         <button className="btn btn-plain mt-5" onClick={onRetry}>
           <RetryIcon className="size-5" />
@@ -354,31 +344,51 @@ function Greeting({
         </button>
       </div>
     )
-
-  const cov = feedback.concept_coverage
-  const n = concepts.length
-  const correct = cov.filter((c) => c.status === 'explained_correct').length
-  const name = (id: string) => concepts.find((c) => c.id === id)?.name ?? id
-  const mentioned = cov.filter((c) => c.status === 'mentioned').map((c) => name(c.concept_id))
-  const wrong = cov.filter((c) => c.status === 'explained_incorrect').map((c) => name(c.concept_id))
-  const missed = concepts.filter((c) => !cov.some((x) => x.concept_id === c.id && x.status !== 'not_covered'))
-  const errors = feedback.factual_errors.length
-  const before = previous ? Object.values(previous.coverage).filter((s) => s === 'explained_correct').length : 0
-
-  const sentences = [
-    previous && correct > before && `Dibanding sesi pertama, ${correct - before} konsep lagi kamu jelaskan dengan benar.`,
-    `${correct} dari ${n} konsep sudah kamu jelaskan dengan benar.`,
-    mentioned.length > 0 && `${joinId(mentioned)} baru disebut, belum dijelaskan.`,
-    wrong.length > 0 && `Penjelasan ${joinId(wrong)} masih keliru.`,
-    missed.length > 0 && `${joinId(missed.map((c) => c.name))} belum dibahas.`,
-    errors > 0 && `Ada ${errors === 1 ? 'satu' : errors} kalimat yang perlu diluruskan.`,
-    'Mulai dari catatan nomor 1 di bawah.',
-  ].filter(Boolean)
-
   return (
-    <div className="mt-6">
-      <h2 className="font-display text-[2rem] font-semibold leading-tight">Hai, ini catatanku untuk penjelasanmu.</h2>
-      <p className="mt-3 max-w-[58ch] text-lg leading-relaxed">{sentences.join(' ')}</p>
+    <h2 className="mt-6 font-display text-[2rem] font-semibold leading-tight">Hai, ini catatanku untuk penjelasanmu.</h2>
+  )
+}
+
+// Ringkasan satu lirikan: jumlah konsep yang benar, deretan tandanya, dan kenaikan dari sesi pertama.
+function Score({
+  marks,
+  feedback,
+  previous,
+}: {
+  marks: Mark[]
+  feedback: Feedback
+  previous: typeof BACKPROP_PREVIOUS | null
+}) {
+  const correct = feedback.concept_coverage.filter((c) => c.status === 'explained_correct').length
+  const gained = previous
+    ? correct - Object.values(previous.coverage).filter((s) => s === 'explained_correct').length
+    : 0
+  return (
+    <div className="mt-5 flex w-fit max-w-full flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border-[3px] border-outline bg-white px-5 py-4 shadow-[0_4px_0_var(--outline)]">
+      <p className="flex items-center gap-3">
+        <span aria-hidden="true" className="font-display text-5xl font-semibold leading-none tabular-nums">
+          {correct}
+          <span className="text-2xl text-paper-ink-2">/{marks.length}</span>
+        </span>
+        <span className="font-display text-lg font-semibold leading-tight">
+          <span className="sr-only">
+            {correct} dari {marks.length}
+          </span>{' '}
+          konsep dijelaskan
+          <br />
+          dengan benar
+        </span>
+      </p>
+      <span aria-hidden="true" className="flex gap-0.5">
+        {marks.map((m, i) => (
+          <ChalkMark key={i} status={m} className={`size-8 ${PAPER_MARK[m]}`} />
+        ))}
+      </span>
+      {gained > 0 && (
+        <p className="rounded-full border-2 border-outline bg-chalk-mint px-3 py-0.5 font-display font-semibold text-go-ink">
+          +{gained} dari sesi pertama
+        </p>
+      )}
     </div>
   )
 }
@@ -550,6 +560,7 @@ function ComparisonCard({
 }
 
 // Lampiran: transkrip lengkap di papan, dengan istilah konsep, filler, dan jeda panjang ditandai.
+// Dilipat secara bawaan supaya halaman feedback tidak terlalu panjang.
 function TranscriptAppendix({ concepts }: { concepts: Concept[] }) {
   const segments = useMemo(
     () =>
@@ -562,37 +573,44 @@ function TranscriptAppendix({ concepts }: { concepts: Concept[] }) {
     [concepts],
   )
   return (
-    <section aria-labelledby="transkrip-title" className="relative z-10 mx-auto mt-14 max-w-[68rem]">
-      <Board>
-        <Panel>
-          <PanelTitle id="transkrip-title" note="Hasil Whisper di laptopmu.">
-            Lampiran: transkrip lengkap
-          </PanelTitle>
-          <p className="mt-5 max-w-[68ch] text-[1.2rem] font-medium leading-[1.8] text-chalk">
-            {segments.map((seg, i) =>
-              seg.kind === 'pause' ? (
-                <PausePill key={i} duration={seg.duration} />
-              ) : (
-                <span key={i} className={seg.conceptId ? 'chalk-term' : seg.filler ? 'chalk-filler' : undefined}>
-                  {seg.text}
-                </span>
-              ),
-            )}
-          </p>
-          <ul aria-label="Arti tanda" className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-display text-chalk-dim">
-            <li>
-              <span className="chalk-term text-chalk">istilah</span> konsep
-            </li>
-            <li>
-              <span className="chalk-filler text-chalk">filler</span> (indikasi)
-            </li>
-            <li className="flex items-center">
-              <PausePill />
-              panjang, 2 detik atau lebih
-            </li>
-          </ul>
-        </Panel>
-      </Board>
-    </section>
+    <details className="group relative z-10 mx-auto mt-12 max-w-[68rem]">
+      <summary className={`btn btn-plain ${SUMMARY}`}>
+        <span className="group-open:hidden">Lihat transkrip lengkap</span>
+        <span className="hidden group-open:inline">Tutup transkrip</span>
+        <ChevronIcon className="size-5 transition-transform group-open:rotate-90" />
+      </summary>
+      <section aria-labelledby="transkrip-title" className="mt-6">
+        <Board>
+          <Panel>
+            <PanelTitle id="transkrip-title" note="Hasil Whisper di laptopmu.">
+              Transkrip lengkap
+            </PanelTitle>
+            <p className="mt-5 max-w-[68ch] text-[1.2rem] font-medium leading-[1.8] text-chalk">
+              {segments.map((seg, i) =>
+                seg.kind === 'pause' ? (
+                  <PausePill key={i} duration={seg.duration} />
+                ) : (
+                  <span key={i} className={seg.conceptId ? 'chalk-term' : seg.filler ? 'chalk-filler' : undefined}>
+                    {seg.text}
+                  </span>
+                ),
+              )}
+            </p>
+            <ul aria-label="Arti tanda" className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-display text-chalk-dim">
+              <li>
+                <span className="chalk-term text-chalk">istilah</span> konsep
+              </li>
+              <li>
+                <span className="chalk-filler text-chalk">filler</span> (indikasi)
+              </li>
+              <li className="flex items-center">
+                <PausePill />
+                panjang, 2 detik atau lebih
+              </li>
+            </ul>
+          </Panel>
+        </Board>
+      </section>
+    </details>
   )
 }

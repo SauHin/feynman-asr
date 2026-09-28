@@ -235,7 +235,7 @@ Dinding langit pucat dan papan hijau tua dalam bingkai kayu hangat, dengan kapur
 
 **The Kertas Tetap Terang Rule.** Kertas adalah benda, bukan tema. Di malam hari `paper` hanya turun ke krem redup dan teks di atasnya tetap `paper-ink`, bukan `ink`. Benda yang menempel di kertas (kutipan, gelembung bicara, label istilah) berisi putih, bukan `surface`, supaya tidak berubah navy di malam hari.
 
-**The Tanda Keempat Rule.** Feedback menambah satu tanda yang tidak ada di layar live: dijelaskan keliru, silang koral di dalam kotak. Di atas kertas keempat tanda memakai warna pekat: belum `mark-none` dengan kotak kosong, disebut `paper-ink` dengan garis miring, dijelaskan `mark-explained` dengan centang, dijelaskan keliru `mark-wrong` dengan silang. Labelnya sama dengan agenda live (belum, disebut, dijelaskan, dijelaskan keliru) dan selalu tampil sebagai teks di samping tanda, dengan legenda "Arti tanda" di bawah daftar.
+**The Tanda Keempat Rule.** Feedback menambah satu tanda yang tidak ada di layar live: dijelaskan keliru, silang koral di dalam kotak. Di atas kertas keempat tanda memakai warna pekat: belum `mark-none` dengan kotak kosong, disebut `paper-ink` dengan garis miring, dijelaskan `mark-explained` dengan centang, dijelaskan keliru `mark-wrong` dengan silang. Labelnya sama dengan agenda live (belum, disebut, dijelaskan, dijelaskan keliru) dan selalu tampil sebagai teks di samping tanda. Karena itu daftar konsep di surat tidak butuh legenda.
 
 ## Typography
 
@@ -273,7 +273,7 @@ Satu layar penuh (`100dvh`) tanpa gulir halaman dari lebar 768px ke atas: bilah 
 - Hiasan dinding hanya tampil dari 1340px, saat ada dinding di samping papan. Dinding kiri hanya berisi jam, supaya ada ruang kosong untuk Si Kapur saat mencentang. Dinding kanan berisi lampu, jendela, dan catatan.
 - Beranda: selembar halaman buku catatan selebar maksimal 40rem di tengah dinding, berisi judul, satu kalimat, tombol Mulai sesi, dan satu baris privasi. Di bawahnya ada jalur empat tahap: mendatar dari 768px, vertikal di bawahnya. Dari 1280px Si Kapur berdiri di dinding kiri jalur dengan balon di atas kepalanya. Di bawahnya ia berdiri di atas jalur dengan balon di kanan.
 - Setup: satu papan dengan satu panel selebar layar (maksimal 68rem), percakapan di kolom tengah maksimal 46rem yang menggulir di dalam panel, dan bilah bawah putih dengan teks privasi dan tombol Mulai menjelaskan. Dari 1280px Si Kapur berdiri di baki di kiri percakapan. Di bawahnya ia muncul kecil di samping pertanyaan terbaru.
-- Feedback: halaman menggulir. Surat di kiri dan kolom samping 20rem di kanan dari 1024px (bertumpuk di bawahnya), dan tombol di kolom samping menempel saat digulir. Lampiran transkrip ada di papan tersendiri di bawah surat, maksimal 68rem.
+- Feedback: halaman menggulir. Surat di kiri dan kolom samping 20rem di kanan dari 1024px (bertumpuk di bawahnya), dan tombol di kolom samping menempel saat digulir. Lampiran transkrip dilipat di bawah surat. Tombol "Lihat transkrip lengkap" membukanya di papan tersendiri, maksimal 68rem.
 - Ritme jarak: 12px antar baris dan antar panel, 20px padding panel di layar kecil (24px x 28px di desktop), 32px tepi halaman di desktop.
 
 ## Elevation & Depth
@@ -334,9 +334,11 @@ Tebal dan terasa bisa ditekan.
 
 ### Paper (buku catatan dan surat)
 - **Halaman buku catatan:** selembar `paper` kotak-kotak dengan garis luar 3px, radius 20px, dan garis margin `paper-margin`. Dua belas cincin spiral melintasi tepi atas (enam di bawah 640px), dan sampul `chalk-blue` mengintip di sisi dan bawah.
-- **Surat:** selembar `paper` polos, radius 20px, padding 40px x 48px, lubang spiral di tepi atas. Isinya salam pembuka, bagian dengan judul stabilo, lalu penutup dengan Si Kapur, "Salam kapur," dan tanda tangan goresan. Si Kapur berdiri di tepi kiri surat dari 1280px.
+- **Surat:** selembar `paper` polos, radius 20px, padding 40px x 48px, lubang spiral di tepi atas. Isinya salam pembuka satu kalimat dan kartu ringkasan. Setelah itu ada bagian dengan judul stabilo: yang perlu diperbaiki, yang sudah bagus, lalu rinciannya. Penutupnya Si Kapur, "Salam kapur," dan tanda tangan goresan. Si Kapur berdiri di tepi kiri surat dari 1280px.
 - **Kutipan:** potongan kertas putih dengan garis 2px, radius 8px, selotip biru di sudut kanan atas, teks dalam tanda kutip. Pembaca layar mendengar "Kutipan dari transkripmu".
-- **Label istilah:** stiker putih dengan garis 2.5px, radius 12px, Fredoka 600.
+- **Kartu ringkasan:** stiker putih selebar isinya, garis 3px, radius 16px, tepi bawah 4px `outline`. Isinya jumlah konsep yang dijelaskan dengan benar (Fredoka 600 3rem, penyebut `paper-ink-2`) dan deretan tanda konsep 32px. Di sesi ke-2 ada pill `chalk-mint` "+n dari sesi pertama".
+- **Lipatan:** `<details>` bawaan dengan chevron yang berputar 90 derajat saat terbuka. Kutipan konsep yang sudah dijelaskan dilipat. Kutipan konsep yang baru disebut atau keliru langsung terbuka. Transkrip lengkap juga dilipat, dengan tombol biasa sebagai pembukanya.
+- **Label istilah:** stiker putih dengan garis 2.5px, radius 12px, Fredoka 600. Kutipannya ditulis sebaris dalam `paper-ink-2`, tanpa potongan kertas.
 - **Nomor catatan:** lingkaran 28px `chalk-yellow` dengan garis 2.5px dan angka Fredoka 600. Poin yang sudah bagus diberi bintang kuning bergaris luar.
 
 ### Jalur Tahap (beranda)
