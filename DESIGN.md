@@ -184,7 +184,7 @@ Registernya ceria dan penuh ilustrasi, seperti aplikasi edukasi Duolingo. Tampil
 
 Ada dua mode, Siang dan Malam, dengan tombol pilihan di bilah atas. Tema awal dipasang di `index.html` sebelum render (dari `localStorage`, lalu `prefers-color-scheme`) supaya tidak berkedip. Malam adalah kelas yang sama setelah gelap: dinding navy, jendela berganti bulan dan bintang, lampu gantung menyala. Papan, kapur, dan tombol tidak berubah.
 
-Selain papan, kelas punya benda kedua: kertas. Beranda adalah buku catatan terbuka di dinding (kertas kotak-kotak, garis margin koral, cincin spiral di lipatan, sampul biru yang mengintip). Feedback adalah surat dari Si Kapur di selembar kertas yang disobek dari buku itu, dengan lampiran transkrip di papan. Setup adalah percakapan dengan Si Kapur di papan. Layar live tetap papan dan agenda.
+Selain papan, kelas punya benda kedua: kertas. Beranda adalah selembar halaman buku catatan di dinding: kertas kotak-kotak, garis margin koral, cincin spiral di tepi atas, dan sampul biru yang mengintip. Di bawahnya ada jalur empat tahap. Feedback adalah surat dari Si Kapur di selembar kertas yang disobek dari buku itu, dengan lampiran transkrip di papan. Setup adalah percakapan dengan Si Kapur di papan. Layar live tetap papan dan agenda.
 
 **Key Characteristics:**
 - Papan tulis sebagai benda berbingkai kayu di dinding kelas, bukan latar halaman.
@@ -246,7 +246,7 @@ Dinding langit pucat dan papan hijau tua dalam bingkai kayu hangat, dengan kapur
 
 ### Hierarchy
 - **Display** (600, 2.25rem, 1.1): judul panduan di papan ("Sebelum mulai"), dalam kapur kuning.
-- **Letter greeting** (600, 2rem, 1.25): salam pembuka surat feedback. Judul halaman kiri buku catatan di beranda lebih besar (2.6rem, 3rem dari 768px, 1.05).
+- **Letter greeting** (600, 2rem, 1.25): salam pembuka surat feedback. Judul halaman buku catatan di beranda lebih besar (2.6rem, 3rem dari 768px, 1.05).
 - **Headline** (600, 1.5rem): nama topik di bilah atas dan judul panel papan ("Agenda", "Penjelasanmu"), dengan garis kapur di bawah judul panel.
 - **Title** (500, 1.45rem, 1.25): nama konsep di agenda. Konsep yang sudah dijelaskan turun ke 400 dan `chalk-dim`, supaya yang belum dibahas paling mencolok lewat warna dan kotak kosong, bukan lewat huruf tebal. Judul bagian surat memakai ukuran yang sama dengan berat 600.
 - **Button** (600, 1.15rem): semua tombol. Mulai memakai 1.25rem.
@@ -271,7 +271,7 @@ Satu layar penuh (`100dvh`) tanpa gulir halaman dari lebar 768px ke atas: bilah 
 - Di bawah 768px, panel bertumpuk, halaman menggulir, dan bilah bawah menempel di bawah layar. Label statistik dan label tema disembunyikan secara visual (tetap untuk pembaca layar).
 - Dari 1280px, bar progres pindah ke baris bilah atas di antara judul dan pill rekam. Di bawahnya, bar mengambil baris sendiri selebar penuh.
 - Hiasan dinding hanya tampil dari 1340px, saat ada dinding di samping papan. Dinding kiri hanya berisi jam, supaya ada ruang kosong untuk Si Kapur saat mencentang. Dinding kanan berisi lampu, jendela, dan catatan.
-- Beranda: buku catatan terbuka selebar maksimal 64rem di tengah dinding. Dari 768px dua halaman berdampingan dengan cincin spiral di lipatan dan sampul yang mengintip. Di bawahnya halaman bertumpuk, dan spiral serta sampul hilang.
+- Beranda: selembar halaman buku catatan selebar maksimal 40rem di tengah dinding, berisi judul, satu kalimat, tombol Mulai sesi, dan satu baris privasi. Di bawahnya ada jalur empat tahap: mendatar dari 768px, vertikal di bawahnya. Dari 1280px Si Kapur berdiri di dinding kiri jalur dengan balon di atas kepalanya. Di bawahnya ia berdiri di atas jalur dengan balon di kanan.
 - Setup: satu papan dengan satu panel selebar layar (maksimal 68rem), percakapan di kolom tengah maksimal 46rem yang menggulir di dalam panel, dan bilah bawah putih dengan teks privasi dan tombol Mulai menjelaskan. Dari 1280px Si Kapur berdiri di baki di kiri percakapan. Di bawahnya ia muncul kecil di samping pertanyaan terbaru.
 - Feedback: halaman menggulir. Surat di kiri dan kolom samping 20rem di kanan dari 1024px (bertumpuk di bawahnya), dan tombol di kolom samping menempel saat digulir. Lampiran transkrip ada di papan tersendiri di bawah surat, maksimal 68rem.
 - Ritme jarak: 12px antar baris dan antar panel, 20px padding panel di layar kecil (24px x 28px di desktop), 32px tepi halaman di desktop.
@@ -286,8 +286,8 @@ Kedalaman datang dari tepi bawah yang tegas dan bayangan benda yang datar, bukan
 - **Bingkai papan** (`box-shadow: inset 0 3px 0 var(--wood-light), 0 6px 0 rgba(0,0,0,0.15)`): kilap kayu di atas dan bayangan datar di bawah.
 - **Panel cekung** (`box-shadow: inset 0 5px 0 rgba(0,0,0,0.18)`): permukaan hijau papan.
 - **Bayangan kertas** (`box-shadow: 0 6px 0 rgba(0,0,0,0.15)`): surat, halaman buku catatan yang bertumpuk, dan sampul buku.
-- **Tepi bawah kartu isian** (`box-shadow: 0 4px 0 var(--outline)`; ubin langkah beranda `0 3px 0 var(--outline)`): kartu putih yang berdiri di atas papan atau kertas, seperti formulir konsep.
-- **Bayangan potongan kertas** (`box-shadow: 0 3px 0 rgba(0,0,0,0.08)`, catatan tempel `0 4px 0 rgba(0,0,0,0.12)`): kutipan dan catatan yang ditempel di kertas.
+- **Tepi bawah kartu isian** (`box-shadow: 0 4px 0 var(--outline)`): kartu putih yang berdiri di atas papan atau kertas, seperti formulir konsep, dan ubin jalur tahap di beranda.
+- **Bayangan potongan kertas** (`box-shadow: 0 3px 0 rgba(0,0,0,0.08)`): kutipan yang ditempel di kertas.
 - **Bayangan benda** (bentuk yang sama, isi `rgba(0,0,0,0.12)`, digeser 4 sampai 6px ke bawah): benda kelas di dinding. Bayangan Si Kapur adalah elips `rgba(0,0,0,0.2)` yang tetap di baki saat ia pergi mencentang.
 
 ### Named Rules
@@ -297,7 +297,7 @@ Kedalaman datang dari tepi bawah yang tegas dan bayangan benda yang datar, bukan
 
 Bentuknya bulat dan tebal seperti stiker. Radius 16px untuk tombol, chip, panel, dan gelembung bicara. Kertas (halaman buku catatan dan surat) 20px. Potongan kertas kutipan 8px. Bingkai papan 28px. Segmen tema yang aktif 10px. Pill (jeda, titik status, baki) bulat penuh. Tanda status digambar sebagai goresan kapur yang sedikit kasar (filter `chalk-rough`), bukan kotak geometris. Tanda tanya, bintang, hati, dan kilau di sekitar Si Kapur juga digambar sebagai path, bukan huruf atau emoji. Ikon adalah SVG garis dengan ujung bulat (1.8 sampai 2.6px) dalam `currentColor`.
 
-Kertas punya detail benda sungguhan yang digambar dengan garis luar yang sama: cincin spiral (pill bergaris 3px dengan dua titik) di lipatan buku catatan, lubang spiral (lingkaran 12px, garis 2px, berisi warna dinding) di tepi atas surat, dan selotip biru (`chalk-blue` 80%, garis 2px, sedikit miring) di sudut kutipan dan di atas catatan tempel.
+Kertas punya detail benda sungguhan yang digambar dengan garis luar yang sama: cincin spiral (pill tegak bergaris 3px dengan dua titik) di tepi atas halaman buku catatan, lubang spiral (lingkaran 12px, garis 2px, berisi warna dinding) di tepi atas surat, dan selotip biru (`chalk-blue` 80%, garis 2px, sedikit miring) di sudut kutipan.
 
 ## Components
 
@@ -332,12 +332,14 @@ Tebal dan terasa bisa ditekan.
 - **Kartu perbandingan:** setiap konsep menampilkan tanda dan label sebelumnya, panah, lalu tanda dan label sekarang yang tebal. Pembaca layar mendengar "sebelumnya" dan "sekarang". Di bawah garis putus-putus `line-strong`, angka kelancaran lama dan baru dipisah panah. Di chip, tanda memakai warna pekat di mode Siang dan kembali ke warna kapur di mode Malam.
 
 ### Paper (buku catatan dan surat)
-- **Buku catatan:** dua halaman `paper` kotak-kotak dengan garis luar 3px, radius 20px (sisi lipatan tanpa sudut dan tanpa garis), garis margin `paper-margin`, pita lipatan hitam 5%, cincin spiral di tengah, dan sampul `chalk-blue` yang mengintip di sisi dan bawah.
+- **Halaman buku catatan:** selembar `paper` kotak-kotak dengan garis luar 3px, radius 20px, dan garis margin `paper-margin`. Dua belas cincin spiral melintasi tepi atas (enam di bawah 640px), dan sampul `chalk-blue` mengintip di sisi dan bawah.
 - **Surat:** selembar `paper` polos, radius 20px, padding 40px x 48px, lubang spiral di tepi atas. Isinya salam pembuka, bagian dengan judul stabilo, lalu penutup dengan Si Kapur, "Salam kapur," dan tanda tangan goresan. Si Kapur berdiri di tepi kiri surat dari 1280px.
 - **Kutipan:** potongan kertas putih dengan garis 2px, radius 8px, selotip biru di sudut kanan atas, teks dalam tanda kutip. Pembaca layar mendengar "Kutipan dari transkripmu".
 - **Label istilah:** stiker putih dengan garis 2.5px, radius 12px, Fredoka 600.
-- **Catatan tempel:** kertas kuning pucat, garis 3px, radius 8px, miring 1 derajat, dengan selotip biru di atas.
 - **Nomor catatan:** lingkaran 28px `chalk-yellow` dengan garis 2.5px dan angka Fredoka 600. Poin yang sudah bagus diberi bintang kuning bergaris luar.
+
+### Jalur Tahap (beranda)
+Empat ubin bulat 64px berisi warna kapur (kuning, biru, merah muda, mint) dan ikon garis. Nomornya ada di lingkaran putih 24px di kiri atas. Ubin disambung garis putus-putus 3px `outline` (Malam `ink-2` 60%) yang melewati pusat ubin. Judul tahap Fredoka 600 1.125rem tanpa deskripsi, supaya beranda cukup dilihat sekali lirik.
 
 ### Conversation (setup)
 Satu giliran adalah gelembung bicara Si Kapur (Fredoka 1.1rem, maksimal 34rem, ekor di kiri) lalu jawaban user rata kanan. Jawaban yang sudah diberikan menjadi chip jawaban: teks Fredoka 1.125rem dan tombol Ubah kecil dengan ikon pensil. Mengubah jawaban lama memulai ulang dari giliran itu. Giliran lama sedikit pudar (90%), dan giliran terbaru selalu digulir ke pandangan. Saat Si Kapur membaca atau menulis, gelembungnya diakhiri tiga titik yang berdenyut (1.2s).

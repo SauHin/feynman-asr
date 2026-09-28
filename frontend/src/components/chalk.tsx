@@ -177,15 +177,6 @@ export function SkipIcon({ className = '' }: { className?: string }) {
   )
 }
 
-export function MicIcon({ className = '' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
-      <rect x="9" y="3.5" width="6" height="11" rx="3" />
-      <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" />
-    </svg>
-  )
-}
-
 export function LaptopIcon({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
