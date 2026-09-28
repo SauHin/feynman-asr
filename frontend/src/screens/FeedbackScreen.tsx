@@ -100,10 +100,8 @@ export default function FeedbackScreen() {
             onRetry={() => setParams({ keadaan: 'memuat' })}
           />
           <aside className="flex flex-col gap-6" aria-label="Kelancaran dan langkah berikutnya">
-            <FluencyCard fluency={fluency} concepts={concepts} />
-            {previous && feedback && (
-              <ComparisonCard concepts={concepts} previous={previous} current={feedback} fluency={fluency} />
-            )}
+            <FluencyCard fluency={fluency} previous={previous?.fluency} concepts={concepts} />
+            {previous && feedback && <ComparisonCard concepts={concepts} previous={previous} current={feedback} />}
             <div className="flex flex-col gap-3 lg:sticky lg:top-4">
               <Link to="/live" className="btn btn-go w-full text-xl">
                 Jelaskan ulang
@@ -460,74 +458,55 @@ function Star({ className = '' }: { className?: string }) {
   )
 }
 
-function FluencyCard({ fluency, concepts }: { fluency: FluencyReport; concepts: Concept[] }) {
-  const perMinute = fluency.filler_count / (fluency.duration / 60)
-  const name = (id?: string) => concepts.find((c) => c.id === id)?.name
+// Empat ubin angka: angka besar di atas, label di bawah, semua rata kiri supaya angkanya segaris.
+// Di sesi ke-2, angka sesi sebelumnya ditulis kecil di ubin yang sama.
+function FluencyCard({
+  fluency,
+  previous,
+  concepts,
+}: {
+  fluency: FluencyReport
+  previous?: FluencyReport
+  concepts: Concept[]
+}) {
+  const longest = fluency.long_pauses.reduce<FluencyReport['long_pauses'][number] | undefined>(
+    (a, p) => (!a || p.duration > a.duration ? p : a),
+    undefined,
+  )
+  const beforeConcept = concepts.find((c) => c.id === longest?.next_concept_id)?.name
+  const tiles = [
+    { Icon: ClockIcon, label: 'durasi', value: clock(fluency.duration), was: previous && clock(previous.duration) },
+    { Icon: SpeedIcon, label: 'kata/menit', value: fluency.wpm, was: previous?.wpm },
+    { Icon: PauseIcon, label: 'jeda panjang', value: fluency.long_pauses.length, was: previous?.long_pauses.length },
+    { Icon: FillerIcon, label: 'filler', value: fluency.filler_count, was: previous?.filler_count },
+  ]
   return (
     <section aria-labelledby="kelancaran-title" className="chip px-5 pb-5 pt-4">
       <h2 id="kelancaran-title" className="font-display text-xl font-semibold">
         Kelancaran
       </h2>
-      <p className="text-sm text-ink-2">Dihitung di laptopmu dari suara dan transkrip.</p>
-      <dl className="mt-4 flex flex-col gap-4">
-        <Metric icon={<ClockIcon className="size-5" />} label="Durasi" value={clock(fluency.duration)} />
-        <Metric
-          icon={<SpeedIcon className="size-5" />}
-          label="Kecepatan"
-          value={String(fluency.wpm)}
-          unit="kata/menit"
-          note="Dihitung tanpa jeda panjang."
-        />
-        <Metric
-          icon={<PauseIcon className="size-5" />}
-          label="Jeda panjang"
-          value={String(fluency.long_pauses.length)}
-          note={fluency.long_pauses
-            .map(
-              (p) =>
-                `${decimal(p.duration)} dtk di ${clock(p.start)}${name(p.next_concept_id) ? `, sebelum ${name(p.next_concept_id)}` : ''}.`,
-            )
-            .join(' ')}
-        />
-        <Metric
-          icon={<FillerIcon className="size-5" />}
-          label="Filler"
-          value={String(fluency.filler_count)}
-          unit={`${decimal(perMinute)} per menit`}
-          note="Indikasi saja. Kata seperti “jadi” juga bisa kata biasa."
-        />
+      <p className="text-sm text-ink-2">Dihitung di laptopmu.</p>
+      <dl className="mt-4 grid grid-cols-2 gap-2.5">
+        {tiles.map(({ Icon, label, value, was }) => (
+          <div key={label} className="flex flex-col rounded-xl bg-wall px-3 pb-2.5 pt-3">
+            <dt className="order-1 mt-1.5 flex items-center gap-1.5 text-sm leading-tight text-ink-2">
+              <Icon className="size-4 shrink-0" />
+              {label}
+            </dt>
+            <dd className="font-display text-[2rem] font-semibold leading-none tabular-nums">{value}</dd>
+            {was !== undefined && <dd className="order-2 mt-0.5 text-xs text-ink-2">sebelumnya {was}</dd>}
+          </div>
+        ))}
       </dl>
+      <ul className="mt-3 flex flex-col gap-1 text-sm leading-snug text-ink-2">
+        {longest && (
+          <li>
+            Jeda terlama {decimal(longest.duration)} dtk{beforeConcept && `, sebelum ${beforeConcept}`}.
+          </li>
+        )}
+        <li>Filler hanya indikasi: “jadi” juga bisa kata biasa.</li>
+      </ul>
     </section>
-  )
-}
-
-function Metric({
-  icon,
-  label,
-  value,
-  unit,
-  note,
-}: {
-  icon: ReactNode
-  label: string
-  value: string
-  unit?: string
-  note?: string
-}) {
-  return (
-    <div className="grid grid-cols-[1.5rem_minmax(0,1fr)] gap-x-2.5">
-      <span className="pt-0.5 text-ink-2">{icon}</span>
-      <div>
-        <div className="flex items-baseline justify-between gap-3">
-          <dt className="font-display text-ink-2">{label}</dt>
-          <dd className="text-right">
-            <span className="font-display text-xl font-semibold tabular-nums">{value}</span>
-            {unit && <span className="ml-1 text-sm text-ink-2">{unit}</span>}
-          </dd>
-        </div>
-        {note && <dd className="mt-0.5 text-sm leading-snug text-ink-2">{note}</dd>}
-      </div>
-    </div>
   )
 }
 
@@ -535,19 +514,12 @@ function ComparisonCard({
   concepts,
   previous,
   current,
-  fluency,
 }: {
   concepts: Concept[]
   previous: typeof BACKPROP_PREVIOUS
   current: Feedback
-  fluency: FluencyReport
 }) {
   const now = (id: string) => current.concept_coverage.find((c) => c.concept_id === id)?.status ?? 'not_covered'
-  const rows: [string, number | string, number | string][] = [
-    ['Filler', previous.fluency.filler_count, fluency.filler_count],
-    ['Jeda panjang', previous.fluency.long_pauses.length, fluency.long_pauses.length],
-    ['Kata/menit', previous.fluency.wpm, fluency.wpm],
-  ]
   return (
     <section aria-labelledby="banding-title" className="chip px-5 pb-5 pt-4">
       <h2 id="banding-title" className="font-display text-xl font-semibold">
@@ -573,19 +545,6 @@ function ComparisonCard({
           )
         })}
       </ul>
-      <dl className="mt-4 flex flex-col gap-1.5 border-t-2 border-dashed border-line-strong pt-3">
-        {rows.map(([label, a, b]) => (
-          <div key={label} className="flex items-baseline justify-between gap-3">
-            <dt className="text-ink-2">{label}</dt>
-            <dd className="font-display tabular-nums">
-              <span className="text-ink-2">{a}</span>
-              <span className="sr-only"> menjadi </span>
-              <Arrow />
-              <span className="font-semibold">{b}</span>
-            </dd>
-          </div>
-        ))}
-      </dl>
     </section>
   )
 }

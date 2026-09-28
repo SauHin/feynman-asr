@@ -328,8 +328,9 @@ Tebal dan terasa bisa ditekan.
 ### Cards / Containers
 - **Papan:** bingkai `wood` dengan serat kayu, radius 28px, padding 12px, berisi dua panel dan baki kapur (kapur biru, kapur merah muda, penghapus).
 - **Panel:** `board`, radius 16px, garis luar 3px, dengan bekas hapusan samar di permukaannya. Judul panel memakai huruf kapur dengan garis kapur di bawahnya.
-- **Kartu samping (Kelancaran, Dibanding sesi pertama):** chip besar dengan padding 16px x 20px, judul Fredoka 600 1.25rem dan catatan `ink-2`. Metrik tersusun dari ikon, label, dan angka Fredoka 600 `tabular-nums`, dengan catatan kecil di bawahnya.
-- **Kartu perbandingan:** setiap konsep menampilkan tanda dan label sebelumnya, panah, lalu tanda dan label sekarang yang tebal. Pembaca layar mendengar "sebelumnya" dan "sekarang". Di bawah garis putus-putus `line-strong`, angka kelancaran lama dan baru dipisah panah. Di chip, tanda memakai warna pekat di mode Siang dan kembali ke warna kapur di mode Malam.
+- **Kartu samping (Kelancaran, Dibanding sesi pertama):** chip besar dengan padding 16px x 20px, judul Fredoka 600 1.25rem dan catatan `ink-2`.
+- **Ubin kelancaran:** empat ubin `wall` radius 12px dalam grid 2×2 (durasi, kata/menit, jeda panjang, filler). Setiap ubin berisi angka Fredoka 600 2rem `tabular-nums` rata kiri, lalu ikon dan label `ink-2` di bawahnya. Tidak ada satuan di samping angka, supaya semua angka segaris. Di sesi ke-2, angka sesi sebelumnya ditulis kecil di bawah label. Di bawah grid ada paling banyak dua catatan: jeda terlama dan peringatan bahwa filler hanya indikasi.
+- **Kartu perbandingan:** setiap konsep menampilkan tanda dan label sebelumnya, panah, lalu tanda dan label sekarang yang tebal. Pembaca layar mendengar "sebelumnya" dan "sekarang". Di chip, tanda memakai warna pekat di mode Siang dan kembali ke warna kapur di mode Malam.
 
 ### Paper (buku catatan dan surat)
 - **Halaman buku catatan:** selembar `paper` kotak-kotak dengan garis luar 3px, radius 20px, dan garis margin `paper-margin`. Dua belas cincin spiral melintasi tepi atas (enam di bawah 640px), dan sampul `chalk-blue` mengintip di sisi dan bawah.
