@@ -281,6 +281,40 @@
   transform-origin: 99% 53%;
   transition: transform 480ms var(--ease-out-expo);
 }
+/* Tanpa tangan: Empur miring dengan ujung bawah di kotak (transform-origin di ujung itu, diisi dari
+   LiveScreen), lalu badannya bergerak membentuk centang, seperti kapur yang menulis. Properti translate
+   terpisah dari transform, jadi gerak ini berjalan di atas perpindahan ke baris tanpa saling menimpa. */
+@keyframes kapur-scribble {
+  25% {
+    translate: -7px -2px;
+  }
+  50% {
+    translate: -1px 6px;
+  }
+  90%,
+  100% {
+    translate: 10px -9px;
+  }
+}
+.kapur-scribble {
+  animation: kapur-scribble 700ms ease-in-out 380ms both;
+}
+
+/* Menu Empur menempel di bawah tombolnya. Browser tanpa anchor CSS menampilkannya di tengah layar. */
+.empur-anchor {
+  anchor-name: --empur;
+}
+@supports (anchor-name: --empur) {
+  .empur-menu {
+    position-anchor: --empur;
+    inset: auto;
+    top: anchor(bottom);
+    left: anchor(left);
+    margin: 8px 0 0;
+    /* Di layar lebar tombolnya di kanan: balik supaya tepi kanan menu sejajar tepi kanan tombol. */
+    position-try-fallbacks: flip-inline;
+  }
+}
 
 /* Garis bawah kapur kuning pada istilah konsep di transkrip. */
 @keyframes underline-draw {
@@ -325,10 +359,10 @@
   animation: dust 750ms ease-out var(--draw-delay, 0ms) both;
 }
 
-/* Si Kapur. */
-@keyframes kapur-bob {
+/* Empur: badan bernapas, tangan bergerak dari bahu, properti ikut hidup. */
+@keyframes kapur-breathe {
   50% {
-    transform: translateY(-3px);
+    scale: 1 1.025;
   }
 }
 @keyframes kapur-hop {
@@ -353,33 +387,117 @@
     transform: scaleY(0.1);
   }
 }
-@keyframes kapur-wave {
-  50% {
-    transform: rotate(-28deg);
+@keyframes kapur-glance {
+  0%,
+  40%,
+  100% {
+    translate: 0 0;
+  }
+  50%,
+  90% {
+    translate: -1.6px -0.6px;
   }
 }
-@keyframes bubble-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px) scale(0.96);
+/* Tangan berputar di bahu. --dir bernilai 1 untuk tangan kanan dan -1 untuk tangan kiri,
+   jadi kedua tangan bergerak seperti cermin. Sudut positif searah jarum jam. */
+@keyframes kapur-arm-wave {
+  0%,
+  50%,
+  100% {
+    rotate: 0deg;
+  }
+  12%,
+  36% {
+    rotate: 16deg;
+  }
+  24% {
+    rotate: 2deg;
+  }
+}
+@keyframes kapur-arm-sway {
+  50% {
+    rotate: calc(var(--dir) * 5deg);
+  }
+}
+@keyframes kapur-arm-cup {
+  50% {
+    rotate: calc(var(--dir) * -5deg);
+  }
+}
+@keyframes kapur-arm-tap {
+  0%,
+  45%,
+  100% {
+    rotate: 0deg;
+  }
+  12%,
+  32% {
+    rotate: calc(var(--dir) * 7deg);
+  }
+  22% {
+    rotate: 0deg;
+  }
+}
+@keyframes kapur-arm-rub {
+  50% {
+    rotate: calc(var(--dir) * 4deg);
+  }
+}
+@keyframes kapur-arm-pump {
+  50% {
+    rotate: calc(var(--dir) * -12deg);
+  }
+}
+@keyframes kapur-arm-clap {
+  50% {
+    rotate: calc(var(--dir) * 6deg);
+  }
+}
+@keyframes kapur-arm-thumb {
+  50% {
+    rotate: calc(var(--dir) * 10deg);
+  }
+}
+@keyframes kapur-pulse {
+  50% {
+    opacity: 0.2;
+  }
+}
+@keyframes kapur-twinkle {
+  50% {
+    scale: 0.7;
+    rotate: 20deg;
+  }
+}
+@keyframes kapur-drift {
+  50% {
+    translate: 0 -3px;
+  }
+}
+@keyframes kapur-confetti {
+  50% {
+    translate: 0 3px;
+    rotate: 30deg;
   }
 }
 .kapur {
   transform-box: fill-box;
   transform-origin: 50% 100%;
   transition: rotate 300ms var(--ease-out-expo);
-}
-.kapur-listen,
-.kapur-wave,
-.kapur-proud,
-.kapur-think {
-  animation: kapur-bob 2.6s ease-in-out infinite;
+  animation: kapur-breathe 3.2s ease-in-out infinite;
 }
 .kapur-happy {
-  animation: kapur-hop 560ms var(--ease-out-expo);
+  animation:
+    kapur-hop 560ms var(--ease-out-expo),
+    kapur-breathe 3.2s ease-in-out 560ms infinite;
 }
 .kapur-cheer {
-  animation: kapur-hop 560ms var(--ease-out-expo) 3;
+  animation:
+    kapur-hop 560ms var(--ease-out-expo) 3,
+    kapur-breathe 3.2s ease-in-out 1680ms infinite;
+}
+.kapur-listen {
+  rotate: 3deg;
 }
 .kapur-curious {
   rotate: -6deg;
@@ -392,10 +510,67 @@
   transform-origin: center;
   animation: kapur-blink 4.2s infinite;
 }
-.kapur-wave-arm {
+.kapur-glance {
+  animation: kapur-glance 3.6s ease-in-out infinite;
+}
+/* transform-origin diisi per tangan (titik bahu) dari komponen. */
+.kapur-arm {
+  transform-box: view-box;
+  animation: 3.2s ease-in-out infinite;
+}
+.kapur-arm-wave {
+  animation-name: kapur-arm-wave;
+  animation-duration: 2.8s;
+}
+.kapur-arm-sway {
+  animation-name: kapur-arm-sway;
+}
+.kapur-arm-cup {
+  animation-name: kapur-arm-cup;
+  animation-duration: 1.6s;
+}
+.kapur-arm-tap {
+  animation-name: kapur-arm-tap;
+  animation-duration: 2.4s;
+}
+.kapur-arm-rub {
+  animation-name: kapur-arm-rub;
+  animation-duration: 1.8s;
+}
+.kapur-arm-pump {
+  animation-name: kapur-arm-pump;
+  animation-duration: 0.9s;
+}
+.kapur-arm-clap {
+  animation-name: kapur-arm-clap;
+  animation-duration: 0.9s;
+}
+.kapur-arm-thumb {
+  animation-name: kapur-arm-thumb;
+  animation-duration: 0.7s;
+}
+.kapur-pulse {
+  animation: kapur-pulse 1.2s ease-in-out infinite;
+}
+.kapur-twinkle,
+.kapur-confetti {
   transform-box: fill-box;
-  transform-origin: 0% 100%;
-  animation: kapur-wave 560ms ease-in-out 4;
+  transform-origin: center;
+}
+.kapur-twinkle {
+  animation: kapur-twinkle 1.6s ease-in-out infinite;
+}
+.kapur-drift {
+  animation: kapur-drift 2s ease-in-out infinite;
+}
+.kapur-confetti {
+  animation: kapur-confetti 1.2s ease-in-out infinite;
+}
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
 }
 .bubble {
   animation: bubble-in 260ms var(--ease-out-expo) both;
@@ -407,7 +582,12 @@
   .dust i,
   .kapur,
   .kapur-eyes,
-  .kapur-wave-arm,
+  .kapur-glance,
+  .kapur-arm,
+  .kapur-pulse,
+  .kapur-twinkle,
+  .kapur-drift,
+  .kapur-confetti,
   .bubble,
   .write-in,
   .scribble,
@@ -416,6 +596,9 @@
   }
   .kapur-actor {
     transition: none;
+  }
+  .kapur-scribble {
+    animation: none;
   }
   .dust {
     display: none;

@@ -174,7 +174,7 @@ function Letter({
     const live = BACKPROP_LIVE_STATUS[id]
     return live ?? 'none'
   }
-  const mood = view === 'gagal' ? 'confused' : view === 'memuat' ? 'think' : 'proud'
+  const mood = view === 'gagal' ? 'confused' : view === 'memuat' ? 'think' : 'happy'
 
   return (
     <article className="relative rounded-[20px] border-[3px] border-outline bg-paper px-6 pb-10 pt-10 text-paper-ink shadow-[0_6px_0_rgba(0,0,0,0.15)] md:px-12">

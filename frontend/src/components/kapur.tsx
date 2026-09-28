@@ -1,310 +1,376 @@
-import type { ReactNode } from 'react'
-import type { KapurMood } from '../lib/kapur'
+import { useId, type CSSProperties, type ReactNode } from 'react'
+import { MOOD_LABEL, TONES, useKapurPrefs, type KapurMood, type KapurTone, type Tone } from '../lib/kapur'
 
-// Si Kapur mengikuti referensi user (docs/design/referensi-si-kapur.jpg): batang kapur putih
-// berbentuk silinder dengan tutup elips, lengan sirip, kaki bulat, dan pipi merah muda.
-// Garis luar memakai currentColor, jadi warnanya sama dengan semua ilustrasi kelas (text-outline).
+// Empur: sebatang kapur dalam gaya datar (B2 di eksplorasi maskot): gradasi diagonal, tutup elips
+// dua warna, tanpa garis luar dan tanpa kilau di sisi badan. Tangan samping digambar di belakang
+// badan dengan gradasi yang sama, jadi badan dan tangan terlihat satu bentuk. Bagian tangan di depan
+// badan diberi bayangan datar dan makin terang ke arah tangan, supaya terbaca di atas badan.
+// Tangan `hold` keluar dari samping badan, lalu lengan bawahnya (mulai dari siku) digambar lagi di depan.
 
-const BODY = '#FBFBF8'
-const SHADE = '#E3E7E1'
-const TOP = '#F1F3EE'
-const EYE = '#2A2A33'
-const CHEEK = '#FFB3C4'
-const MOUTH = '#D9485F'
-const TONGUE = '#FF9AAD'
-const YELLOW = '#FFE27A'
-const BLUE = '#9BD8FF'
-const PINK = '#FFB3D1'
-const MINT = '#9EE8C0'
+const SPARK = '#FFD34D'
+const SPARK_HI = '#FFF3B0'
 
-const MOOD_LABEL: Record<KapurMood, string> = {
-  wave: 'melambai',
-  listen: 'mendengarkan',
-  happy: 'senang',
-  curious: 'penasaran',
-  confused: 'bingung',
-  think: 'berpikir',
-  cheer: 'bersorak',
-  proud: 'bangga',
+// Badan dalam viewBox 120 x 150: sisi x 33..87, tutup elips di y 34, dasar membulat di y 132.
+const CX = 60
+const W = 27
+const TOP = 34
+const RY = W * 0.36
+const BOT = 132
+const BODY = `M${CX - W} ${TOP}V${BOT - 14.7}C${CX - W} ${BOT - 5.3} ${CX - W * 0.7} ${BOT} ${CX} ${BOT}C${CX + W * 0.7} ${BOT} ${CX + W} ${BOT - 5.3} ${CX + W} ${BOT - 14.7}V${TOP}A${W} ${RY} 0 0 0 ${CX - W} ${TOP}Z`
+
+// Tangan kanan: bahu (x, y) di dalam badan, sudut a dari arah bawah (positif ke luar badan,
+// negatif ke depan badan), panjang len. bend melengkungkan lengan dan curl membelokkan ujungnya
+// (pecahan dari len; positif ke arah jarum jam dilihat dari bahu). Tangan kiri dicerminkan terhadap x = 60.
+// thumb: tonjolan jempol di sisi datar kepalan yang menghadap ke atas.
+type ArmPose = {
+  x: number
+  y: number
+  a: number
+  len: number
+  bend: number
+  curl: number
+  front?: boolean
+  hold?: boolean
+  thumb?: boolean
+}
+const ARM = {
+  down: { x: 80, y: 72, a: 20, len: 23, bend: 0.2, curl: -0.08 },
+  up: { x: 80, y: 70, a: 128, len: 27, bend: -0.25, curl: 0.25 },
+  cheer: { x: 80, y: 68, a: 130, len: 27, bend: -0.18, curl: 0.22 },
+  // Tangan memegang sisi atas kepala, siku keluar: pusing.
+  head: { x: 82, y: 66, a: 160, len: 30, bend: -0.75, curl: 0.45, hold: true },
+  ear: { x: 82, y: 70, a: 150, len: 23, bend: -0.8, curl: 0.35 },
+  chin: { x: 82, y: 86, a: -104, len: 23, bend: 0.25, curl: -0.1, front: true },
+  clasp: { x: 84, y: 92, a: -133, len: 21.5, bend: 0.35, curl: 0, front: true },
+  tick: { x: 80, y: 78, a: 90, len: 27, bend: -0.12, curl: 0.04 },
+  thumb: { x: 80, y: 76, a: 100, len: 21, bend: -0.2, curl: 0.35, thumb: true },
+} satisfies Record<string, ArmPose>
+type Pose = keyof typeof ARM
+const RIGHT: Record<KapurMood, Pose> = {
+  wave: 'up',
+  listen: 'ear',
+  happy: 'clasp',
+  curious: 'chin',
+  confused: 'head',
+  think: 'chin',
+  cheer: 'cheer',
+}
+// Mood yang tidak tercantum: tangan kiri turun.
+const LEFT: Partial<Record<KapurMood, Pose>> = { happy: 'clasp', cheer: 'cheer' }
+
+// Gerak tangan saat diam, berputar di bahu (kelas kapur-arm-* di index.css).
+type Motion = 'wave' | 'sway' | 'cup' | 'tap' | 'rub' | 'pump' | 'clap' | 'thumb'
+const MOTION: Record<KapurMood, [right: Motion, left: Motion]> = {
+  wave: ['wave', 'sway'],
+  listen: ['cup', 'sway'],
+  happy: ['clap', 'clap'],
+  curious: ['tap', 'sway'],
+  confused: ['rub', 'sway'],
+  think: ['rub', 'sway'],
+  cheer: ['pump', 'pump'],
 }
 
-const line = { fill: 'none', stroke: 'currentColor', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
-const inked = { stroke: 'currentColor', strokeWidth: 2.6, strokeLinejoin: 'round' as const }
-
-// Lengan sirip untuk sisi kanan. Sisi kiri dicerminkan terhadap x = 60.
-const ARMS = {
-  down: 'M89 66C100 72 106 88 104 101C103 106 97 104 94 98C91 91 89 82 89 76Z',
-  up: 'M88 64C96 56 104 44 110 33C114 27 121 31 118 39C113 55 103 73 90 84Z',
-  ear: 'M89 70C98 72 105 64 103 52C102 45 95 43 93 50C92 56 92 61 89 63Z',
-  chin: 'M89 72C85 87 73 94 62 92C56 91 56 85 62 84C71 83 80 78 86 68Z',
-  tick: 'M89 67C100 64 111 68 117 73C121 76 120 82 116 82C106 81 97 86 89 85Z',
-  hip: 'M89 72C100 74 105 86 99 95C96 99 90 97 91 92C93 86 94 81 89 81Z',
-  chest: 'M31 72C36 90 50 100 66 100C72 100 73 94 67 93C54 92 42 86 36 70Z',
-}
-type Pose = keyof typeof ARMS
-const mirror = (d: string) =>
-  d.replace(/(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)/g, (_, x: string, y: string) => `${120 - Number(x)} ${y}`)
-
-function Arm({ pose, side, className }: { pose: Pose; side: 1 | -1; className?: string }) {
-  return <path d={side === 1 ? ARMS[pose] : mirror(ARMS[pose])} fill={BODY} {...inked} className={className} />
-}
-
-// Spiral 2,5 putaran untuk mata bingung.
-const spiral = (cx: number, cy: number) => {
-  const pts: string[] = []
-  for (let a = 0; a <= Math.PI * 5; a += 0.35) {
-    const r = 0.5 + a * 0.42
-    pts.push(`${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`)
+type Pt = [number, number]
+// Sirip melengkung: garis tengah kurva kuadrat dari bahu ke tangan, lebar menyempit ke ujung
+// dengan sedikit pinggang, pangkal dan ujung setengah lingkaran. Hasilnya poligon rapat.
+function arm(p: ArmPose, side: 1 | -1) {
+  const L = p.len
+  const b = 9
+  const r = 7
+  const C: Pt = [p.bend * L, L * 0.5]
+  const E: Pt = [p.curl * L, L]
+  const at = (t: number): Pt => [2 * (1 - t) * t * C[0] + t * t * E[0], 2 * (1 - t) * t * C[1] + t * t * E[1]]
+  const tan = (t: number): Pt => {
+    const x = 2 * (1 - t) * C[0] + 2 * t * (E[0] - C[0])
+    const y = 2 * (1 - t) * C[1] + 2 * t * (E[1] - C[1])
+    const m = Math.hypot(x, y)
+    return [x / m, y / m]
   }
-  return `M${pts.join('L')}`
-}
-
-// Tanda tanya yang digambar (bukan huruf), dengan titiknya.
-function Question({ x, y, s, color }: { x: number; y: number; s: number; color: string }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <path d="M-5-4q0-7 6-7t6 6c0 4-6 5-6 10" {...line} stroke={color} strokeWidth="3.4" />
-      <circle cx="1" cy="10" r="2" fill={color} />
-    </g>
-  )
-}
-
-// Daun laurel bergaris luar di kedua sisi tutup kapur (pose bangga).
-function Laurel() {
-  const leaves: [number, number, number][] = [
-    [28, 30, -65],
-    [31, 21, -45],
-    [37, 14, -25],
-  ]
-  return (
-    <g>
-      <path d="M31 36q-4-14 12-24M89 36q4-14-12-24" {...line} strokeWidth="2" />
-      {leaves.flatMap(([x, y, r]) => [
-        <ellipse key={`l${x}`} cx={x} cy={y} rx="5" ry="2.6" fill={MINT} {...inked} strokeWidth="1.8" transform={`rotate(${r} ${x} ${y})`} />,
-        <ellipse key={`r${x}`} cx={120 - x} cy={y} rx="5" ry="2.6" fill={MINT} {...inked} strokeWidth="1.8" transform={`rotate(${-r} ${120 - x} ${y})`} />,
-      ])}
-    </g>
-  )
-}
-
-const star = (x: number, y: number, r: number) =>
-  `M${x} ${y - r}L${x + r * 0.3} ${y - r * 0.3}L${x + r} ${y}L${x + r * 0.3} ${y + r * 0.3}L${x} ${y + r}L${x - r * 0.3} ${y + r * 0.3}L${x - r} ${y}L${x - r * 0.3} ${y - r * 0.3}Z`
-const heart = (x: number, y: number) =>
-  `M${x} ${y + 4}C${x - 6} ${y} ${x - 5} ${y - 5} ${x - 2} ${y - 5}C${x - 0.5} ${y - 5} ${x} ${y - 4} ${x} ${y - 3}C${x} ${y - 4} ${x + 0.5} ${y - 5} ${x + 2} ${y - 5}C${x + 5} ${y - 5} ${x + 6} ${y} ${x} ${y + 4}Z`
-
-function Eyes({ mood }: { mood: KapurMood }) {
-  if (mood === 'happy' || mood === 'cheer')
-    return <path d="M39 64q7-8 14 0M67 64q7-8 14 0" {...line} stroke={EYE} strokeWidth="3.6" />
-  if (mood === 'confused')
-    return (
-      <g {...line} stroke={EYE} strokeWidth="2.2">
-        <path d={spiral(46, 62)} />
-        <path d={spiral(74, 62)} />
-      </g>
-    )
-  if (mood === 'curious')
-    return (
-      <g className="kapur-eyes">
-        <circle cx="46" cy="61" r="7.5" fill="#fff" {...inked} strokeWidth="2.4" />
-        <circle cx="74" cy="61" r="7.5" fill="#fff" {...inked} strokeWidth="2.4" />
-        <circle cx="48.5" cy="58" r="3.4" fill={EYE} />
-        <circle cx="76.5" cy="58" r="3.4" fill={EYE} />
-      </g>
-    )
-  // Mata setengah tertutup: mendengarkan melirik ke kanan, berpikir melirik ke kiri, bangga lurus.
-  if (mood === 'listen' || mood === 'think' || mood === 'proud') {
-    const dx = mood === 'listen' ? 2 : mood === 'think' ? -2 : 0
-    return (
-      <g className="kapur-eyes">
-        {[46, 74].map((cx) => (
-          <g key={cx}>
-            <path d={`M${cx - 5.5 + dx} 62a5 5 0 0 0 11 0Z`} fill={EYE} />
-            <path d={`M${cx - 7} 62h14`} {...line} stroke={EYE} strokeWidth="3" />
-            <circle cx={cx - 1.5 + dx} cy="64" r="1.3" fill="#fff" />
-          </g>
-        ))}
-      </g>
-    )
+  const base = (t: number) => b + (r - b) * t - 1.2 * Math.sin(Math.PI * t)
+  const f = (-p.a * Math.PI) / 180
+  const c = Math.cos(f)
+  const s = Math.sin(f)
+  const world = ([x, y]: Pt): Pt => {
+    const X = p.x + x * c - y * s
+    return [side === 1 ? X : 2 * CX - X, p.y + x * s + y * c]
   }
-  // Titik bulat (melambai).
+  const rim = (t: number, dir: 1 | -1, w: number): Pt => {
+    const [qx, qy] = at(t)
+    const [tx, ty] = tan(t)
+    return [qx - ty * w * dir, qy + tx * w * dir]
+  }
+  // Jempol menempel di sisi datar kepalan yang lebih tinggi di layar, tepat sebelum ujung yang bulat.
+  // Posisinya diukur dari ujung dalam satuan panjang, karena kecepatan kurva berbeda per pose.
+  const speed = 2 * Math.hypot(E[0] - C[0], E[1] - C[1])
+  const tThumb = 1 - (0.9 * r) / speed
+  const spread = (0.75 * r) / speed
+  const up: 1 | -1 = world(rim(tThumb, 1, r))[1] < world(rim(tThumb, -1, r))[1] ? 1 : -1
+  const width = (t: number, dir: 1 | -1) =>
+    base(t) + (p.thumb && dir === up ? 3.8 * Math.exp(-(((t - tThumb) / spread) ** 2)) : 0)
+  const edge = (t: number, dir: 1 | -1) => rim(t, dir, width(t, dir))
+
+  const K = 24
+  // Setengah lingkaran dari arah `from`, berputar 180 derajat.
+  const cap = (o: Pt, from: Pt, rad: number): Pt[] => {
+    const a0 = Math.atan2(from[1], from[0])
+    return Array.from({ length: 9 }, (_, i) => [o[0] + rad * Math.cos(a0 + (Math.PI * i) / 8), o[1] + rad * Math.sin(a0 + (Math.PI * i) / 8)])
+  }
+  const [t1x, t1y] = tan(1)
+  const outline = (from: number) => {
+    const [t0x, t0y] = tan(0)
+    const steps = (a: number, dir: 1 | -1) => Array.from({ length: K - a }, (_, i) => edge((dir === -1 ? a + i : K - 1 - i) / K, dir))
+    const start = from === 0 ? cap([0, 0], [-t0y, t0x], b) : []
+    const first = from === 0 ? 1 : from
+    return [...start, ...steps(first, -1), ...cap(E, [t1y, -t1x], r), ...steps(first, 1)]
+  }
+  const path = (pts: Pt[]) => `M${pts.map((q) => world(q).map((v) => v.toFixed(1)).join(' ')).join('L')}Z`
+  const d = path(outline(0))
+  // Siku: titik garis tengah yang paling jauh dari badan. Bagian depan tangan `hold` dimulai dari
+  // sana, di luar badan, jadi potongannya tertutup lengan yang sama di belakang.
+  let elbow = 0
+  for (let i = 1; i < K; i++) if (Math.abs(world(at(i / K))[0] - CX) > Math.abs(world(at(elbow / K))[0] - CX)) elbow = i
+  const front = p.hold
+    ? { d: path(outline(elbow)), from: world(at(elbow / K)), to: world(E) }
+    : p.front
+      ? { d, from: world([0, 0]), to: world(E) }
+      : undefined
+  return { d, front, behind: !p.front }
+}
+
+const SPARKLE = 'M0-14C2-4 4-2 14 0C4 2 2 4 0 14C-2 4-4 2-14 0C-4-2-2-4 0-14Z'
+
+// Tanpa mulut dan tanpa alis, jadi mata membawa seluruh ekspresi. Semua mata satu keluarga: pil
+// tinta yang kelopak atasnya bisa turun dan miring (lid, tilt), sisi bawahnya bisa terangkat seperti
+// pipi tersenyum (smile), dan bisa diputar (rot). Setiap mata mendapat titik cahaya.
+type Eye = { w?: number; h?: number; dx?: number; dy?: number; lid?: number; tilt?: number; smile?: number; rot?: number }
+const [EL, ER] = [CX - W * 0.35, CX + W * 0.35]
+const EYE_Y = 61
+
+function pill(x: number, e: Eye) {
+  const { w = 6.6, h = 13, dx = 0, dy = 0, lid, tilt = 0, smile } = e
+  const cx = x + dx
+  const r = w / 2
+  const top = EYE_Y + dy - h / 2
+  const bot = EYE_Y + dy + h / 2
+  const head = lid === undefined ? `M${cx - r} ${top + r}A${r} ${r} 0 0 1 ${cx + r} ${top + r}` : `M${cx - r} ${top + lid - tilt / 2}L${cx + r} ${top + lid + tilt / 2}`
+  const foot = smile === undefined ? `L${cx + r} ${bot - r}A${r} ${r} 0 0 1 ${cx - r} ${bot - r}Z` : `L${cx + r} ${bot}Q${cx} ${bot - 2 * smile} ${cx - r} ${bot}Z`
+  // Titik cahaya di kiri atas bagian yang terlihat: di bawah kelopak jika ada, di lengkung atas jika
+  // tidak. Mata yang sempit (menyipit atau lengkung senang) mendapat titik yang lebih kecil.
+  const k = h - (lid ?? 0) - 2 * (smile ?? 0) >= 7 ? 1 : 0.7
+  const glint = {
+    cx: cx - r * (lid === undefined ? 0.3 : 0.4),
+    cy: lid === undefined ? top + r * 0.85 : top + lid - 0.15 * tilt + 1.2 + 1.1 * k,
+    rx: w * 0.15 * k,
+    ry: w * 0.24 * k,
+  }
+  return { d: head + foot, glint }
+}
+
+const EYES: Record<KapurMood, [left: Eye, right: Eye]> = {
+  // Pipi terangkat: tersenyum lewat mata.
+  wave: [{ w: 7, h: 12, dy: -0.5, smile: 1.1 }, { w: 7, h: 12, dy: -0.5, smile: 1.1 }],
+  // Kelopak turun, melirik ke tangan di telinga: menyimak.
+  listen: [{ dx: 1.8, lid: 2.5, tilt: -1 }, { dx: 1.8, lid: 2.5, tilt: -1 }],
+  // Pil pendek dengan pipi terangkat tinggi: lengkung ∩ yang tebal.
+  happy: [{ w: 8, h: 9, dy: -1, smile: 1.9 }, { w: 8, h: 9, dy: -1, smile: 1.9 }],
+  // Seperti senang, lebih besar dan miring ke luar.
+  cheer: [{ w: 8.5, h: 10, dy: -1, smile: 2.1, rot: -14 }, { w: 8.5, h: 10, dy: -1, smile: 2.1, rot: 14 }],
+  // Ukuran sama: satu terbuka lebar, satu terpotong kelopak.
+  curious: [{ w: 6.8, h: 14, dy: -0.5 }, { w: 6.8, h: 14, dy: -0.5, lid: 5 }],
+  // Kelopak miring dari tengah ke samping, / \: bingung dan pusing.
+  confused: [{ lid: 4, tilt: -3 }, { lid: 4, tilt: 3 }],
+  // Satu mata melirik ke atas, satu menyipit: "hmm".
+  think: [{ dx: -1.5, dy: -2, h: 11 }, { w: 7.5, h: 8, dy: 1, lid: 3, smile: 1 }],
+}
+
+function Eyes({ mood, ink }: { mood: KapurMood; ink: string }) {
+  const closed = mood === 'happy' || mood === 'cheer'
   return (
-    <g className="kapur-eyes">
-      <circle cx="46" cy="62" r="4.6" fill={EYE} />
-      <circle cx="74" cy="62" r="4.6" fill={EYE} />
-      <circle cx="44.6" cy="60.4" r="1.5" fill="#fff" />
-      <circle cx="72.6" cy="60.4" r="1.5" fill="#fff" />
+    <g className={mood === 'think' ? 'kapur-glance' : undefined}>
+      <g className={closed ? undefined : 'kapur-eyes'}>
+        {[EL, ER].map((x, i) => {
+          const e = EYES[mood][i]
+          const { d, glint } = pill(x, e)
+          return (
+            <g key={x} transform={e.rot ? `rotate(${e.rot} ${x} ${EYE_Y})` : undefined}>
+              <path d={d} fill={ink} />
+              <ellipse {...glint} fill="#fff" opacity="0.9" />
+            </g>
+          )
+        })}
+      </g>
     </g>
   )
 }
 
-const BROWS: Partial<Record<KapurMood, string>> = {
-  listen: 'M39 53l12 3M69 56l12-3',
-  think: 'M39 55h12M69 52l12 3',
-  proud: 'M39 53l12 3.5M69 56.5l12-3.5',
-  curious: 'M40 50q6-4 11 0M69 50q6-4 11 0',
-}
+// Properti per mood, dalam gaya datar yang sama. Kelas kapur-pulse, -twinkle, -drift, dan -confetti
+// menghidupkannya (index.css); jeda yang berbeda membuat gerakannya tidak serempak.
+const delay = (s: number) => ({ animationDelay: `${s}s` })
 
-function Mouth({ mood }: { mood: KapurMood }) {
-  if (mood === 'wave' || mood === 'think')
-    return <path d="M58 64.5q6 1.6 0 4.2q6 1.6 0 4.2" {...line} stroke={EYE} strokeWidth="2.8" />
-  if (mood === 'listen' || mood === 'curious')
-    return <ellipse cx="60" cy="69" rx="3.2" ry="4" fill={MOUTH} stroke={EYE} strokeWidth="2.2" />
-  if (mood === 'confused')
-    return <path d="M51.5 70.5q2.2-2.6 4.3 0t4.3 0 4.3 0 4.3 0" {...line} stroke={EYE} strokeWidth="2.4" />
-  if (mood === 'proud') return <path d="M53 68q7 6 14 0" {...line} stroke={EYE} strokeWidth="2.8" />
-  // Senang dan bersorak: mulut terbuka dengan lidah.
-  return (
-    <>
-      <path d="M52 65h16q0 11-8 11t-8-11Z" fill={MOUTH} stroke={EYE} strokeWidth="2.2" strokeLinejoin="round" />
-      <ellipse cx="60" cy="72.5" rx="4.2" ry="2.4" fill={TONGUE} />
-    </>
+function Props({ mood, t, id }: { mood: KapurMood; t: Tone; id: string }): ReactNode {
+  const line = { fill: 'none', stroke: t.dark, strokeOpacity: 0.5, strokeLinecap: 'round' as const }
+  const sparkle = (x: number, y: number, r: number, wait = 0) => (
+    <g key={`${x}-${y}`} className="kapur-twinkle" style={delay(wait)}>
+      <path d={SPARKLE} transform={`translate(${x} ${y}) scale(${r / 14})`} fill={`url(#${id}spark)`} />
+    </g>
   )
-}
-
-// Properti per mood, dalam warna kapur.
-function Props({ mood }: { mood: KapurMood }): ReactNode {
+  const arcs = (d: string[], width: number) =>
+    d.map((a, i) => <path key={a} d={a} {...line} strokeWidth={width} className="kapur-pulse" style={delay(i * 0.3)} />)
   switch (mood) {
     case 'wave':
-      return <path d="M110 24q6 4 7 10M103 20q8 1 12 7" {...line} stroke={BLUE} strokeWidth="2.6" />
+      return arcs(['M98 36q5 4 5 10', 'M102 30q7 6 7 14'], 2.2)
     case 'listen':
-      return <path d="M108 44q4 6 0 12M113 39q8 11 0 22" {...line} stroke={BLUE} strokeWidth="2.6" />
+      return arcs(['M98 40q4 6.5 0 13', 'M103 35q8 11.5 0 23'], 2.4)
     case 'happy':
-      return (
-        <>
-          <path d={star(14, 36, 7)} fill={YELLOW} />
-          <path d={star(108, 60, 5)} fill={YELLOW} />
-          <path d={heart(104, 30)} fill={PINK} />
-        </>
-      )
+      return [sparkle(16, 42, 6), sparkle(104, 38, 4.5, 0.8)]
     case 'curious':
       return (
         <g>
-          <circle cx="104" cy="24" r="7" fill={YELLOW} {...inked} strokeWidth="2.2" />
-          <path d="M101 31h6v4h-6Z" fill={SHADE} {...inked} strokeWidth="2.2" />
-          <path d="M104 11v-4M114 16l3-3M94 16l-3-3" {...line} stroke={YELLOW} strokeWidth="2.4" />
+          <circle cx="98" cy="24" r="10.5" fill={SPARK} opacity="0.3" className="kapur-pulse" />
+          <rect x="95" y="29" width="6" height="6" rx="1.8" fill="#CDD2DE" />
+          <circle cx="98" cy="24" r="7" fill={`url(#${id}spark)`} />
         </g>
       )
     case 'confused':
-      return (
-        <>
-          <Question x={104} y={24} s={1.1} color={BLUE} />
-          <Question x={14} y={36} s={0.8} color={YELLOW} />
-        </>
-      )
-    case 'think':
-      return (
-        <g>
-          <path
-            d="M90 20c-4 0-6-4-3-7 0-4 5-6 8-3 2-4 8-4 10 0 4-2 9 1 7 5 4 1 4 7-1 7-2 3-7 3-9 0-3 2-9 2-12-2Z"
-            fill="#fff"
-            {...inked}
-            strokeWidth="2.2"
-          />
-          <g fill={EYE}>
-            <circle cx="95" cy="16" r="1.4" />
-            <circle cx="100" cy="16" r="1.4" />
-            <circle cx="105" cy="16" r="1.4" />
+      return [
+        [102, 30, 1],
+        [18, 38, 0.75],
+      ].map(([x, y, k], i) => (
+        <g key={x} className="kapur-drift" style={delay(i * 0.7)}>
+          <g transform={`translate(${x} ${y}) scale(${k})`}>
+            <path d="M-5-4q0-7 6-7t6 6c0 4-6 5-6 10" fill="none" stroke={t.dark} strokeWidth="3.4" strokeLinecap="round" />
+            <circle cx="1" cy="10" r="2.1" fill={t.dark} />
           </g>
-          <circle cx="88" cy="31" r="2.6" fill="#fff" {...inked} strokeWidth="1.8" />
-          <circle cx="84" cy="38" r="1.6" fill="#fff" {...inked} strokeWidth="1.6" />
         </g>
-      )
+      ))
+    case 'think':
+      return [
+        [85, 30, 2.4],
+        [92, 22, 3.4],
+        [102, 12, 5],
+      ].map(([x, y, r], i) => (
+        <circle key={x} cx={x} cy={y} r={r} fill={`url(#${id}cloud)`} className="kapur-drift" style={delay(i * 0.35)} />
+      ))
     case 'cheer':
       return (
         <g>
-          <rect x="10" y="22" width="7" height="3.5" rx="1.5" fill={YELLOW} transform="rotate(-25 13 24)" />
-          <rect x="102" y="18" width="7" height="3.5" rx="1.5" fill={PINK} transform="rotate(30 105 20)" />
-          <rect x="22" y="8" width="6" height="3" rx="1.5" fill={BLUE} transform="rotate(15 25 10)" />
-          <rect x="92" y="6" width="6" height="3" rx="1.5" fill={MINT} transform="rotate(-20 95 8)" />
-          <rect x="112" y="40" width="6" height="3" rx="1.5" fill={YELLOW} transform="rotate(40 115 42)" />
-          <rect x="4" y="50" width="6" height="3" rx="1.5" fill={BLUE} transform="rotate(-35 7 52)" />
+          {(
+            [
+              [12, 24, -25, '#FFD84D'],
+              [106, 20, 30, '#93D5FF'],
+              [24, 10, 15, '#DCC2FF'],
+              [96, 8, -20, '#FF93AE'],
+              [112, 44, 40, '#A7F3D0'],
+              [6, 50, -35, '#FF7F3F'],
+            ] as const
+          ).map(([x, y, r, c], i) => (
+            <g key={x} className="kapur-confetti" style={delay(i * 0.2)}>
+              <rect x={x - 3.5} y={y - 1.75} width="7" height="3.5" rx="1.5" fill={c} transform={`rotate(${r} ${x} ${y})`} />
+            </g>
+          ))}
         </g>
       )
-    case 'proud':
-      return <Laurel />
   }
 }
 
 // `tick`: pose mencentang, tangan kanan terulur ke kanan (ujungnya di KAPUR_HAND, lib/kapur.ts).
 // `quiet`: tanpa properti, supaya kotak agenda lain tetap bersih saat mencentang.
+// `tone` dan `arms` bawaannya mengikuti pilihan user di menu Empur (useKapurPrefs). Tanpa tangan,
+// pose mencentang hanya membuat properti diam; gerak menulisnya ada di LiveScreen.
 export function Kapur({
   mood,
   tick = false,
   quiet = false,
+  arms: armsOption,
+  tone,
   className = '',
 }: {
   mood: KapurMood
   tick?: boolean
   quiet?: boolean
+  arms?: boolean
+  tone?: KapurTone
   className?: string
 }) {
-  const right: Pose = tick
-    ? 'tick'
-    : mood === 'wave' || mood === 'cheer'
-      ? 'up'
-      : mood === 'listen'
-        ? 'ear'
-        : mood === 'curious' || mood === 'think'
-          ? 'chin'
-          : mood === 'proud'
-            ? 'hip'
-            : 'down'
-  // Bangga: tangan kiri di dada dan tangan kanan di pinggang, seperti di referensi.
-  const left: Pose = tick ? 'down' : mood === 'cheer' ? 'up' : 'down'
-  const chestArm = mood === 'proud' && !tick
-  const armInFront = right === 'chin'
+  const id = useId().replace(/[^a-zA-Z0-9]/g, '')
+  const prefs = useKapurPrefs()
+  const t = TONES[tone ?? prefs.tone]
+  const withArms = armsOption ?? prefs.arms
+
+  const right: Pose = tick ? 'tick' : RIGHT[mood]
+  // Mencentang: tangan kanan menunjuk kotak, tangan kiri mengacungkan jempol.
+  const left: Pose = tick ? 'thumb' : (LEFT[mood] ?? 'down')
+  // Saat mencentang tangan penunjuk diam supaya tepat di kotak; jempol yang bergerak.
+  const [mRight, mLeft] = tick ? [undefined, 'thumb' as const] : MOTION[mood]
+  const arms = [
+    { pose: right, side: 1 as const, motion: mRight },
+    { pose: left, side: -1 as const, motion: mLeft },
+  ].map((a) => {
+    const p: ArmPose = ARM[a.pose]
+    const style = { '--dir': a.side, transformOrigin: `${a.side === 1 ? p.x : 2 * CX - p.x}px ${p.y}px` } as CSSProperties
+    return { ...a, ...arm(p, a.side), style }
+  })
+
+  // Pembungkus yang menggerakkan satu bagian tangan dari bahu. Bagian belakang dan depan tangan
+  // `hold` memakai kelas yang sama, jadi keduanya bergerak bersama.
+  const moving = (a: (typeof arms)[number], children: ReactNode) => (
+    <g
+      key={a.side}
+      className={a.motion && `kapur-arm kapur-arm-${a.motion}`}
+      style={{ ...a.style, animationDelay: a.motion === 'pump' && a.side === -1 ? '-0.45s' : undefined }}
+    >
+      {children}
+    </g>
+  )
+  const back = arms.filter((a) => a.behind).map((a) => moving(a, <path d={a.d} fill={`url(#${id}base)`} />))
+  const front = arms.map((a) => {
+    if (!a.front) return null
+    const { d, from, to } = a.front
+    const fade = `${id}fade${a.side}`
+    return moving(
+      a,
+      <>
+        <linearGradient id={fade} gradientUnits="userSpaceOnUse" x1={from[0]} y1={from[1]} x2={to[0]} y2={to[1]}>
+          <stop offset="0" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0.7" stopColor="#fff" stopOpacity="0.22" />
+        </linearGradient>
+        <path d={d} fill={t.dark} opacity="0.22" transform="translate(1.3 2.4)" clipPath={`url(#${id}body)`} />
+        <path d={d} fill={`url(#${id}base)`} />
+        <path d={d} fill={`url(#${fade})`} />
+      </>,
+    )
+  })
 
   return (
-    <svg
-      viewBox="0 0 120 150"
-      className={`overflow-visible text-outline ${className}`}
-      role="img"
-      aria-label={`Empur ${MOOD_LABEL[mood]}`}
-    >
+    <svg viewBox="0 0 120 150" className={`overflow-visible ${className}`} role="img" aria-label={`Empur ${MOOD_LABEL[mood]}`}>
+      <defs>
+        <linearGradient id={`${id}base`} gradientUnits="userSpaceOnUse" x1={CX - W} y1={TOP - RY} x2={CX - W + 0.8 * W} y2={BOT}>
+          <stop offset="0" stopColor={t.top} />
+          <stop offset="1" stopColor={t.bot} />
+        </linearGradient>
+        <radialGradient id={`${id}spark`} cx="0.4" cy="0.35" r="0.7">
+          <stop offset="0" stopColor={SPARK_HI} />
+          <stop offset="1" stopColor={SPARK} />
+        </radialGradient>
+        <radialGradient id={`${id}cloud`} cx="0.4" cy="0.35" r="0.75">
+          <stop offset="0" stopColor="#fff" />
+          <stop offset="1" stopColor="#E3E6EF" />
+        </radialGradient>
+        <clipPath id={`${id}body`}>
+          <path d={BODY} />
+        </clipPath>
+      </defs>
+
       <g key={`${mood}-${tick}`} className={`kapur kapur-${tick ? 'tick' : mood}`}>
-        {/* Kaki */}
-        <rect x="39" y="124" width="18" height="15" rx="7.5" fill={BODY} {...inked} />
-        <rect x="63" y="124" width="18" height="15" rx="7.5" fill={BODY} {...inked} />
-
-        {!chestArm && <Arm pose={left} side={-1} />}
-        {!armInFront && (
-          <Arm pose={right} side={1} className={mood === 'wave' && !tick ? 'kapur-wave-arm' : undefined} />
-        )}
-
-        {/* Badan silinder: sisi, bayangan kanan, kilap kiri, dua garis pita, tutup elips */}
-        <path d="M30 26V116Q30 128 42 128H78Q90 128 90 116V26Z" fill={BODY} />
-        <path d="M77 26H90V116Q90 128 78 128H77Z" fill={SHADE} />
-        <path d="M30 26V116Q30 128 40 128H36Q34 118 34 110V26Z" fill={SHADE} opacity="0.7" />
-        <rect x="38" y="40" width="5" height="54" rx="2.5" fill="#fff" />
-        <path d="M30 26V116Q30 128 42 128H78Q90 128 90 116V26" fill="none" {...inked} />
-        <path d="M30 40q30 9 60 0M30 113q30 9 60 0" {...line} strokeWidth="2.2" opacity="0.55" />
-        <ellipse cx="60" cy="26" rx="30" ry="8" fill={TOP} {...inked} />
-        <g fill="#C9CFC7">
-          <circle cx="44" cy="104" r="0.9" />
-          <circle cx="72" cy="98" r="0.8" />
-          <circle cx="80" cy="52" r="0.9" />
-          <circle cx="52" cy="24" r="0.8" />
-          <circle cx="68" cy="27" r="0.7" />
+        <g transform={mood === 'wave' && !tick ? 'rotate(-6 60 130)' : undefined}>
+          {withArms && back}
+          <path d={BODY} fill={`url(#${id}base)`} />
+          <ellipse cx={CX} cy={TOP} rx={W} ry={RY} fill={t.cap} />
+          <ellipse cx={CX - 2.7} cy={TOP - 1.3} rx={W * 0.75} ry={RY * 0.65} fill={t.capHi} />
+          <Eyes mood={mood} ink={t.ink} />
+          {withArms && front}
+          {!quiet && <Props mood={mood} t={t} id={id} />}
         </g>
-
-        {/* Tanda "v" di perut, seperti di referensi */}
-        <path
-          d="M48 88l4.5 4.5 4.5-4.5M63 88l4.5 4.5 4.5-4.5M55.5 96l4.5 4.5 4.5-4.5"
-          {...line}
-          strokeWidth="2.2"
-          opacity="0.55"
-        />
-
-        {/* Wajah */}
-        <ellipse cx="38" cy="70" rx="6" ry="3.6" fill={CHEEK} />
-        <ellipse cx="82" cy="70" rx="6" ry="3.6" fill={CHEEK} />
-        <Eyes mood={mood} />
-        {BROWS[mood] && <path d={BROWS[mood]} {...line} stroke={EYE} strokeWidth="2.8" />}
-        <Mouth mood={mood} />
-
-        {armInFront && <Arm pose={right} side={1} />}
-        {chestArm && <path d={ARMS.chest} fill={BODY} {...inked} />}
-        {!quiet && <Props mood={mood} />}
       </g>
     </svg>
   )

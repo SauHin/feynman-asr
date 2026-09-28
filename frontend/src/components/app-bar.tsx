@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { setKapurPrefs, TONES, useKapurPrefs, type KapurTone } from '../lib/kapur'
 import { useTheme } from '../lib/theme'
 import { ArrowLeftIcon, MoonIcon, SunIcon } from './chalk'
+import { Kapur } from './kapur'
 
 // Bilah atas untuk beranda, setup, dan feedback. Layar live punya bilah sendiri.
 export function AppBar({
@@ -33,6 +35,7 @@ export function AppBar({
         {subtitle && <p className="mt-1 text-sm text-ink-2">{subtitle}</p>}
       </div>
       {children}
+      <EmpurMenu />
       <ThemeToggle />
     </header>
   )
@@ -74,6 +77,78 @@ export function ThemeToggle() {
         </button>
       ))}
     </div>
+  )
+}
+
+// Menu Empur: pilih warna kapur dan tampil dengan atau tanpa tangan. Popover bawaan browser menutup
+// sendiri saat klik di luar atau Esc; posisinya menempel di tombol lewat anchor CSS (index.css).
+export function EmpurMenu() {
+  const { tone, arms } = useKapurPrefs()
+  const option = (on: boolean) =>
+    `rounded-[10px] border-2 px-3 py-1 font-display text-sm transition-colors duration-150 ${
+      on ? 'border-outline bg-chalk-yellow text-go-ink' : 'border-transparent text-ink-2 hover:text-ink'
+    }`
+  return (
+    <>
+      <button
+        type="button"
+        popoverTarget="empur-menu"
+        className="empur-anchor chip flex items-center gap-1.5 px-3 py-1.5 font-display text-sm text-ink"
+      >
+        <Swatch tone={tone} className="size-4" />
+        <span className="max-sm:sr-only">Empur</span>
+      </button>
+      <div
+        id="empur-menu"
+        popover="auto"
+        className="empur-menu w-72 rounded-2xl border-[3px] border-outline bg-surface p-4 text-ink"
+      >
+        <div className="flex items-center gap-3">
+          <Kapur mood="wave" className="h-20 w-16 shrink-0" />
+          <p className="font-display text-lg font-semibold">Empur</p>
+        </div>
+        <div role="radiogroup" aria-label="Warna Empur" className="mt-3 flex gap-1">
+          {(Object.keys(TONES) as KapurTone[]).map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="radio"
+              aria-checked={tone === t}
+              aria-label={t}
+              title={t}
+              onClick={() => setKapurPrefs({ tone: t })}
+              className={`grid size-8 place-items-center rounded-full border-2 ${tone === t ? 'border-outline' : 'border-transparent'}`}
+            >
+              <Swatch tone={t} className="size-6" checked={tone === t} />
+            </button>
+          ))}
+        </div>
+        <div role="radiogroup" aria-label="Tangan Empur" className="chip mt-3 flex w-fit gap-1 p-1">
+          {[true, false].map((on) => (
+            <button key={String(on)} type="button" role="radio" aria-checked={arms === on} onClick={() => setKapurPrefs({ arms: on })} className={option(arms === on)}>
+              {on ? 'Dengan tangan' : 'Tanpa tangan'}
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
+// Lingkaran bergradasi dengan warna badan Empur. Pilihan aktif juga diberi centang, bukan warna saja.
+function Swatch({ tone, checked = false, className = '' }: { tone: KapurTone; checked?: boolean; className?: string }) {
+  const t = TONES[tone]
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <defs>
+        <linearGradient id={`swatch-${tone}`} x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0" stopColor={t.top} />
+          <stop offset="1" stopColor={t.bot} />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="11" fill={`url(#swatch-${tone})`} />
+      {checked && <path d="M7.5 12.5l3 3 6-7" fill="none" stroke={t.ink} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />}
+    </svg>
   )
 }
 

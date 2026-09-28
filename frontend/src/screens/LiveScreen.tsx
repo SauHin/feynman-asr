@@ -23,9 +23,9 @@ import {
 import { Board, PausePill, Panel, PanelTitle } from '../components/board'
 import { ClassroomWall } from '../components/classroom'
 import { Kapur } from '../components/kapur'
-import { ThemeToggle } from '../components/app-bar'
+import { EmpurMenu, ThemeToggle } from '../components/app-bar'
 import { clock, decimal } from '../lib/format'
-import { KAPUR_HAND, kapurSays } from '../lib/kapur'
+import { KAPUR_HAND, KAPUR_TIP, kapurSays, useKapurPrefs } from '../lib/kapur'
 import { initialLiveState, liveReducer, type LiveState } from '../lib/live-state'
 import type { TranscriptSource } from '../lib/transcript-source'
 import { buildSegments, type Segment } from '../lib/transcript-segments'
@@ -94,7 +94,9 @@ export default function LiveScreen() {
   const statusOf = (id: string): MarkStatus => state.concepts[id] ?? 'none'
   const line = kapurSays({ state, concepts, started, elapsed, topic: BACKPROP_TOPIC })
 
-  // Si Kapur pergi ke baris yang statusnya baru naik, mencentangnya dengan tangan, lalu kembali ke baki.
+  // Empur pergi ke baris yang statusnya baru naik, mencentangnya, lalu kembali ke baki. Dengan tangan:
+  // ujung tangan menyentuh kotak. Tanpa tangan: Empur miring dan menulis centang dengan ujung bawahnya.
+  const { arms } = useKapurPrefs()
   const rowRefs = useRef<Record<string, HTMLLIElement | null>>({})
   const kapurRef = useRef<HTMLDivElement>(null)
   const lastEvent = state.conceptEvents.at(-1)
@@ -106,15 +108,17 @@ export default function LiveScreen() {
     if (!row || !rest || matchMedia('(prefers-reduced-motion: reduce)').matches) return setReach(null)
     const r = row.getBoundingClientRect()
     const k = rest.getBoundingClientRect()
-    // Ujung tangan menyentuh sisi kiri kotak tanda. Badannya berdiri di dinding kiri kolom kotak,
-    // jadi kotak konsep lain tetap terlihat. Kalau dinding kiri terlalu sempit, ia mencentang dari baki.
-    const targetX = r.left + 6
-    const bodyLeft = targetX - (k.width * (KAPUR_HAND.x - 26)) / 120
+    // Badannya berada di dinding kiri kolom kotak, jadi kotak konsep lain tetap terlihat. Kalau dinding
+    // kiri terlalu sempit, ia mencentang dari baki. Tanpa tangan, badan yang miring menjorok 74 satuan
+    // viewBox ke kiri dari ujung bawahnya.
+    const point = arms ? KAPUR_HAND : KAPUR_TIP
+    const targetX = arms ? r.left + 6 : r.left + 18
+    const bodyLeft = targetX - (k.width * (arms ? KAPUR_HAND.x - 14 : 74)) / 120
     if (bodyLeft < 8) return setReach(null)
-    const handX = k.left + (k.width * KAPUR_HAND.x) / 120
-    const handY = k.top + (k.height * KAPUR_HAND.y) / 150
-    setReach({ x: targetX - handX, y: r.top + r.height / 2 - handY })
-  }, [writing])
+    const px = k.left + (k.width * point.x) / 120
+    const py = k.top + (k.height * point.y) / 150
+    setReach({ x: targetX - px, y: r.top + r.height / 2 - py })
+  }, [writing, arms])
 
   const agenda = (
     <>
@@ -140,8 +144,11 @@ export default function LiveScreen() {
             className="absolute bottom-2 left-1/2 h-3 w-20 -translate-x-1/2 rounded-full bg-black/20"
           />
           <div
-            className="kapur-actor"
-            style={reach ? { transform: `translate(${reach.x}px, ${reach.y}px) rotate(-4deg)` } : undefined}
+            className={`kapur-actor ${reach && !arms ? 'kapur-scribble' : ''}`}
+            style={{
+              transformOrigin: arms ? undefined : `${(KAPUR_TIP.x / 120) * 100}% ${(KAPUR_TIP.y / 150) * 100}%`,
+              transform: reach ? `translate(${reach.x}px, ${reach.y}px) rotate(${arms ? -4 : -28}deg)` : undefined,
+            }}
           >
             <Kapur mood={line.mood} tick={reach !== null} quiet={reach !== null} className="h-28 w-[5.6rem] md:h-40 md:w-32" />
           </div>
@@ -269,6 +276,7 @@ function TopBar({
           <FixedWidth options={['0,0 dtk']} value={latency} className="tabular-nums text-ink" />
         </p>
       </div>
+      <EmpurMenu />
       <ThemeToggle />
     </header>
   )
