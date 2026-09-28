@@ -2,6 +2,8 @@ import { Link } from 'react-router'
 import { AppBar } from '../components/app-bar'
 import { LaptopIcon } from '../components/chalk'
 import { Kapur } from '../components/kapur'
+import { StatusIcon } from '../components/marks'
+import { MARK_LABEL } from '../lib/format'
 
 const STEPS = ['Siapkan topik', 'Jelaskan 2–5 menit', 'Baca feedback', 'Jelaskan ulang'] as const
 const STEP_COLORS: [string, string][] = [
@@ -58,9 +60,9 @@ export default function HomeScreen() {
 // Contoh agenda, supaya user pertama langsung melihat apa yang dilakukan Empur saat sesi.
 // Status dibedakan lewat ikon dan label, bukan warna saja.
 const SAMPLE = [
-  { name: 'Forward pass', status: 'dijelaskan' },
-  { name: 'Loss function', status: 'disebut' },
-  { name: 'Chain rule', status: 'belum' },
+  { name: 'Forward pass', status: 'explained' },
+  { name: 'Loss function', status: 'mentioned' },
+  { name: 'Chain rule', status: 'none' },
 ] as const
 
 function AgendaPreview() {
@@ -82,34 +84,12 @@ function AgendaPreview() {
             <li key={c.name} className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5">
               <StatusIcon status={c.status} />
               <span className="text-lg font-semibold">{c.name}</span>
-              <span className="ml-auto text-sm text-ink-3">{c.status}</span>
+              <span className="ml-auto text-sm text-ink-3">{MARK_LABEL[c.status]}</span>
             </li>
           ))}
         </ul>
       </div>
     </figure>
-  )
-}
-
-function StatusIcon({ status }: { status: (typeof SAMPLE)[number]['status'] }) {
-  if (status === 'dijelaskan')
-    return (
-      <svg viewBox="0 0 24 24" className="size-7 shrink-0" aria-hidden="true">
-        <circle cx="12" cy="12" r="11" fill="#22C55E" />
-        <path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    )
-  if (status === 'disebut')
-    return (
-      <svg viewBox="0 0 24 24" className="size-7 shrink-0" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" fill="none" stroke="#FFB020" strokeWidth="2.4" />
-        <path d="M12 2a10 10 0 0 1 0 20Z" fill="#FFB020" />
-      </svg>
-    )
-  return (
-    <svg viewBox="0 0 24 24" className="size-7 shrink-0 text-ink-3" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeOpacity="0.6" strokeWidth="2.4" />
-    </svg>
   )
 }
 

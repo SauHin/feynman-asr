@@ -380,6 +380,23 @@
   -webkit-box-decoration-break: clone;
   animation: underline-draw 420ms var(--ease-out-expo) both;
 }
+/* Istilah konsep di transkrip: sorotan stabilo kuning di separuh bawah huruf, tergores dari kiri. */
+@keyframes mark-in {
+  from {
+    background-size: 0% 100%;
+  }
+}
+.term-mark {
+  background-image: linear-gradient(transparent 58%, rgb(255 216 77 / 0.6) 58%, rgb(255 216 77 / 0.6) 92%, transparent 92%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: mark-in 420ms var(--ease-out-expo) both;
+}
+[data-theme='dark'] .term-mark {
+  background-image: linear-gradient(transparent 58%, rgb(255 216 77 / 0.32) 58%, rgb(255 216 77 / 0.32) 92%, transparent 92%);
+}
 .chalk-rule {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M1.5 6.4C17 4.2 33 7.4 51 5.2S83 4.4 98.5 6' fill='none' stroke='%23F4F7F0' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -402,7 +419,7 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: var(--color-chalk);
+  background: #ffd34d;
   opacity: 0;
   animation: dust 750ms ease-out var(--draw-delay, 0ms) both;
 }
@@ -627,6 +644,7 @@
 @media (prefers-reduced-motion: reduce) {
   .chalk-draw,
   .chalk-term,
+  .term-mark,
   .dust i,
   .kapur,
   .kapur-eyes,
