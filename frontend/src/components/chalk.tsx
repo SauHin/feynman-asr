@@ -125,6 +125,14 @@ export function ArrowLeftIcon({ className = '' }: { className?: string }) {
   )
 }
 
+export function ChevronIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.6}>
+      <path d="M9.5 5.5 16 12l-6.5 6.5" />
+    </svg>
+  )
+}
+
 export function PencilIcon({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
@@ -173,15 +181,6 @@ export function SkipIcon({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.4}>
       <path d="M5 6.5 11 12l-6 5.5M12.5 6.5l6 5.5-6 5.5" />
-    </svg>
-  )
-}
-
-export function MicIcon({ className = '' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...stroke} strokeWidth={2.2}>
-      <rect x="9" y="3.5" width="6" height="11" rx="3" />
-      <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" />
     </svg>
   )
 }
