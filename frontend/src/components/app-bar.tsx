@@ -154,21 +154,21 @@ export function MockStateSwitch<T extends string>({ options }: { options: readon
   if (!import.meta.env.DEV) return null
   const current = params.get('keadaan') ?? options[0].value
   return (
-    <div role="radiogroup" aria-label="Keadaan contoh" className="flex flex-wrap items-center gap-1.5 text-sm text-ink-2">
-      <span className="mr-1">Keadaan contoh:</span>
-      {options.map((o) => (
-        <button
-          key={o.value}
-          role="radio"
-          aria-checked={current === o.value}
-          onClick={() => setParams(o.value === options[0].value ? {} : { keadaan: o.value })}
-          className={`rounded-full border-2 px-2.5 py-0.5 font-display transition-colors duration-150 ${
-            current === o.value ? 'border-outline bg-surface text-ink' : 'border-dashed border-line-strong hover:text-ink'
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
+    <div role="radiogroup" aria-label="Keadaan contoh" className="flex flex-wrap items-center gap-2 text-sm text-ink-3">
+      <span>Keadaan contoh:</span>
+      <div className="flex gap-0.5 rounded-full bg-card p-1">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            role="radio"
+            aria-checked={current === o.value}
+            onClick={() => setParams(o.value === options[0].value ? {} : { keadaan: o.value })}
+            className={segment(current === o.value)}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

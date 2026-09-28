@@ -189,12 +189,41 @@
     color: var(--ink-3);
     opacity: 1;
   }
+  /* Fokus pada kolom: garis berubah biru dengan cahaya lembut, mengikuti sudut kolom. */
+  .field:focus-visible {
+    outline: none;
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 22%, transparent);
+  }
   /* Pil bergaris tipis untuk kontrol kecil di bilah atas. */
   .chip {
     border: 1.5px solid var(--line);
     border-radius: 999px;
     background: var(--surface);
   }
+}
+
+/* Zona unggah: berdenyut pelan saat file diseret di jendela, bergetar sekali saat format ditolak. */
+@keyframes drop-ready {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-focus) 18%, transparent);
+  }
+}
+@keyframes drop-shake {
+  20%,
+  60% {
+    translate: -6px 0;
+  }
+  40%,
+  80% {
+    translate: 6px 0;
+  }
+}
+.drop-ready {
+  animation: drop-ready 1.2s ease-in-out infinite;
+}
+.drop-shake {
+  animation: drop-shake 360ms ease-in-out;
 }
 
 /* Kertas buku catatan: kotak-kotak biru pucat. */
@@ -616,7 +645,9 @@
   .kapur-actor {
     transition: none;
   }
-  .kapur-scribble {
+  .kapur-scribble,
+  .drop-ready,
+  .drop-shake {
     animation: none;
   }
   .dust {
