@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties, type ReactNode } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { AppBar, MockStateSwitch } from '../components/app-bar'
 import { Board, Panel, PanelTitle, PausePill } from '../components/board'
@@ -70,6 +70,7 @@ export default function FeedbackScreen() {
   const fluency = BACKPROP_FLUENCY
   const feedback = view === 'memuat' || view === 'gagal' ? null : BACKPROP_FEEDBACK
   const previous = view === 'ulang' ? BACKPROP_PREVIOUS : null
+  const [sidebar, sidebarTop] = useStickyTop<HTMLElement>(16)
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -99,10 +100,17 @@ export default function FeedbackScreen() {
             previous={previous}
             onRetry={() => setParams({ keadaan: 'memuat' })}
           />
-          <aside className="flex flex-col gap-6" aria-label="Kelancaran dan langkah berikutnya">
+          {/* Kolom kanan ikut turun saat surat dibaca, tanpa scroll sendiri. Kalau lebih tinggi dari layar,
+              kolom ini ikut tergulir bersama halaman sampai bagian bawahnya terlihat, lalu berhenti di situ. */}
+          <aside
+            ref={sidebar}
+            style={{ top: sidebarTop }}
+            className="flex flex-col gap-6 lg:sticky lg:self-start"
+            aria-label="Kelancaran dan langkah berikutnya"
+          >
             <FluencyCard fluency={fluency} previous={previous?.fluency} concepts={concepts} />
             {previous && feedback && <ComparisonCard concepts={concepts} previous={previous} current={feedback} />}
-            <div className="flex flex-col gap-3 lg:sticky lg:top-4">
+            <div className="flex flex-col gap-3">
               <Link to="/live" className="btn btn-go w-full text-xl">
                 Jelaskan ulang
               </Link>
@@ -121,6 +129,27 @@ export default function FeedbackScreen() {
       </main>
     </div>
   )
+}
+
+// Jarak atas untuk kolom sticky. Kalau kolom muat di layar, ia menempel di atas.
+// Kalau lebih tinggi dari layar, jaraknya negatif, jadi kolom menempel dengan bagian bawahnya terlihat.
+function useStickyTop<T extends HTMLElement>(gap: number) {
+  const ref = useRef<T>(null)
+  const [top, setTop] = useState(gap)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const update = () => setTop(Math.min(gap, window.innerHeight - el.offsetHeight - gap))
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    window.addEventListener('resize', update)
+    update()
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [gap])
+  return [ref, top] as const
 }
 
 // Surat dari Si Kapur, di selembar kertas yang disobek dari buku catatan.
@@ -150,7 +179,8 @@ function Letter({
   return (
     <article className="relative rounded-[20px] border-[3px] border-outline bg-paper px-6 pb-10 pt-10 text-paper-ink shadow-[0_6px_0_rgba(0,0,0,0.15)] md:px-12">
       {/* Si Kapur berdiri di tepi kiri surat: bangga, sedang menulis, atau bingung. */}
-      <Kapur mood={mood} className="absolute -left-28 top-24 z-20 hidden h-40 w-32 xl:block" />
+      {/* Posisinya agak turun supaya tidak menabrak jam dinding di pojok kiri atas. */}
+      <Kapur mood={mood} className="absolute -left-28 top-48 z-20 hidden h-40 w-32 xl:block" />
       {/* Lubang spiral: halaman ini disobek dari buku catatan di beranda. */}
       <div aria-hidden="true" className="absolute inset-x-6 top-4 flex justify-between md:inset-x-12">
         {Array.from({ length: 14 }, (_, i) => (
@@ -164,10 +194,10 @@ function Letter({
       {view === 'memuat' && (
         <>
           <Section title="Yang perlu diperbaiki dulu" hl="var(--color-chalk-yellow)">
-            <Writing label="Si Kapur sedang menulis bagian ini" />
+            <Writing label="Empur sedang menulis bagian ini" />
           </Section>
           <Section title="Yang sudah bagus" hl="var(--color-chalk-mint)">
-            <Writing label="Si Kapur sedang menulis bagian ini" />
+            <Writing label="Empur sedang menulis bagian ini" />
           </Section>
         </>
       )}
@@ -198,6 +228,8 @@ function Letter({
           </Section>
         </>
       )}
+
+      {view !== 'gagal' && <Divider label="Rincian" />}
 
       <Section title="Cakupan konsep" hl="var(--color-chalk-blue)">
         <p className="max-w-[60ch] text-paper-ink-2">
@@ -311,7 +343,7 @@ function Letter({
                 : 'Semangat! Saat menjelaskan ulang, mulai dari catatan nomor 1, ya.'}
           </p>
           <p className="mt-3 text-paper-ink-2">Salam kapur,</p>
-          <p className="font-display text-2xl font-semibold">Si Kapur</p>
+          <p className="font-display text-2xl font-semibold">Empur</p>
           <svg viewBox="0 0 120 16" aria-hidden="true" className="mt-0.5 h-4 w-28 text-outline">
             <path d="M3 10c12-8 20 4 30-2s16-6 22 0 18 2 26-3 20-1 36 1" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
           </svg>
@@ -389,6 +421,17 @@ function Score({
           +{gained} dari sesi pertama
         </p>
       )}
+    </div>
+  )
+}
+
+// Pemisah antara ringkasan (atas) dan rincian (bawah), supaya tujuh judul tidak terbaca sama penting.
+function Divider({ label }: { label: string }) {
+  return (
+    <div className="mt-12 flex items-center gap-3 text-paper-ink-2" role="presentation">
+      <span className="h-0 flex-1 border-t-[2.5px] border-dashed border-paper-ink/25" />
+      <span className="font-display text-sm">{label}</span>
+      <span className="h-0 flex-1 border-t-[2.5px] border-dashed border-paper-ink/25" />
     </div>
   )
 }
@@ -573,11 +616,19 @@ function TranscriptAppendix({ concepts }: { concepts: Concept[] }) {
     [concepts],
   )
   return (
-    <details className="group relative z-10 mx-auto mt-12 max-w-[68rem]">
-      <summary className={`btn btn-plain ${SUMMARY}`}>
-        <span className="group-open:hidden">Lihat transkrip lengkap</span>
-        <span className="hidden group-open:inline">Tutup transkrip</span>
-        <ChevronIcon className="size-5 transition-transform group-open:rotate-90" />
+    // Lampiran selebar halaman, bukan tombol lepas di bawah surat.
+    <details className="group relative z-10 mx-auto mt-10 max-w-[68rem]">
+      <summary
+        className={`chip flex items-center gap-4 px-5 py-3.5 text-ink transition-transform duration-100 active:translate-y-0.5 ${SUMMARY}`}
+      >
+        <span className="min-w-0">
+          <span className="block font-display text-lg font-semibold leading-tight">
+            <span className="group-open:hidden">Lihat transkrip lengkap</span>
+            <span className="hidden group-open:inline">Tutup transkrip</span>
+          </span>
+          <span className="block text-sm text-ink-2">Lampiran: semua ucapanmu, dengan jeda dan filler ditandai.</span>
+        </span>
+        <ChevronIcon className="ml-auto size-5 shrink-0 transition-transform group-open:rotate-90" />
       </summary>
       <section aria-labelledby="transkrip-title" className="mt-6">
         <Board>

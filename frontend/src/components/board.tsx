@@ -1,6 +1,5 @@
 import { useId, type ReactNode } from 'react'
 import { decimal } from '../lib/format'
-import { PauseIcon } from './chalk'
 
 // Papan tulis sebagai benda: bingkai kayu bergaris luar berisi panel hijau, dan baki kapur di bawah.
 export function Board({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -82,11 +81,21 @@ function BoardHaze() {
 }
 
 // Jeda panjang di dalam kalimat transkrip. Tanpa durasi: contoh untuk legenda.
+// Digambar seperti tanda kapur guru di papan: kurung kasar berwarna kapur biru dan dua garis jeda,
+// bukan pil UI bergaris tajam. Butuh <ChalkDefs /> di halaman untuk filter goresan kapur.
 export function PausePill({ duration }: { duration?: number }) {
   return (
-    <span className="mx-1 inline-flex items-center gap-1 whitespace-nowrap rounded-full border-2 border-chalk-blue/70 px-2 align-[0.1em] font-display text-base text-chalk-blue">
-      <PauseIcon className="size-4" />
-      {duration === undefined ? 'jeda' : `jeda ${decimal(duration)} dtk`}
+    <span className="relative mx-1 inline-flex items-center gap-1 whitespace-nowrap px-3 align-[0.05em] font-display text-[1.05rem] font-medium text-chalk-blue">
+      {/* Garis tepi kasar lewat filter kapur yang sama dengan tanda agenda. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0.5 rounded-full border-[2.4px] border-chalk-blue bg-chalk-blue/10"
+        style={{ filter: 'url(#chalk-rough)' }}
+      />
+      <svg viewBox="0 0 12 14" aria-hidden="true" className="relative h-3.5 w-3 shrink-0">
+        <path d="M3.5 2.5v9M8.5 2.5v9" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" filter="url(#chalk-rough)" />
+      </svg>
+      <span className="chalk-letter relative">{duration === undefined ? 'jeda' : `jeda ${decimal(duration)} dtk`}</span>
     </span>
   )
 }

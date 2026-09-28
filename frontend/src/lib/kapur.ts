@@ -26,7 +26,7 @@ export function kapurSays(input: {
   const allExplained = concepts.length > 0 && explained === concepts.length
 
   if (!started)
-    return { mood: 'wave', text: 'Halo, aku Kapur! Aku akan mencentang konsep yang sudah kamu jelaskan.' }
+    return { mood: 'wave', text: 'Halo, aku Empur! Aku akan mencentang konsep yang sudah kamu jelaskan.' }
   if (state.status === 'processing') return { mood: 'think', text: 'Sebentar, aku rapikan catatannya dulu.' }
   if (state.status === 'idle') {
     if (allExplained) return { mood: 'cheer', text: 'Mantap! Semua konsep sudah kamu jelaskan.' }

@@ -121,8 +121,9 @@ export default function SetupScreen() {
         <div className="relative z-10 mx-auto flex w-full max-w-[68rem] flex-1 flex-col md:min-h-0 2xl:max-w-[80rem]">
           <Board className="flex-1 md:min-h-0">
             <Panel className="flex-1 md:min-h-0">
-              <div ref={scroller} className="-mx-2 flex-1 px-2 md:overflow-y-auto">
-                <ol className="mx-auto flex max-w-[46rem] flex-col gap-7 pb-4">
+              {/* Percakapan menempel di bawah, dekat Si Kapur di baki: giliran terbaru selalu paling bawah. */}
+              <div ref={scroller} className="-mx-2 flex flex-1 flex-col px-2 md:overflow-y-auto">
+                <ol className="mx-auto mt-auto flex w-full max-w-[46rem] flex-col gap-7 pb-4">
                   <Turn mood={MOOD.topic} current={step === 'topic'} says="Halo! Mau menjelaskan topik apa hari ini?">
                     {step === 'topic' ? (
                       <TopicForm
@@ -260,9 +261,21 @@ export default function SetupScreen() {
           Materi dan daftar konsep dikirim ke Gemini untuk mengambil konsep. Gemini versi gratis bisa memakai data itu
           untuk meningkatkan layanan Google. Suaramu nanti tetap diproses di laptop ini.
         </p>
-        <button className="btn btn-go shrink-0 px-8 text-xl" disabled={!ready} onClick={() => navigate('/live')}>
-          Mulai menjelaskan
-        </button>
+        <div className="flex items-center gap-4">
+          {!ready && (
+            <p id="syarat-mulai" className="max-w-[17rem] text-right text-sm leading-snug text-ink-2">
+              Aktif setelah daftar konsep kamu cek.
+            </p>
+          )}
+          <button
+            className="btn btn-go shrink-0 px-8 text-xl"
+            disabled={!ready}
+            aria-describedby={ready ? undefined : 'syarat-mulai'}
+            onClick={() => navigate('/live')}
+          >
+            Mulai menjelaskan
+          </button>
+        </div>
       </footer>
     </div>
   )
@@ -624,7 +637,7 @@ function ConceptEditor({
         {full
           ? 'Sudah 8 konsep. Supaya agenda tetap terbaca dalam satu lirikan, hapus satu dulu sebelum menambah. '
           : ''}
-        Di layar live, Si Kapur mencentang kotak ini saat kamu menyebut dan menjelaskan konsepnya. Nama dan alias juga
+        Di layar live, Empur mencentang kotak ini saat kamu menyebut dan menjelaskan konsepnya. Nama dan alias juga
         membantu Whisper mengenali istilahnya.
       </p>
     </section>
