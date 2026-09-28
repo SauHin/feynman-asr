@@ -128,9 +128,18 @@
     transform: translateY(4px);
     box-shadow: 0 0 0 var(--outline);
   }
+  /* Tombol nonaktif harus jelas beda dari tombol aktif: abu-abu, pudar, dan tidak bereaksi. */
   .btn:disabled {
     cursor: not-allowed;
-    filter: saturate(0.4);
+    filter: grayscale(1);
+    opacity: 0.55;
+  }
+  .btn:disabled:hover {
+    filter: grayscale(1);
+  }
+  .btn:disabled:active {
+    transform: none;
+    box-shadow: 0 4px 0 var(--outline);
   }
   .btn-go {
     background: var(--color-go);
@@ -185,6 +194,8 @@
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
   padding-inline: 0.12em;
+  /* Stabilo melebar ke samping tanpa menggeser huruf, supaya baris tetap rata kiri. */
+  margin-inline: -0.12em;
 }
 
 /* Filler di transkrip: garis bawah bergelombang merah muda, beda bentuk dengan garis istilah. */

@@ -259,7 +259,7 @@ export function Kapur({
       viewBox="0 0 120 150"
       className={`overflow-visible text-outline ${className}`}
       role="img"
-      aria-label={`Si Kapur ${MOOD_LABEL[mood]}`}
+      aria-label={`Empur ${MOOD_LABEL[mood]}`}
     >
       <g key={`${mood}-${tick}`} className={`kapur kapur-${tick ? 'tick' : mood}`}>
         {/* Kaki */}

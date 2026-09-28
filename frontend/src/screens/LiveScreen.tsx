@@ -143,13 +143,13 @@ export default function LiveScreen() {
             className="kapur-actor"
             style={reach ? { transform: `translate(${reach.x}px, ${reach.y}px) rotate(-4deg)` } : undefined}
           >
-            <Kapur mood={line.mood} tick={reach !== null} quiet={reach !== null} className="h-40 w-32" />
+            <Kapur mood={line.mood} tick={reach !== null} quiet={reach !== null} className="h-28 w-[5.6rem] md:h-40 md:w-32" />
           </div>
         </div>
         {!reach && (
           <p
             key={line.text}
-            className="bubble relative mb-[4.5rem] max-w-[26rem] rounded-2xl border-[3px] border-outline bg-surface px-4 py-3 font-display text-[1.05rem] leading-snug text-ink"
+            className="bubble relative mb-12 max-w-[26rem] md:mb-[4.5rem] rounded-2xl border-[3px] border-outline bg-surface px-4 py-3 font-display text-[1.05rem] leading-snug text-ink"
           >
             {line.text}
             <span
@@ -225,6 +225,7 @@ function TopBar({
   }, [explained])
   const recording = state.status === 'listening'
   const label = recording ? 'Merekam' : state.status === 'processing' ? 'Memproses' : sessionDone ? 'Selesai' : 'Siap'
+  const latency = state.latencyMs === null ? '–' : `${decimal(state.latencyMs / 1000)} dtk`
 
   return (
     <header className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 md:gap-x-5 md:px-8 md:py-3">
@@ -254,19 +255,38 @@ function TopBar({
         </p>
       </div>
 
-      <p className="chip flex items-center gap-2 px-3 py-1.5 font-display" aria-live="polite">
-        <span aria-hidden="true" className={`size-3 rounded-full ${recording ? 'bg-stop' : 'bg-line-strong'}`} />
-        {label}
-        <span className="min-w-[2.6rem] tabular-nums text-ink-2">{clock(elapsed)}</span>
-      </p>
-      <p className="font-display text-ink-2">
-        Latensi{' '}
-        <span className="tabular-nums text-ink">
-          {state.latencyMs === null ? '–' : `${decimal(state.latencyMs / 1000)} dtk`}
-        </span>
-      </p>
+      {/* Status rekaman dan latensi dalam satu chip, supaya bilah atas tidak penuh elemen lepas. */}
+      <div className="chip flex items-center gap-3 px-3 py-1.5 font-display">
+        <p className="flex items-center gap-2" aria-live="polite">
+          <span aria-hidden="true" className={`size-3 rounded-full ${recording ? 'bg-stop' : 'bg-line-strong'}`} />
+          {/* Lebar chip tetap di semua status, supaya progress bar di sampingnya tidak ikut melebar dan menyempit. */}
+          <FixedWidth options={STATUS_LABELS} value={label} />
+          <span className="min-w-[2.6rem] tabular-nums text-ink-2">{clock(elapsed)}</span>
+        </p>
+        <span aria-hidden="true" className="h-5 w-0.5 rounded-full bg-line-strong" />
+        <p className="flex items-baseline gap-1 text-sm text-ink-2">
+          Latensi
+          <FixedWidth options={['0,0 dtk']} value={latency} className="tabular-nums text-ink" />
+        </p>
+      </div>
       <ThemeToggle />
     </header>
+  )
+}
+
+const STATUS_LABELS = ['Siap', 'Merekam', 'Memproses', 'Selesai']
+
+// Semua kemungkinan teks ditumpuk di satu sel grid dan hanya satu yang terlihat,
+// jadi lebarnya selalu selebar teks terpanjang.
+function FixedWidth({ options, value, className = '' }: { options: string[]; value: string; className?: string }) {
+  return (
+    <span className={`grid ${className}`}>
+      {[value, ...options.filter((o) => o !== value)].map((o, i) => (
+        <span key={o} aria-hidden={i > 0 || undefined} className={`[grid-area:1/1] ${i > 0 ? 'invisible' : ''}`}>
+          {o}
+        </span>
+      ))}
+    </span>
   )
 }
 
@@ -334,10 +354,11 @@ function Guidance() {
     'Sesekali lirik agenda. Kotak kosong berarti konsep itu belum kamu bahas.',
   ]
   return (
-    <div className="flex flex-1 flex-col justify-center gap-5 text-chalk md:min-h-0 md:overflow-y-auto">
+    // Judul memakai gaya yang sama dengan Agenda dan Penjelasanmu, dan sejajar di atas panel.
+    <div className="flex flex-1 flex-col gap-5 text-chalk md:min-h-0 md:overflow-y-auto">
       <div>
-        <h2 className="chalk-letter font-display text-4xl font-semibold text-chalk-yellow">Sebelum mulai</h2>
-        <p className="mt-3 max-w-[56ch] text-lg font-medium leading-relaxed">
+        <PanelTitle>Sebelum mulai</PanelTitle>
+        <p className="mt-4 max-w-[56ch] text-lg font-medium leading-relaxed">
           Di sini kamu berlatih dengan metode Feynman: jelaskan {BACKPROP_TOPIC} dengan suaramu sendiri, seolah ke
           teman yang belum paham.
         </p>
@@ -419,9 +440,13 @@ function Footer({
   onStop: () => void
 }) {
   return (
-    <footer className="sticky bottom-0 z-30 flex items-center gap-4 border-t-[3px] border-outline bg-surface px-3 py-3 md:static md:gap-6 md:px-8 md:py-4">
+    // Di layar sempit, footer baru menempel di bawah setelah sesi mulai. Sebelum itu teks privasinya panjang,
+    // jadi footer ikut mengalir di akhir halaman supaya tidak menutupi separuh layar.
+    <footer
+      className={`z-30 flex items-center gap-4 border-t-[3px] border-outline bg-surface px-3 py-3 md:static md:gap-6 md:px-8 md:py-4 ${started ? 'sticky bottom-0' : 'relative'}`}
+    >
       {!started ? (
-        <p className="mr-auto max-w-3xl text-sm leading-relaxed text-ink-2">
+        <p className="mr-auto max-w-[60rem] text-sm leading-relaxed text-ink-2">
           Suaramu diproses di laptop ini dan tidak dikirim ke mana pun. Setelah kamu berhenti, teks transkrip, daftar
           konsep, metrik kelancaran, dan materi yang kamu upload dikirim ke Gemini untuk feedback. Gemini versi gratis
           bisa memakai data itu untuk meningkatkan layanan Google. Untuk sekarang, aplikasi memutar sesi contoh sekitar
@@ -546,7 +571,6 @@ function ProgressTrack({
                 className="fill-[#5ccb94] dark:fill-[#9ee8c0]"
                 style={{ ...grow, transform: `scaleX(${reach(explained) / w})` }}
               />
-              <rect x="10" y="12" width={Math.max(0, w - 20)} height="3.5" rx="1.75" fill="#fff" opacity="0.45" />
             </g>
             {Array.from({ length: total }, (_, i) => {
               const cx = nodeX(i)

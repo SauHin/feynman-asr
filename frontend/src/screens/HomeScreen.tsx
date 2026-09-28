@@ -58,7 +58,7 @@ export default function HomeScreen() {
 
       <main className="relative flex flex-1 flex-col px-4 pb-16 pt-6 md:px-8">
         <ClassroomWall />
-        <div className="relative z-10 mx-auto my-auto w-full max-w-[40rem]">
+        <div className="relative z-10 mx-auto my-auto w-full max-w-[44rem]">
           <NotebookPage />
           <StepPath />
         </div>
@@ -72,6 +72,8 @@ export default function HomeScreen() {
 function NotebookPage() {
   return (
     <section aria-labelledby="judul-beranda" className="relative">
+      {/* Dari 1280px Si Kapur berdiri di tepi kiri buku catatan, menyapa dari samping halaman. */}
+      <Greeter className="absolute -bottom-4 right-[calc(100%-2.25rem)] z-10 hidden w-44 flex-col-reverse items-center gap-3 xl:flex" />
       <div
         aria-hidden="true"
         className="absolute -inset-x-2 -bottom-4 top-3 rounded-[26px] border-[3px] border-outline bg-chalk-blue shadow-[0_6px_0_rgba(0,0,0,0.15)] dark:bg-[#7fb8dc]"
@@ -83,7 +85,7 @@ function NotebookPage() {
           Belajar dengan <span className="highlight">menjelaskan</span>
         </h2>
         <p className="mt-4 max-w-[36ch] text-lg font-medium leading-relaxed">
-          Jelaskan satu topik kuliah dengan suaramu. Si Kapur mendengarkan, lalu memberi catatan.
+          Jelaskan satu topik kuliah dengan suaramu. Empur mendengarkan, lalu memberi catatan.
         </p>
         <Link to="/setup" className="btn btn-go mt-7 px-10 text-xl">
           Mulai sesi
@@ -118,45 +120,51 @@ function Spiral() {
 // Vertikal di layar sempit, mendatar dari 768px.
 function StepPath() {
   return (
-    <div className="relative mt-14 flex flex-col gap-6 md:flex-row md:items-end xl:block">
-      <Greeter />
-      <ol aria-label="Satu sesi, empat tahap" className="relative grid flex-1 gap-5 md:grid-cols-4 md:gap-2">
-        {/* Garis jalur melewati pusat ubin pertama sampai terakhir */}
-        <span
-          aria-hidden="true"
-          className="absolute bottom-8 left-8 top-8 border-l-[3px] border-dashed border-outline md:bottom-auto dark:border-ink-2/60 md:left-[12.5%] md:right-[12.5%] md:border-l-0 md:border-t-[3px]"
-        />
-        {STEPS.map((s, i) => (
-          <li key={s.title} className="relative flex items-center gap-4 md:flex-col md:gap-3 md:text-center">
-            <span
-              aria-hidden="true"
-              className={`relative grid size-16 shrink-0 place-items-center rounded-full border-[3px] border-outline text-outline shadow-[0_4px_0_var(--outline)] ${s.fill}`}
-            >
-              <svg viewBox="0 0 40 40" className="size-10">
-                {s.doodle}
-              </svg>
-              <span className="absolute -left-1.5 -top-1.5 grid size-6 place-items-center rounded-full border-[2.5px] border-outline bg-white font-display text-sm font-semibold text-paper-ink">
-                {i + 1}
+    <div className="mt-12 flex flex-col gap-6">
+      <Greeter className="flex items-end gap-2 xl:hidden" />
+      <div>
+        <h3 id="tahap-sesi" className="mb-5 font-display text-base font-medium text-ink-2 md:text-center">
+          Satu sesi, empat tahap
+        </h3>
+        <ol aria-labelledby="tahap-sesi" className="relative grid flex-1 gap-5 md:grid-cols-4 md:gap-2">
+          {/* Garis jalur melewati pusat ubin pertama sampai terakhir */}
+          <span
+            aria-hidden="true"
+            className="absolute bottom-8 left-8 top-8 border-l-[3px] border-dashed border-outline md:bottom-auto dark:border-ink-2/60 md:left-[12.5%] md:right-[12.5%] md:border-l-0 md:border-t-[3px]"
+          />
+          {STEPS.map((s, i) => (
+            <li key={s.title} className="relative flex items-center gap-4 md:flex-col md:gap-3 md:text-center">
+              <span
+                aria-hidden="true"
+                className={`relative grid size-16 shrink-0 place-items-center rounded-full border-[3px] border-outline text-outline shadow-[0_4px_0_var(--outline)] ${s.fill}`}
+              >
+                <svg viewBox="0 0 40 40" className="size-10">
+                  {s.doodle}
+                </svg>
+                <span className="absolute -left-1.5 -top-1.5 grid size-6 place-items-center rounded-full border-[2.5px] border-outline bg-white font-display text-sm font-semibold text-paper-ink">
+                  {i + 1}
+                </span>
               </span>
-            </span>
-            <span className="font-display text-lg font-semibold leading-tight">
-              <span className="sr-only">Tahap {i + 1}: </span>
-              {s.title}
-            </span>
-          </li>
-        ))}
-      </ol>
+              <span className="font-display text-lg font-semibold leading-tight md:whitespace-nowrap">
+                <span className="sr-only">Tahap {i + 1}: </span>
+                {s.title}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
     </div>
   )
 }
 
-// Si Kapur menyapa di awal jalur. Dari 1280px ia berdiri di dinding kiri, dengan balon di atas kepalanya.
-function Greeter() {
+// Si Kapur menyapa. Di layar sempit ia berdiri di atas jalur tahap, balon di sampingnya.
+// Dari 1280px ia berdiri di tepi buku catatan, dengan balon di atas kepalanya.
+function Greeter({ className }: { className: string }) {
   return (
-    <div className="flex items-end gap-2 xl:absolute xl:-left-52 xl:bottom-0 xl:w-44 xl:flex-col-reverse xl:items-center xl:gap-3">
+    <div className={className}>
       <Kapur mood="wave" className="h-28 w-20 shrink-0 xl:h-40 xl:w-32" />
       <p className="bubble relative mb-10 whitespace-nowrap rounded-2xl border-[3px] border-outline bg-white px-4 py-2.5 font-display text-lg leading-snug text-paper-ink xl:mb-0">
-        Halo, aku Kapur!
+        Halo, aku Empur!
         <span
           aria-hidden="true"
           className="absolute -left-[11px] bottom-3 size-4 rotate-45 border-b-[3px] border-l-[3px] border-outline bg-white xl:-bottom-[11px] xl:left-1/2 xl:-translate-x-1/2 xl:-rotate-45"
