@@ -13,21 +13,9 @@
   --card-2: #ececf0;
   --line: #e7e7ec;
   --ink-3: #8c8c9c;
-  --wall: #eaf5ff;
   --ink: #16161d;
   --ink-2: #5c5c6e;
   --surface: #ffffff;
-  --line-strong: #bccddd;
-  --track: #cfdfee;
-  --board: #245a45;
-  --wood: #c98a4b;
-  --wood-dark: #9a6230;
-  --wood-light: #e0a868;
-  --outline: #44586c;
-  /* Kertas adalah benda seperti papan: tetap terang di malam hari, hanya sedikit redup. */
-  --paper: #fffdf6;
-  --paper-grid: #dcebf8;
-  --wallpaper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='%23D6E9F9'%3E%3Crect x='12.5' y='8' width='3' height='11' rx='1.5'/%3E%3Crect x='8.5' y='12' width='11' height='3' rx='1.5'/%3E%3Ccircle cx='42' cy='42' r='2.2'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 [data-theme='dark'] {
@@ -37,20 +25,9 @@
   --card-2: #2a2a2e;
   --line: #34343a;
   --ink-3: #7c7c88;
-  --wall: #152231;
   --ink: #f5f5f7;
   --ink-2: #a8a8b3;
   --surface: #1a1a1d;
-  --line-strong: #0e1824;
-  --track: #3a5775;
-  --board: #1f4f3c;
-  --wood: #8a5a30;
-  --wood-dark: #633e1d;
-  --wood-light: #a87244;
-  --outline: #0c1620;
-  --paper: #ebe5d5;
-  --paper-grid: #cfdce6;
-  --wallpaper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='%231B2B3E'%3E%3Crect x='12.5' y='8' width='3' height='11' rx='1.5'/%3E%3Crect x='8.5' y='12' width='11' height='3' rx='1.5'/%3E%3Ccircle cx='42' cy='42' r='2.2'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 @theme inline {
@@ -59,39 +36,13 @@
   --color-card-2: var(--card-2);
   --color-line: var(--line);
   --color-ink-3: var(--ink-3);
-  --color-wall: var(--wall);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-surface: var(--surface);
-  --color-line-strong: var(--line-strong);
-  --color-track: var(--track);
-  --color-board: var(--board);
-  --color-wood: var(--wood);
-  --color-wood-dark: var(--wood-dark);
-  --color-wood-light: var(--wood-light);
-  --color-outline: var(--outline);
-  --color-paper: var(--paper);
-  /* Tinta di atas kertas sama di kedua mode, karena kertasnya tetap terang. */
-  --color-paper-ink: #1e2b3a;
-  --color-paper-ink-2: #4f5f70;
-  --color-paper-margin: #f59c92;
-  /* Tanda status di atas kertas: versi pekat dari warna kapur, supaya kontras dengan krem. */
-  --color-mark-none: #a9700f;
-  --color-mark-explained: #1d8a57;
-  --color-mark-wrong: #d23f33;
-  /* Kapur dan tombol sama di kedua mode, karena papan selalu hijau. */
-  --color-chalk: #f4f7f0;
-  --color-chalk-dim: #b9d3c4;
-  --color-chalk-yellow: #ffe27a;
-  --color-chalk-blue: #9bd8ff;
-  --color-chalk-pink: #ffb3d1;
-  --color-chalk-mint: #9ee8c0;
   --color-go: #22c55e;
   --color-go-edge: #16994a;
-  --color-go-ink: #0e3b22;
   --color-stop: #f04438;
   --color-stop-edge: #b42318;
-  --color-stop-ink: #3b0d0e;
   --color-focus: #4b7bff;
   /* Satu keluarga huruf untuk seluruh aplikasi: Lexend, dirancang untuk keterbacaan. */
   --font-sans: 'Lexend Variable', system-ui, sans-serif;
@@ -108,11 +59,11 @@
   }
   body {
     caret-color: var(--color-go);
-    scrollbar-color: var(--line-strong) transparent;
+    scrollbar-color: var(--line) transparent;
   }
   ::selection {
-    background: var(--color-chalk-yellow);
-    color: var(--color-go-ink);
+    background: #ffe27a;
+    color: #16161d;
   }
   :focus-visible {
     outline: 3px solid var(--color-focus);
@@ -226,29 +177,9 @@
   animation: drop-shake 360ms ease-in-out;
 }
 
-/* Kertas buku catatan: kotak-kotak biru pucat. */
-.paper-grid {
-  background-color: var(--paper);
-  background-image:
-    linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px),
-    linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
-  background-size: 26px 26px;
-  background-position: -1px -1px;
-}
-
-/* Stabilo di belakang judul: warna kapur, hanya di separuh bawah huruf. */
-.highlight {
-  background-image: linear-gradient(transparent 55%, var(--hl, var(--color-chalk-yellow)) 55%, var(--hl, var(--color-chalk-yellow)) 92%, transparent 92%);
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-  padding-inline: 0.12em;
-  /* Stabilo melebar ke samping tanpa menggeser huruf, supaya baris tetap rata kiri. */
-  margin-inline: -0.12em;
-}
-
 /* Filler di transkrip: garis bawah bergelombang merah muda, beda bentuk dengan garis istilah. */
 .chalk-filler {
-  text-decoration: underline wavy var(--color-chalk-pink);
+  text-decoration: underline wavy #ff93ae;
   text-decoration-thickness: 2px;
   text-underline-offset: 6px;
 }
@@ -261,21 +192,6 @@
 }
 .write-in {
   animation: write-in 520ms var(--ease-out-expo) calc(var(--i, 0) * 140ms) both;
-}
-
-/* Garis tulisan yang terus digores ulang saat Si Kapur masih menulis. */
-@keyframes scribble {
-  0% {
-    stroke-dashoffset: 1;
-  }
-  70%,
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-.scribble {
-  stroke-dasharray: 1;
-  animation: scribble 1.8s var(--ease-out-expo) infinite;
 }
 
 /* Tiga titik saat Si Kapur membaca atau menulis. */
@@ -313,15 +229,6 @@
 .chalk-draw {
   stroke-dasharray: 1;
   animation: chalk-draw 300ms var(--ease-out-expo) var(--draw-delay, 0ms) both;
-}
-
-.chalk-letter {
-  filter: url(#chalk-text);
-}
-
-/* Serat kayu pada bingkai papan. */
-.wood-grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='40'%3E%3Cg fill='none' stroke='%23000' stroke-opacity='.1' stroke-width='1.5'%3E%3Cpath d='M0 8C60 4 120 12 240 7'/%3E%3Cpath d='M0 21C80 25 150 16 240 22'/%3E%3Cpath d='M0 33C50 30 170 37 240 32'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Si Kapur berjalan ke baris agenda: ujung tangan kanannya menjadi titik putar. */
@@ -365,21 +272,6 @@
 }
 
 /* Garis bawah kapur kuning pada istilah konsep di transkrip. */
-@keyframes underline-draw {
-  from {
-    background-size: 0% 0.5em;
-  }
-}
-.chalk-term {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='1' seed='2'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='1.4'/%3E%3C/filter%3E%3Cpath d='M1.5 6.4C17 4.2 33 7.4 51 5.2S83 4.4 98.5 6' fill='none' stroke='%23FFE27A' stroke-width='2.6' stroke-linecap='round' vector-effect='non-scaling-stroke' filter='url(%23r)'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 100% 0.5em;
-  padding-bottom: 0.12em;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-  animation: underline-draw 420ms var(--ease-out-expo) both;
-}
 /* Istilah konsep di transkrip: sorotan stabilo kuning di separuh bawah huruf, tergores dari kiri. */
 @keyframes mark-in {
   from {
@@ -397,12 +289,6 @@
 [data-theme='dark'] .term-mark {
   background-image: linear-gradient(transparent 58%, rgb(255 216 77 / 0.32) 58%, rgb(255 216 77 / 0.32) 92%, transparent 92%);
 }
-.chalk-rule {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M1.5 6.4C17 4.2 33 7.4 51 5.2S83 4.4 98.5 6' fill='none' stroke='%23F4F7F0' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-}
-
 /* Kepulan debu kapur saat konsep dijelaskan. */
 @keyframes dust {
   0% {
@@ -643,7 +529,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chalk-draw,
-  .chalk-term,
   .term-mark,
   .dust i,
   .kapur,
@@ -656,7 +541,6 @@
   .kapur-confetti,
   .bubble,
   .write-in,
-  .scribble,
   .dots i {
     animation: none;
   }

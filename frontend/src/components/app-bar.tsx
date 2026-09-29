@@ -156,7 +156,7 @@ export function MockStateSwitch<T extends string>({ options }: { options: readon
   return (
     <div role="radiogroup" aria-label="Keadaan contoh" className="flex flex-wrap items-center gap-2 text-sm text-ink-3">
       <span>Keadaan contoh:</span>
-      <div className="flex gap-0.5 rounded-full bg-card p-1">
+      <div className="flex flex-wrap gap-0.5 rounded-[20px] bg-card p-1 *:whitespace-nowrap">
         {options.map((o) => (
           <button
             key={o.value}
