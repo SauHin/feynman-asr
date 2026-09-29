@@ -230,7 +230,7 @@ const EYES: Record<KapurMood, [left: Eye, right: Eye]> = {
 }
 
 // gaze: lirikan kedua mata (dx, dy). blink hanya untuk mata terbuka; mata senang sudah berupa lengkung.
-function Eyes({ eyes, gaze, blink, ink }: { eyes: number[][]; gaze: number[]; blink?: boolean; ink: string }) {
+export function Eyes({ eyes, gaze, blink, ink }: { eyes: number[][]; gaze: number[]; blink?: boolean; ink: string }) {
   return (
     <g transform={`translate(${gaze[0].toFixed(2)} ${gaze[1].toFixed(2)})`}>
       <g className={blink === undefined ? undefined : `kapur-eyes ${blink ? 'kapur-blink' : ''}`}>
@@ -354,7 +354,7 @@ const REACTION: Record<KapurMood | 'tick' | 'enter', Anim[]> = {
 // menghidupkannya (index.css); jeda yang berbeda membuat gerakannya tidak serempak.
 const delay = (s: number) => ({ animationDelay: `${s}s` })
 
-function Props({ mood, t, id }: { mood: KapurMood; t: Tone; id: string }): ReactNode {
+export function Props({ mood, t, id }: { mood: KapurMood; t: Tone; id: string }): ReactNode {
   const line = { fill: 'none', stroke: t.dark, strokeOpacity: 0.5, strokeLinecap: 'round' as const }
   const sparkle = (x: number, y: number, r: number, wait = 0) => (
     <g key={`${x}-${y}`} className="kapur-twinkle" style={delay(wait)}>
@@ -551,3 +551,7 @@ export function Kapur({
     </svg>
   )
 }
+
+// Geometri dan pose rig untuk video promo (video/src/empur.tsx), yang menggerakkan Empur per frame.
+// oxlint-disable-next-line react/only-export-components
+export const KAPUR_RIG = { BODY, CX, W, TOP, RY, BOT, ARM, RIGHT, LEFT, MOTION, LEAN, REACTION, EYES, EYE_LEN, ARM_LEN, arm, armVec, armOf, eyeVec }
