@@ -1,175 +1,138 @@
-import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { AppBar } from '../components/app-bar'
 import { LaptopIcon } from '../components/chalk'
-import { ClassroomWall } from '../components/classroom'
 import { Kapur } from '../components/kapur'
+import { StatusIcon } from '../components/marks'
+import { MARK_LABEL } from '../lib/format'
 
-const INKED = { stroke: 'currentColor', strokeWidth: 3, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const }
-
-const STEPS: { title: string; fill: string; doodle: ReactNode }[] = [
-  {
-    title: 'Siapkan topik',
-    fill: 'bg-chalk-yellow',
-    doodle: (
-      <>
-        <path d="M11 6h13l7 7v20a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" fill="#fff" {...INKED} />
-        <path d="M24 6v7h7M14 20h12M14 25h12M14 30h7" fill="none" {...INKED} strokeWidth="2.6" />
-      </>
-    ),
-  },
-  {
-    title: 'Jelaskan 2–5 menit',
-    fill: 'bg-chalk-blue',
-    doodle: (
-      <>
-        <rect x="14.5" y="5" width="11" height="19" rx="5.5" fill="#fff" {...INKED} />
-        <path d="M9.5 19a10.5 10.5 0 0 0 21 0M20 29.5v5M14.5 34.5h11" fill="none" {...INKED} />
-      </>
-    ),
-  },
-  {
-    title: 'Baca catatan',
-    fill: 'bg-chalk-pink',
-    doodle: (
-      <>
-        <rect x="6" y="10" width="28" height="21" rx="3.5" fill="#fff" {...INKED} />
-        <path d="M7.5 12.5 20 22l12.5-9.5" fill="none" {...INKED} />
-      </>
-    ),
-  },
-  {
-    title: 'Jelaskan ulang',
-    fill: 'bg-chalk-mint',
-    doodle: (
-      <path
-        d="M30 17a10.5 10.5 0 0 0-19-3.5M10 23a10.5 10.5 0 0 0 19 3.5M10.5 7v7h7M29.5 33v-7h-7"
-        fill="none"
-        {...INKED}
-      />
-    ),
-  },
+const STEPS = ['Siapkan topik', 'Jelaskan 2–5 menit', 'Baca feedback', 'Jelaskan ulang'] as const
+const STEP_COLORS: [string, string][] = [
+  ['#FFE27A', '#FF9F43'],
+  ['#9FDBFF', '#4B7BFF'],
+  ['#FFC1D3', '#FF5A8A'],
+  ['#B8F5D6', '#12B886'],
 ]
 
 export default function HomeScreen() {
   return (
     <div className="flex min-h-dvh flex-col">
-      <AppBar title="Feynman Speech Coach" subtitle="Latihan menjelaskan dengan metode Feynman" />
+      <AppBar title="Feynman Speech Coach" />
 
-      <main className="relative flex flex-1 flex-col px-4 pb-16 pt-6 md:px-8">
-        <ClassroomWall />
-        <div className="relative z-10 mx-auto my-auto w-full max-w-[44rem]">
-          <NotebookPage />
-          <StepPath />
-        </div>
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center gap-14 px-5 pb-14 pt-6 md:px-8">
+        <section aria-labelledby="judul-beranda" className="grid items-center gap-36 md:grid-cols-2 md:gap-14">
+          <div>
+            <h2 id="judul-beranda" className="text-[2.6rem] font-bold leading-[1.05] tracking-[-0.02em] md:text-[3.6rem]">
+              Belajar dengan menjelaskan
+            </h2>
+            <p className="mt-5 max-w-[26rem] text-lg leading-relaxed text-ink-2 md:text-xl">
+              Jelaskan satu topik kuliah dengan suaramu. Empur mendengarkan, lalu memberi feedback.
+            </p>
+            <Link to="/setup" className="btn btn-go mt-9 w-full max-w-72 text-lg">
+              Mulai sesi
+            </Link>
+            <p className="mt-4 flex items-start gap-2 text-sm leading-snug text-ink-3">
+              <LaptopIcon className="size-5 shrink-0" />
+              Suaramu tetap di laptop. Hanya teks yang dikirim ke Gemini.
+            </p>
+          </div>
+          <AgendaPreview />
+        </section>
+
+        <ol aria-label="Satu sesi, empat tahap" className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          {STEPS.map((s, i) => (
+            <li key={s} className="flex flex-col items-center gap-3 rounded-[22px] bg-card px-4 py-5 text-center">
+              <StepIcon i={i} className="size-12" />
+              <p className="font-semibold leading-snug">
+                <span className="mr-1.5 text-ink-3">
+                  <span className="sr-only">Tahap </span>
+                  {i + 1}
+                </span>
+                {s}
+              </p>
+            </li>
+          ))}
+        </ol>
       </main>
     </div>
   )
 }
 
-// Selembar halaman buku catatan: kertas kotak-kotak, garis margin koral, jilid spiral di tepi atas,
-// dan sampul biru yang mengintip di sisi dan bawah.
-function NotebookPage() {
+// Contoh agenda, supaya user pertama langsung melihat apa yang dilakukan Empur saat sesi.
+// Status dibedakan lewat ikon dan label, bukan warna saja.
+const SAMPLE = [
+  { name: 'Forward pass', status: 'explained' },
+  { name: 'Loss function', status: 'mentioned' },
+  { name: 'Chain rule', status: 'none' },
+] as const
+
+function AgendaPreview() {
   return (
-    <section aria-labelledby="judul-beranda" className="relative">
-      {/* Dari 1280px Si Kapur berdiri di tepi kiri buku catatan, menyapa dari samping halaman. */}
-      <Greeter className="absolute -bottom-4 right-[calc(100%-2.25rem)] z-10 hidden w-44 flex-col-reverse items-center gap-3 xl:flex" />
-      <div
-        aria-hidden="true"
-        className="absolute -inset-x-2 -bottom-4 top-3 rounded-[26px] border-[3px] border-outline bg-chalk-blue shadow-[0_6px_0_rgba(0,0,0,0.15)] dark:bg-[#7fb8dc]"
-      />
-      <div className="paper-grid relative rounded-[20px] border-[3px] border-outline pb-9 pl-14 pr-6 pt-12 text-paper-ink md:pl-20 md:pr-12">
-        <span aria-hidden="true" className="absolute inset-y-0 left-9 w-[2.5px] bg-paper-margin md:left-12" />
-        <Spiral />
-        <h2 id="judul-beranda" className="font-display text-[2.6rem] font-semibold leading-[1.05] md:text-5xl">
-          Belajar dengan <span className="highlight">menjelaskan</span>
-        </h2>
-        <p className="mt-4 max-w-[36ch] text-lg font-medium leading-relaxed">
-          Jelaskan satu topik kuliah dengan suaramu. Empur mendengarkan, lalu memberi catatan.
-        </p>
-        <Link to="/setup" className="btn btn-go mt-7 px-10 text-xl">
-          Mulai sesi
-        </Link>
-        <p className="mt-5 flex items-start gap-2 text-sm leading-snug text-paper-ink-2">
-          <LaptopIcon className="size-5 shrink-0" />
-          Suaramu tetap di laptop. Hanya teks yang dikirim ke Gemini.
+    <figure className="relative md:ml-10 lg:ml-24 xl:ml-32">
+      {/* Layar sempit: Empur berdiri di sudut kiri atas kartu, kakinya masuk sedikit ke kartu, di samping
+          keterangan. Dari 1024px: Empur berdiri di samping kiri kartu, sejajar dasar kartu, dengan balon
+          di atas kepalanya, jadi ia tetap di tengah layar dan tidak naik ke dekat bilah atas. */}
+      <div className="absolute -left-2 -top-[9.5rem] z-10 flex items-start gap-1 md:-left-10 lg:-bottom-6 lg:-left-32 lg:top-auto xl:-left-40 lg:flex-col-reverse lg:items-center lg:gap-1">
+        <Kapur mood="wave" className="h-48 w-40 shrink-0 lg:h-40 lg:w-32 xl:h-48 xl:w-40" />
+        <p className="bubble mt-8 whitespace-nowrap rounded-2xl border border-line bg-surface px-4 py-2 font-medium shadow-[0_10px_30px_-18px_rgba(0,0,0,0.5)] lg:mt-0">
+          Halo, aku Empur!
         </p>
       </div>
-    </section>
-  )
-}
-
-// Cincin spiral melintasi tepi atas halaman.
-function Spiral() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-x-8 -top-5 flex justify-between md:inset-x-12">
-      {Array.from({ length: 12 }, (_, i) => (
-        <span
-          key={i}
-          className={`relative block h-10 w-4 rounded-full border-[3px] border-outline bg-[#dfe7ee] ${i % 2 ? 'max-sm:hidden' : ''}`}
-        >
-          <span className="absolute left-1/2 top-1 size-1.5 -translate-x-1/2 rounded-full bg-outline" />
-          <span className="absolute bottom-1 left-1/2 size-1.5 -translate-x-1/2 rounded-full bg-outline" />
-        </span>
-      ))}
-    </div>
-  )
-}
-
-// Jalur empat tahap seperti jalur pelajaran: ubin bulat bernomor yang disambung garis putus-putus.
-// Vertikal di layar sempit, mendatar dari 768px.
-function StepPath() {
-  return (
-    <div className="mt-12 flex flex-col gap-6">
-      <Greeter className="flex items-end gap-2 xl:hidden" />
-      <div>
-        <h3 id="tahap-sesi" className="mb-5 font-display text-base font-medium text-ink-2 md:text-center">
-          Satu sesi, empat tahap
-        </h3>
-        <ol aria-labelledby="tahap-sesi" className="relative grid flex-1 gap-5 md:grid-cols-4 md:gap-2">
-          {/* Garis jalur melewati pusat ubin pertama sampai terakhir */}
-          <span
-            aria-hidden="true"
-            className="absolute bottom-8 left-8 top-8 border-l-[3px] border-dashed border-outline md:bottom-auto dark:border-ink-2/60 md:left-[12.5%] md:right-[12.5%] md:border-l-0 md:border-t-[3px]"
-          />
-          {STEPS.map((s, i) => (
-            <li key={s.title} className="relative flex items-center gap-4 md:flex-col md:gap-3 md:text-center">
-              <span
-                aria-hidden="true"
-                className={`relative grid size-16 shrink-0 place-items-center rounded-full border-[3px] border-outline text-outline shadow-[0_4px_0_var(--outline)] ${s.fill}`}
-              >
-                <svg viewBox="0 0 40 40" className="size-10">
-                  {s.doodle}
-                </svg>
-                <span className="absolute -left-1.5 -top-1.5 grid size-6 place-items-center rounded-full border-[2.5px] border-outline bg-white font-display text-sm font-semibold text-paper-ink">
-                  {i + 1}
-                </span>
-              </span>
-              <span className="font-display text-lg font-semibold leading-tight md:whitespace-nowrap">
-                <span className="sr-only">Tahap {i + 1}: </span>
-                {s.title}
-              </span>
+      <div className="rounded-[28px] border border-line bg-surface p-5 shadow-[0_24px_60px_-36px_rgba(22,22,29,0.35)] md:p-7 lg:px-5 xl:px-7">
+        <figcaption className="text-right text-sm font-medium text-ink-3">Contoh agenda</figcaption>
+        <ul className="mt-3 flex flex-col gap-2.5">
+          {SAMPLE.map((c) => (
+            <li key={c.name} className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5">
+              <StatusIcon status={c.status} />
+              <span className="text-lg font-semibold">{c.name}</span>
+              <span className="ml-auto text-sm text-ink-3">{MARK_LABEL[c.status]}</span>
             </li>
           ))}
-        </ol>
+        </ul>
       </div>
-    </div>
+    </figure>
   )
 }
 
-// Si Kapur menyapa. Di layar sempit ia berdiri di atas jalur tahap, balon di sampingnya.
-// Dari 1280px ia berdiri di tepi buku catatan, dengan balon di atas kepalanya.
-function Greeter({ className }: { className: string }) {
+// Ikon tahap: bentuk datar bergradasi, tanpa garis luar, sama dengan gaya Empur.
+function StepIcon({ i, className = '' }: { i: number; className?: string }) {
+  const [a, b] = STEP_COLORS[i]
+  const id = `step-${i}`
+  const g = `url(#${id})`
   return (
-    <div className={className}>
-      <Kapur mood="wave" className="h-28 w-20 shrink-0 xl:h-40 xl:w-32" />
-      <p className="bubble relative mb-10 whitespace-nowrap rounded-2xl border-[3px] border-outline bg-white px-4 py-2.5 font-display text-lg leading-snug text-paper-ink xl:mb-0">
-        Halo, aku Empur!
-        <span
-          aria-hidden="true"
-          className="absolute -left-[11px] bottom-3 size-4 rotate-45 border-b-[3px] border-l-[3px] border-outline bg-white xl:-bottom-[11px] xl:left-1/2 xl:-translate-x-1/2 xl:-rotate-45"
-        />
-      </p>
-    </div>
+    <svg viewBox="0 0 40 40" aria-hidden="true" className={className}>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0.5" y2="1">
+          <stop offset="0" stopColor={a} />
+          <stop offset="1" stopColor={b} />
+        </linearGradient>
+      </defs>
+      {i === 0 && (
+        <>
+          <rect x="9" y="5" width="22" height="30" rx="5" fill={g} />
+          <rect x="14" y="13" width="12" height="3" rx="1.5" fill="#fff" opacity="0.85" />
+          <rect x="14" y="19" width="12" height="3" rx="1.5" fill="#fff" opacity="0.85" />
+          <rect x="14" y="25" width="7" height="3" rx="1.5" fill="#fff" opacity="0.85" />
+        </>
+      )}
+      {i === 1 && (
+        <>
+          <rect x="14" y="4" width="12" height="21" rx="6" fill={g} />
+          <path d="M9 19a11 11 0 0 0 22 0" fill="none" stroke={b} strokeWidth="3.4" strokeLinecap="round" />
+          <rect x="18.3" y="29" width="3.4" height="7" rx="1.7" fill={b} />
+        </>
+      )}
+      {i === 2 && (
+        <>
+          <rect x="5" y="9" width="30" height="22" rx="5" fill={g} />
+          <path d="M7 12l13 10 13-10" fill="none" stroke="#fff" strokeOpacity="0.85" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        </>
+      )}
+      {i === 3 && (
+        <>
+          <path d="M29 14a11 11 0 1 0 2 9" fill="none" stroke={g} strokeWidth="5" strokeLinecap="round" />
+          <path d="M24 7l8 1-2 8Z" fill={b} />
+        </>
+      )}
+    </svg>
   )
 }

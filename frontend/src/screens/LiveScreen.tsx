@@ -1,31 +1,11 @@
-import {
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-  type Ref,
-} from 'react'
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import {
-  ChalkDefs,
-  ChalkMark,
-  CloseIcon,
-  FillerIcon,
-  PauseIcon,
-  SpeedIcon,
-  type MarkStatus,
-} from '../components/chalk'
-import { Board, PausePill, Panel, PanelTitle } from '../components/board'
-import { ClassroomWall } from '../components/classroom'
+import { EmpurMenu, ThemeToggle } from '../components/app-bar'
+import { CloseIcon, FillerIcon, PauseIcon, SpeedIcon, type MarkStatus } from '../components/chalk'
 import { Kapur } from '../components/kapur'
-import { ThemeToggle } from '../components/app-bar'
-import { clock, decimal } from '../lib/format'
-import { KAPUR_HAND, kapurSays } from '../lib/kapur'
+import { PauseChip, StatusIcon } from '../components/marks'
+import { clock, decimal, MARK_LABEL } from '../lib/format'
+import { KAPUR_HAND, KAPUR_TIP, kapurSays, useKapurPrefs } from '../lib/kapur'
 import { initialLiveState, liveReducer, type LiveState } from '../lib/live-state'
 import type { TranscriptSource } from '../lib/transcript-source'
 import { buildSegments, type Segment } from '../lib/transcript-segments'
@@ -33,18 +13,6 @@ import { BACKPROP_CONCEPTS, BACKPROP_TOPIC } from '../mocks/backprop'
 import { MockTranscriptSource } from '../mocks/mock-transcript-source'
 import type { Concept } from '../types/feedback'
 
-const MARK_LABEL: Record<MarkStatus, string> = { none: 'belum', mentioned: 'disebut', explained: 'dijelaskan' }
-// Belum dibahas paling mencolok lewat warna kuning dan kotak kosong, bukan lewat huruf tebal.
-const ROW_CLASS: Record<MarkStatus, string> = {
-  none: 'font-medium text-chalk-yellow',
-  mentioned: 'font-medium text-chalk',
-  explained: 'font-normal text-chalk-dim',
-}
-const MARK_CLASS: Record<MarkStatus, string> = {
-  none: 'text-chalk-yellow',
-  mentioned: 'text-chalk',
-  explained: 'text-chalk-mint',
-}
 const DUST = [
   [-26, -18],
   [-8, -30],
@@ -54,10 +22,14 @@ const DUST = [
   [22, 12],
 ]
 
-// Lama Si Kapur berada di baris agenda saat mencentang, sebelum kembali ke baki.
+// Lama Empur berada di baris agenda saat mencentang, sebelum kembali ke tempatnya.
 const WRITE_SECONDS = 1.3
+// Ujung tangan saat Empur dicerminkan untuk mencentang dari kanan.
+const HAND_MIRRORED = { x: 120 - KAPUR_HAND.x, y: KAPUR_HAND.y }
+const origin = (p: { x: number; y: number }) => `${(p.x / 120) * 100}% ${(p.y / 150) * 100}%`
 
-
+// Layar live dalam gaya terang dan bersih (rasa Brilliant): agenda di kartu abu muda, penjelasan di
+// kartu putih besar, Empur di pojok kiri bawah kartu penjelasan dengan balon di sampingnya.
 export default function LiveScreen() {
   // ponytail: sumber dan konsep masih mock; Fase 1 ganti ke WebSocket, Fase 4 ke daftar konsep dari setup.
   const [source] = useState<TranscriptSource>(() => new MockTranscriptSource())
@@ -94,105 +66,89 @@ export default function LiveScreen() {
   const statusOf = (id: string): MarkStatus => state.concepts[id] ?? 'none'
   const line = kapurSays({ state, concepts, started, elapsed, topic: BACKPROP_TOPIC })
 
-  // Si Kapur pergi ke baris yang statusnya baru naik, mencentangnya dengan tangan, lalu kembali ke baki.
+  // Empur pergi ke baris yang statusnya baru naik, mencentangnya, lalu kembali. Tanda ada di ujung kanan
+  // baris, jadi Empur berdiri di kanannya menghadap kiri (dicerminkan) dan nama konsep tetap terlihat.
+  // Dengan tangan: ujung tangan menyentuh tanda. Tanpa tangan: Empur miring ke kanan dan menulis centang
+  // dengan ujung bawahnya.
+  const { arms } = useKapurPrefs()
   const rowRefs = useRef<Record<string, HTMLLIElement | null>>({})
   const kapurRef = useRef<HTMLDivElement>(null)
   const lastEvent = state.conceptEvents.at(-1)
   const writing = lastEvent && state.status === 'listening' && elapsed - lastEvent.t < WRITE_SECONDS ? lastEvent : null
   const [reach, setReach] = useState<{ x: number; y: number } | null>(null)
   useLayoutEffect(() => {
-    const row = writing ? rowRefs.current[writing.id] : null
+    const mark = writing ? rowRefs.current[writing.id]?.querySelector('[data-mark]') : null
     const rest = kapurRef.current
-    if (!row || !rest || matchMedia('(prefers-reduced-motion: reduce)').matches) return setReach(null)
-    const r = row.getBoundingClientRect()
+    if (!mark || !rest || matchMedia('(prefers-reduced-motion: reduce)').matches) return setReach(null)
+    const m = mark.getBoundingClientRect()
     const k = rest.getBoundingClientRect()
-    // Ujung tangan menyentuh sisi kiri kotak tanda. Badannya berdiri di dinding kiri kolom kotak,
-    // jadi kotak konsep lain tetap terlihat. Kalau dinding kiri terlalu sempit, ia mencentang dari baki.
-    const targetX = r.left + 6
-    const bodyLeft = targetX - (k.width * (KAPUR_HAND.x - 26)) / 120
-    if (bodyLeft < 8) return setReach(null)
-    const handX = k.left + (k.width * KAPUR_HAND.x) / 120
-    const handY = k.top + (k.height * KAPUR_HAND.y) / 150
-    setReach({ x: targetX - handX, y: r.top + r.height / 2 - handY })
-  }, [writing])
-
-  const agenda = (
-    <>
-      <Agenda
-        concepts={concepts}
-        statusOf={statusOf}
-        rowRef={(id, el) => {
-          rowRefs.current[id] = el
-        }}
-      />
-      <Legend className="mt-6 text-sm md:mt-auto" />
-    </>
-  )
-
-  // Si Kapur berdiri di baki kapur di bawah panel penjelasan: kakinya turun melewati tepi bawah papan.
-  const kapur = (
-    <>
-      <div className="relative z-20 mt-4 flex shrink-0 items-end gap-2 md:-mb-[52px]">
-        <div ref={kapurRef} className="relative shrink-0">
-          {/* Bayangan tetap di baki saat Si Kapur pergi mencentang. */}
-          <span
-            aria-hidden="true"
-            className="absolute bottom-2 left-1/2 h-3 w-20 -translate-x-1/2 rounded-full bg-black/20"
-          />
-          <div
-            className="kapur-actor"
-            style={reach ? { transform: `translate(${reach.x}px, ${reach.y}px) rotate(-4deg)` } : undefined}
-          >
-            <Kapur mood={line.mood} tick={reach !== null} quiet={reach !== null} className="h-28 w-[5.6rem] md:h-40 md:w-32" />
-          </div>
-        </div>
-        {!reach && (
-          <p
-            key={line.text}
-            className="bubble relative mb-12 max-w-[26rem] md:mb-[4.5rem] rounded-2xl border-[3px] border-outline bg-surface px-4 py-3 font-display text-[1.05rem] leading-snug text-ink"
-          >
-            {line.text}
-            <span
-              aria-hidden="true"
-              className="absolute -left-[11px] bottom-4 size-4 rotate-45 border-b-[3px] border-l-[3px] border-outline bg-surface"
-            />
-          </p>
-        )}
-      </div>
-    </>
-  )
+    // Kalau ruang di kanan tanda terlalu sempit, ia tidak pergi. Saat dicerminkan, ujung tangan ada di
+    // x = 120 - KAPUR_HAND.x dan badan menjorok sampai x = 106 (cermin dari tepi kiri, 14). Tanpa tangan,
+    // badan yang miring menjorok 74 satuan viewBox ke kanan dari ujung bawahnya.
+    const point = arms ? HAND_MIRRORED : KAPUR_TIP
+    const targetX = arms ? m.right - 2 : m.left + m.width / 2
+    const bodyRight = targetX + (k.width * (arms ? 106 - HAND_MIRRORED.x : 74)) / 120
+    if (bodyRight > window.innerWidth - 8) return setReach(null)
+    const px = k.left + (k.width * point.x) / 120
+    const py = k.top + (k.height * point.y) / 150
+    setReach({ x: targetX - px, y: m.top + m.height / 2 - py })
+  }, [writing, arms])
 
   return (
     <div className="flex min-h-dvh flex-col md:h-dvh">
-      <ChalkDefs />
       <TopBar state={state} concepts={concepts} elapsed={elapsed} sessionDone={sessionDone} />
 
-      <div className="relative flex flex-1 flex-col px-3 pb-4 md:min-h-0 md:px-8 md:pb-5">
-        <ClassroomWall elapsed={elapsed} />
-        <div className="relative z-10 mx-auto flex w-full max-w-[68rem] flex-1 flex-col md:min-h-0 2xl:max-w-[80rem]">
-          <Board className="flex-1 md:min-h-0">
-            <div className="flex flex-1 flex-col gap-3 md:min-h-0 md:flex-row">
-              <Panel className="md:w-[36%] md:max-w-[27rem] md:shrink-0">{agenda}</Panel>
-              <Panel className="min-h-[45vh] flex-1 md:min-h-0">
-                {started ? (
-                  <Transcript state={state} concepts={concepts.filter((c) => statusOf(c.id) !== 'none')} />
-                ) : (
-                  <Guidance />
-                )}
-                {kapur}
-              </Panel>
-            </div>
-          </Board>
-        </div>
-      </div>
+      <main className="mx-auto flex w-full max-w-[80rem] flex-1 flex-col gap-4 px-4 pb-4 md:min-h-0 md:flex-row md:gap-5 md:px-8 md:pb-5">
+        <section
+          aria-labelledby="agenda-title"
+          className="flex flex-col rounded-[28px] bg-card p-5 md:min-h-0 md:w-[34%] md:max-w-[26rem] md:shrink-0 md:p-6"
+          // Tanda dan debu menunggu Empur tiba di baris.
+          style={{ '--draw-delay': '380ms' } as CSSProperties}
+        >
+          <Agenda
+            concepts={concepts}
+            statusOf={statusOf}
+            rowRef={(id, el) => {
+              rowRefs.current[id] = el
+            }}
+          />
+          <Legend className="mt-5 md:mt-auto md:pt-5" />
+        </section>
 
-      <Footer
-        state={state}
-        started={started}
-        sessionDone={sessionDone}
-        onStart={start}
-        onStop={() => source.stop()}
-      />
+        <section className="relative flex min-h-[45vh] flex-1 flex-col rounded-[28px] border border-line bg-surface p-5 md:min-h-0 md:p-7">
+          {started ? <Transcript state={state} concepts={concepts.filter((c) => statusOf(c.id) !== 'none')} /> : <Guidance />}
+
+          {/* Empur di pojok kiri bawah kartu, dengan balon di sampingnya. */}
+          <div className="relative z-20 mt-4 flex shrink-0 items-end gap-2">
+            <div ref={kapurRef} className="relative shrink-0">
+              {/* Bayangan tetap di tempat saat Empur pergi mencentang. */}
+              <span aria-hidden="true" className="absolute bottom-3 left-1/2 h-2.5 w-16 -translate-x-1/2 rounded-full bg-ink/10" />
+              <div
+                className={`kapur-actor ${reach && !arms ? 'kapur-scribble' : ''}`}
+                style={{
+                  transformOrigin: origin(arms ? HAND_MIRRORED : KAPUR_TIP),
+                  transform: reach ? `translate(${reach.x}px, ${reach.y}px) rotate(${arms ? 4 : 28}deg)` : undefined,
+                }}
+              >
+                {/* Dicerminkan hanya saat mencentang dengan tangan, supaya tangan penunjuk mengarah ke kiri. */}
+                <div style={{ transform: reach && arms ? 'scaleX(-1)' : undefined }}>
+                  <Kapur mood={line.mood} tick={reach !== null} quiet={reach !== null} className="h-28 w-[5.6rem] md:h-40 md:w-32" />
+                </div>
+              </div>
+            </div>
+            {!reach && (
+              <p
+                key={line.text}
+                className="bubble relative mb-10 max-w-[26rem] rounded-2xl border border-line bg-surface px-4 py-3 font-medium leading-snug shadow-[0_12px_32px_-18px_rgba(0,0,0,0.4)] md:mb-16"
+              >
+                {line.text}
+              </p>
+            )}
+          </div>
+        </section>
+      </main>
+
+      <Footer state={state} started={started} sessionDone={sessionDone} onStart={start} onStop={() => source.stop()} />
     </div>
   )
 }
@@ -219,57 +175,75 @@ function TopBar({
     shown.current = explained
     if (!grew || matchMedia('(prefers-reduced-motion: reduce)').matches) return
     barRef.current?.animate(
-      [{ transform: 'scale(1)' }, { transform: 'scale(1.02, 1.18)', offset: 0.4 }, { transform: 'scale(1)' }],
+      [{ transform: 'scale(1)' }, { transform: 'scale(1.01, 1.4)', offset: 0.4 }, { transform: 'scale(1)' }],
       { duration: 420, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
     )
   }, [explained])
   const recording = state.status === 'listening'
   const label = recording ? 'Merekam' : state.status === 'processing' ? 'Memproses' : sessionDone ? 'Selesai' : 'Siap'
   const latency = state.latencyMs === null ? '–' : `${decimal(state.latencyMs / 1000)} dtk`
+  const summary = `${explained} dari ${concepts.length} konsep dijelaskan`
 
   return (
-    <header className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 md:gap-x-5 md:px-8 md:py-3">
+    <header className="flex flex-wrap items-center gap-x-3 gap-y-3 px-4 py-3 md:gap-x-5 md:px-8 md:py-4">
       <Link
         to="/setup"
         aria-label="Ganti topik"
-        className="chip grid size-11 place-items-center text-ink transition-transform duration-100 active:translate-y-0.5"
+        className="chip grid size-10 shrink-0 place-items-center text-ink transition-colors duration-150 hover:bg-card"
       >
         <CloseIcon className="size-5" />
       </Link>
       <div className="mr-auto md:mr-0">
-        <h1 className="font-display text-2xl font-semibold leading-none">{BACKPROP_TOPIC}</h1>
-        <p className="mt-1 text-sm text-ink-2">Sesi contoh, bukan suaramu</p>
+        <h1 className="text-lg font-semibold leading-tight tracking-tight">{BACKPROP_TOPIC}</h1>
+        <p className="text-sm text-ink-3">Sesi contoh, bukan suaramu</p>
       </div>
 
+      {/* Bilah kemajuan bersegmen seperti Brilliant: satu bagian per konsep. Hijau penuh = dijelaskan,
+          kuning setengah = baru disebut. Bagian menghitung jumlah, bukan baris agenda. */}
       <div className="order-last w-full min-w-0 xl:order-none xl:mx-4 xl:w-auto xl:flex-1 xl:basis-0">
-        <ProgressTrack
+        <div
           ref={barRef}
-          total={concepts.length}
-          explained={explained}
-          mentioned={mentioned}
-          label={`${explained} dari ${concepts.length} konsep dijelaskan`}
-        />
-        <p className="mt-0.5 font-display text-sm text-ink-2">
-          {explained} dari {concepts.length} konsep dijelaskan
+          role="progressbar"
+          aria-label="Konsep yang sudah dijelaskan"
+          aria-valuemin={0}
+          aria-valuemax={concepts.length}
+          aria-valuenow={explained}
+          aria-valuetext={summary}
+          className="flex gap-1.5"
+        >
+          {concepts.map((c, i) => (
+            <span key={c.id} className="h-2.5 flex-1 overflow-hidden rounded-full bg-card-2">
+              <span
+                className={`block h-full rounded-full transition-[width,background-color] duration-500 ease-out ${i < explained ? 'bg-go' : 'bg-[#FFB020]'}`}
+                style={{ width: i < explained ? '100%' : i < explained + mentioned ? '50%' : '0%' }}
+              />
+            </span>
+          ))}
+        </div>
+        <p className="mt-1.5 text-sm text-ink-3">
+          {summary}
           {mentioned > 0 && ` · ${mentioned} baru disebut`}
         </p>
       </div>
 
-      {/* Status rekaman dan latensi dalam satu chip, supaya bilah atas tidak penuh elemen lepas. */}
-      <div className="chip flex items-center gap-3 px-3 py-1.5 font-display">
-        <p className="flex items-center gap-2" aria-live="polite">
-          <span aria-hidden="true" className={`size-3 rounded-full ${recording ? 'bg-stop' : 'bg-line-strong'}`} />
-          {/* Lebar chip tetap di semua status, supaya progress bar di sampingnya tidak ikut melebar dan menyempit. */}
+      {/* Status rekaman, waktu, dan latensi dalam satu pil. */}
+      <div className="flex items-center gap-3 rounded-full bg-card px-4 py-2 text-sm">
+        <p className="flex items-center gap-2 font-medium" aria-live="polite">
+          <span aria-hidden="true" className={`size-2.5 rounded-full ${recording ? 'animate-pulse bg-stop' : 'bg-ink-3/50'}`} />
+          {/* Lebar tetap di semua status, supaya bilah kemajuan di sampingnya tidak ikut bergeser. */}
           <FixedWidth options={STATUS_LABELS} value={label} />
           <span className="min-w-[2.6rem] tabular-nums text-ink-2">{clock(elapsed)}</span>
         </p>
-        <span aria-hidden="true" className="h-5 w-0.5 rounded-full bg-line-strong" />
-        <p className="flex items-baseline gap-1 text-sm text-ink-2">
+        <span aria-hidden="true" className="h-4 w-px bg-line" />
+        <p className="flex items-baseline gap-1 text-ink-3">
           Latensi
-          <FixedWidth options={['0,0 dtk']} value={latency} className="tabular-nums text-ink" />
+          <FixedWidth options={['0,0 dtk']} value={latency} className="font-medium tabular-nums text-ink" />
         </p>
       </div>
-      <ThemeToggle />
+      <div className="flex items-center gap-2">
+        <EmpurMenu />
+        <ThemeToggle />
+      </div>
     </header>
   )
 }
@@ -300,27 +274,25 @@ function Agenda({
   rowRef: (id: string, el: HTMLLIElement | null) => void
 }) {
   return (
-    <section
-      aria-labelledby="agenda-title"
-      className="flex flex-col md:min-h-0"
-      // Tanda dan debu menunggu tangan Si Kapur tiba di baris.
-      style={{ '--draw-delay': '380ms' } as CSSProperties}
-    >
-      <PanelTitle id="agenda-title">Agenda</PanelTitle>
-      <p className="mt-2 text-sm text-chalk-dim">Perkiraan langsung, diperiksa lagi setelah sesi.</p>
+    <div className="flex flex-col md:min-h-0">
+      <h2 id="agenda-title" className="text-lg font-semibold">
+        Agenda
+      </h2>
+      <p className="mt-0.5 text-sm text-ink-3">Perkiraan langsung, diperiksa lagi setelah sesi.</p>
       {/* ponytail: 5-6 konsep muat di 1366x768; daftar yang lebih panjang menggulir di dalam agenda. */}
-      <ol className="-mx-3 mt-4 flex flex-col gap-3 px-3 md:min-h-0 md:overflow-y-auto">
+      <ol className="-mx-2 mt-4 flex flex-col gap-2 px-2 py-1 md:min-h-0 md:overflow-y-auto md:overflow-x-hidden">
         {concepts.map((c) => {
           const s = statusOf(c.id)
           return (
-            <li key={c.id} ref={(el) => rowRef(c.id, el)} className="relative flex items-center gap-3">
-              <ChalkMark status={s} className={`size-9 shrink-0 ${MARK_CLASS[s]}`} />
-              <p className="flex flex-wrap items-baseline gap-x-2 leading-tight">
-                <span className={`font-display text-[1.45rem] ${ROW_CLASS[s]}`}>{c.name}</span>
-                <span className="text-sm text-chalk-dim">{MARK_LABEL[s]}</span>
-              </p>
+            <li key={c.id} ref={(el) => rowRef(c.id, el)} className="relative flex items-center gap-3 rounded-2xl bg-surface py-3 pl-4 pr-3">
+              {/* Yang belum dibahas paling tegas; yang sudah dijelaskan meredup. */}
+              <span className={`min-w-0 flex-1 text-[1.1rem] leading-snug ${s === 'explained' ? 'font-medium text-ink-3' : 'font-semibold'}`}>
+                {c.name}
+              </span>
+              <span className="shrink-0 text-sm text-ink-3">{MARK_LABEL[s]}</span>
+              <StatusIcon key={s} status={s} draw={s === 'explained'} />
               {s === 'explained' && (
-                <span aria-hidden="true" className="dust absolute left-4 top-1/2">
+                <span aria-hidden="true" className="dust absolute right-6 top-1/2">
                   {DUST.map(([dx, dy], i) => (
                     <i key={i} style={{ '--dx': `${dx}px`, '--dy': `${dy}px` } as CSSProperties} />
                   ))}
@@ -330,16 +302,16 @@ function Agenda({
           )
         })}
       </ol>
-    </section>
+    </div>
   )
 }
 
 function Legend({ className = '' }: { className?: string }) {
   return (
-    <ul aria-label="Arti tanda" className={`flex flex-wrap gap-x-5 gap-y-2 font-display text-chalk-dim ${className}`}>
+    <ul aria-label="Arti tanda" className={`flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-2 ${className}`}>
       {(['none', 'mentioned', 'explained'] as const).map((s) => (
         <li key={s} className="flex items-center gap-2">
-          <ChalkMark status={s} className={`size-6 ${MARK_CLASS[s]}`} />
+          <StatusIcon status={s} className="size-5" />
           {MARK_LABEL[s]}
         </li>
       ))}
@@ -351,22 +323,21 @@ function Guidance() {
   const steps = [
     'Tekan Mulai. Kalau browser meminta izin mikrofon, izinkan.',
     'Bicara seperti biasa. Kamu tidak perlu terus melihat layar.',
-    'Sesekali lirik agenda. Kotak kosong berarti konsep itu belum kamu bahas.',
+    'Sesekali lirik agenda. Cincin kosong berarti konsep itu belum kamu bahas.',
   ]
   return (
-    // Judul memakai gaya yang sama dengan Agenda dan Penjelasanmu, dan sejajar di atas panel.
-    <div className="flex flex-1 flex-col gap-5 text-chalk md:min-h-0 md:overflow-y-auto">
+    <div className="flex flex-1 flex-col gap-6 md:min-h-0 md:overflow-y-auto">
       <div>
-        <PanelTitle>Sebelum mulai</PanelTitle>
-        <p className="mt-4 max-w-[56ch] text-lg font-medium leading-relaxed">
-          Di sini kamu berlatih dengan metode Feynman: jelaskan {BACKPROP_TOPIC} dengan suaramu sendiri, seolah ke
-          teman yang belum paham.
+        <h2 className="text-lg font-semibold">Sebelum mulai</h2>
+        <p className="mt-2 text-[1.2rem] leading-relaxed text-ink-2">
+          Jelaskan {BACKPROP_TOPIC} dengan suaramu sendiri, seolah ke teman yang belum paham.
         </p>
       </div>
-      <ol className="flex flex-col gap-3">
+      {/* Mengisi lebar kartu: bertumpuk di layar sempit, tiga kolom dari 1024px. */}
+      <ol className="grid gap-2.5 lg:grid-cols-3 lg:gap-3">
         {steps.map((step, i) => (
-          <li key={i} className="flex items-start gap-3 text-[1.05rem] font-medium leading-snug">
-            <span className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-chalk-dim font-display font-semibold text-chalk-yellow">
+          <li key={i} className="flex items-start gap-3 rounded-2xl bg-card px-4 py-3.5 leading-snug lg:flex-col lg:px-5 lg:py-5">
+            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-surface text-sm font-semibold tabular-nums text-ink-2">
               {i + 1}
             </span>
             <span className="pt-0.5">{step}</span>
@@ -379,7 +350,7 @@ function Guidance() {
 
 function Transcript({ state, concepts }: { state: LiveState; concepts: Concept[] }) {
   const ref = useRef<HTMLDivElement>(null)
-  // Key memakai posisi karakter, supaya garis bawah yang sudah ada tidak digambar ulang
+  // Key memakai posisi karakter, supaya sorotan yang sudah ada tidak digambar ulang
   // saat istilah baru memecah teks sebelumnya.
   const segments = useMemo(
     () =>
@@ -406,20 +377,23 @@ function Transcript({ state, concepts }: { state: LiveState; concepts: Concept[]
   const empty = !state.confirmed && !state.partial
   return (
     <>
-      <PanelTitle note="Teks samar masih bisa berubah.">Penjelasanmu</PanelTitle>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+        <h2 className="text-lg font-semibold">Penjelasanmu</h2>
+        <p className="text-sm text-ink-3">Teks samar masih bisa berubah.</p>
+      </div>
       <div ref={ref} className="mt-4 flex-1 md:overflow-y-auto md:pr-2">
-        <p className="max-w-[68ch] text-[1.25rem] font-medium leading-[1.7] text-chalk">
-          {empty && <span className="text-chalk-dim">Mendengarkan… mulai jelaskan kapan saja.</span>}
+        <p className="max-w-[64ch] text-[1.3rem] leading-[1.7]">
+          {empty && <span className="text-ink-3">Mendengarkan… mulai jelaskan kapan saja.</span>}
           {segments.map(({ seg, key }) =>
             seg.kind === 'pause' ? (
-              <PausePill key={key} duration={seg.duration} />
+              <PauseChip key={key} duration={seg.duration} />
             ) : (
-              <span key={key} className={seg.conceptId ? 'chalk-term' : undefined}>
+              <span key={key} className={seg.conceptId ? 'term-mark' : undefined}>
                 {seg.text}
               </span>
             ),
           )}{' '}
-          {state.partial && <span className="text-chalk-dim">{state.partial}</span>}
+          {state.partial && <span className="text-ink-3">{state.partial}</span>}
         </p>
       </div>
     </>
@@ -440,28 +414,28 @@ function Footer({
   onStop: () => void
 }) {
   return (
-    // Di layar sempit, footer baru menempel di bawah setelah sesi mulai. Sebelum itu teks privasinya panjang,
-    // jadi footer ikut mengalir di akhir halaman supaya tidak menutupi separuh layar.
+    // Di layar sempit, footer baru menempel di bawah setelah sesi mulai. Sebelum itu ia mengalir di akhir
+    // halaman, supaya teks privasinya tidak menutupi separuh layar.
     <footer
-      className={`z-30 flex items-center gap-4 border-t-[3px] border-outline bg-surface px-3 py-3 md:static md:gap-6 md:px-8 md:py-4 ${started ? 'sticky bottom-0' : 'relative'}`}
+      className={`z-30 flex flex-col gap-3 border-t border-line bg-surface px-4 py-3 sm:flex-row sm:items-center sm:gap-4 md:static md:gap-6 md:px-8 md:py-4 ${started ? 'sticky bottom-0' : 'relative'}`}
     >
       {!started ? (
-        <p className="mr-auto max-w-[60rem] text-sm leading-relaxed text-ink-2">
-          Suaramu diproses di laptop ini dan tidak dikirim ke mana pun. Setelah kamu berhenti, teks transkrip, daftar
-          konsep, metrik kelancaran, dan materi yang kamu upload dikirim ke Gemini untuk feedback. Gemini versi gratis
-          bisa memakai data itu untuk meningkatkan layanan Google. Untuk sekarang, aplikasi memutar sesi contoh sekitar
-          90 detik.
+        <p className="mr-auto max-w-[56rem] text-sm leading-relaxed text-ink-3">
+          Suaramu diproses di laptop ini. Setelah kamu berhenti, transkrip, daftar konsep, metrik, dan materimu dikirim
+          ke Gemini untuk feedback, dan Gemini versi gratis bisa memakai data itu. Untuk sekarang, aplikasi memutar sesi
+          contoh sekitar 90 detik.
         </p>
       ) : (
-        <dl className="mr-auto flex gap-1.5 md:gap-3">
+        <dl className="mr-auto flex gap-2 md:gap-3">
           <Stat icon={<SpeedIcon className="size-5" />} value={state.wpm} label="kata/menit" />
           <Stat icon={<FillerIcon className="size-5" />} value={state.fillerCount} label="filler" />
           <Stat icon={<PauseIcon className="size-5" />} value={state.pauses.length} label="jeda panjang" />
         </dl>
       )}
-      <div className="flex shrink-0 gap-3">
+      {/* Di layar sempit tombol melebar penuh di bawah teks atau statistik. */}
+      <div className="flex shrink-0 gap-3 max-sm:*:flex-1">
         {!started && (
-          <button className="btn btn-go px-10 text-xl" onClick={onStart}>
+          <button className="btn btn-go px-12 text-lg" onClick={onStart}>
             Mulai
           </button>
         )}
@@ -490,137 +464,12 @@ function Footer({
   )
 }
 
-// Bar progres sebagai satu bentuk: jalur dan satu lingkaran per konsep berbagi satu garis luar,
-// dan warnanya mengalir masuk ke lingkaran. Warnanya sama dengan agenda: mint = dijelaskan (centang),
-// kapur putih = baru disebut (garis miring), kosong = belum. Lingkaran menghitung jumlah, bukan baris agenda.
-function ProgressTrack({
-  ref,
-  total,
-  explained,
-  mentioned,
-  label,
-}: {
-  ref: Ref<HTMLDivElement>
-  total: number
-  explained: number
-  mentioned: number
-  label: string
-}) {
-  const clip = useId()
-  const box = useRef<HTMLDivElement>(null)
-  const [w, setW] = useState(0)
-  useLayoutEffect(() => {
-    const el = box.current
-    if (!el) return
-    const ro = new ResizeObserver(([e]) => setW(Math.round(e.contentRect.width)))
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
-  const H = 36
-  // Lingkaran 1,6 kali setengah tinggi jalur, supaya tiap lingkaran terbaca sebagai titik sendiri.
-  const R = 15
-  const grow = { transformOrigin: '0 0', transition: 'transform 500ms ease-out' }
-  // Lingkaran di tengah tiap segmen, jadi kedua ujung bar tetap berupa jalur, bukan lingkaran.
-  const nodeX = (i: number) => 4 + ((w - 8) * (i + 0.5)) / total
-  const reach = (n: number) => (n <= 0 ? 0 : n >= total ? w : nodeX(n - 1) + R)
-  const shapes = (
-    <>
-      <rect x="4" y="9" width={Math.max(0, w - 8)} height="18" rx="9" />
-      {Array.from({ length: total }, (_, i) => (
-        <circle key={i} cx={nodeX(i)} cy={H / 2} r={R} />
-      ))}
-    </>
-  )
-
-  return (
-    <div
-      ref={ref}
-      role="progressbar"
-      aria-label="Konsep yang sudah dijelaskan"
-      aria-valuemin={0}
-      aria-valuemax={total}
-      aria-valuenow={explained}
-      aria-valuetext={label}
-    >
-      <div ref={box} className="relative h-9 text-outline">
-        {w > 0 && (
-          <svg width={w} height={H} viewBox={`0 0 ${w} ${H}`} aria-hidden="true" className="absolute inset-0 overflow-visible">
-            <clipPath id={clip}>{shapes}</clipPath>
-            {/* Garis luar gabungan: bentuk yang sama digambar dengan stroke tebal, lalu diisi di atasnya. */}
-            <g fill="currentColor" stroke="currentColor" strokeWidth="6" strokeLinejoin="round">
-              {shapes}
-            </g>
-            <g className="fill-track">{shapes}</g>
-            <g clipPath={`url(#${clip})`}>
-              {/* Isi bergeser lewat scaleX dari tepi kiri, bukan animasi lebar. */}
-              <rect
-                x="0"
-                y="0"
-                width={w}
-                height={H}
-                fill="#f4f7f0"
-                style={{ ...grow, transform: `scaleX(${reach(explained + mentioned) / w})` }}
-              />
-              {/* Mint lebih pekat di mode siang supaya kontras dengan jalur yang pucat. */}
-              <rect
-                x="0"
-                y="0"
-                width={w}
-                height={H}
-                className="fill-[#5ccb94] dark:fill-[#9ee8c0]"
-                style={{ ...grow, transform: `scaleX(${reach(explained) / w})` }}
-              />
-            </g>
-            {Array.from({ length: total }, (_, i) => {
-              const cx = nodeX(i)
-              const done = explained >= i + 1
-              const partly = !done && explained + mentioned >= i + 1
-              return done ? (
-                <path
-                  key={i}
-                  d={`M${cx - 5.5} ${H / 2 + 0.5}l3.8 3.8 7.2-8`}
-                  fill="none"
-                  stroke="#0e3b22"
-                  strokeWidth="3.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              ) : partly ? (
-                <path
-                  key={i}
-                  d={`M${cx - 4.5} ${H / 2 + 5}l9-10`}
-                  fill="none"
-                  stroke="#1e2b3a"
-                  strokeWidth="3.2"
-                  strokeLinecap="round"
-                />
-              ) : (
-                // Cincin dalam, supaya lingkaran kosong tetap bisa dihitung.
-                <circle
-                  key={i}
-                  cx={cx}
-                  cy={H / 2}
-                  r="7"
-                  fill="none"
-                  strokeWidth="2"
-                  className="stroke-current opacity-35 dark:stroke-chalk-dim dark:opacity-80"
-                />
-              )
-            })}
-          </svg>
-        )}
-      </div>
-    </div>
-  )
-}
-
 function Stat({ icon, value, label }: { icon: ReactNode; value: number; label: string }) {
   return (
-    <div className="chip flex items-center gap-1.5 px-2 py-1 md:gap-2 md:px-3 md:py-1.5">
-      <span className="text-ink-2">{icon}</span>
-      <dt className="order-2 text-sm text-ink-2 max-sm:sr-only">{label}</dt>
-      <dd className="order-1 font-display text-lg font-semibold tabular-nums">{value}</dd>
+    <div className="flex items-center gap-2 rounded-full bg-card px-3 py-1.5 md:px-4">
+      <span className="text-ink-3">{icon}</span>
+      <dt className="order-2 text-sm text-ink-3 max-sm:sr-only">{label}</dt>
+      <dd className="order-1 text-lg font-semibold tabular-nums">{value}</dd>
     </div>
   )
 }

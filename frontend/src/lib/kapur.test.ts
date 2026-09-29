@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest'
 import { BACKPROP_CONCEPTS } from '../mocks/backprop'
-import { kapurSays } from './kapur'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { kapurSays, setKapurPrefs, useKapurPrefs, type KapurPrefs } from './kapur'
 import { initialLiveState, liveReducer, type LiveAction } from './live-state'
 
 const at = (actions: LiveAction[], elapsed: number, started = true) =>
@@ -57,7 +59,19 @@ test('sesi selesai menyebut jumlah konsep yang sudah jelas', () => {
     topic: 'Backpropagation',
   })
   expect(done).toEqual({
-    mood: 'proud',
+    mood: 'happy',
     text: 'Sesi selesai! 1 dari 5 konsep jelas, tapi Loss function belum dibahas.',
   })
+})
+
+test('pilihan Empur tersimpan dan terbaca kembali', () => {
+  setKapurPrefs({ tone: 'mint', arms: false })
+  const seen: KapurPrefs[] = []
+  function Probe() {
+    seen.push(useKapurPrefs())
+    return null
+  }
+  renderToStaticMarkup(createElement(Probe))
+  expect(seen.at(-1)).toEqual({ tone: 'mint', arms: false })
+  setKapurPrefs({ tone: 'jingga', arms: true })
 })

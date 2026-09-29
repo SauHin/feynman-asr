@@ -1,121 +1,91 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/nunito';
-@import '@fontsource-variable/fredoka';
+@import '@fontsource-variable/lexend';
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
-/* Siang: kelas terang. Malam: kelas yang sama setelah gelap. */
+/* Arah A (terang dan bersih, rasa Brilliant). Siang: putih polos. Malam: hampir hitam.
+   bg: latar halaman; card: kartu abu muda tanpa garis; line: garis tipis untuk kartu putih dan pil. */
 :root,
 [data-theme='light'] {
   color-scheme: light;
-  --wall: #eaf5ff;
-  --ink: #1e2b3a;
-  --ink-2: #56677a;
+  --bg: #ffffff;
+  --card: #f5f5f7;
+  --card-2: #ececf0;
+  --line: #e7e7ec;
+  --ink-3: #8c8c9c;
+  --ink: #16161d;
+  --ink-2: #5c5c6e;
   --surface: #ffffff;
-  --line-strong: #bccddd;
-  --track: #cfdfee;
-  --board: #245a45;
-  --wood: #c98a4b;
-  --wood-dark: #9a6230;
-  --wood-light: #e0a868;
-  --outline: #44586c;
-  /* Kertas adalah benda seperti papan: tetap terang di malam hari, hanya sedikit redup. */
-  --paper: #fffdf6;
-  --paper-grid: #dcebf8;
-  --wallpaper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='%23D6E9F9'%3E%3Crect x='12.5' y='8' width='3' height='11' rx='1.5'/%3E%3Crect x='8.5' y='12' width='11' height='3' rx='1.5'/%3E%3Ccircle cx='42' cy='42' r='2.2'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --wall: #152231;
-  --ink: #eef4fa;
-  --ink-2: #a3b4c6;
-  --surface: #1e3044;
-  --line-strong: #0e1824;
-  --track: #3a5775;
-  --board: #1f4f3c;
-  --wood: #8a5a30;
-  --wood-dark: #633e1d;
-  --wood-light: #a87244;
-  --outline: #0c1620;
-  --paper: #ebe5d5;
-  --paper-grid: #cfdce6;
-  --wallpaper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='%231B2B3E'%3E%3Crect x='12.5' y='8' width='3' height='11' rx='1.5'/%3E%3Crect x='8.5' y='12' width='11' height='3' rx='1.5'/%3E%3Ccircle cx='42' cy='42' r='2.2'/%3E%3C/g%3E%3C/svg%3E");
+  --bg: #141414;
+  --card: #1f1f22;
+  --card-2: #2a2a2e;
+  --line: #34343a;
+  --ink-3: #7c7c88;
+  --ink: #f5f5f7;
+  --ink-2: #a8a8b3;
+  --surface: #1a1a1d;
 }
 
 @theme inline {
-  --color-wall: var(--wall);
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-line: var(--line);
+  --color-ink-3: var(--ink-3);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-surface: var(--surface);
-  --color-line-strong: var(--line-strong);
-  --color-track: var(--track);
-  --color-board: var(--board);
-  --color-wood: var(--wood);
-  --color-wood-dark: var(--wood-dark);
-  --color-wood-light: var(--wood-light);
-  --color-outline: var(--outline);
-  --color-paper: var(--paper);
-  /* Tinta di atas kertas sama di kedua mode, karena kertasnya tetap terang. */
-  --color-paper-ink: #1e2b3a;
-  --color-paper-ink-2: #4f5f70;
-  --color-paper-margin: #f59c92;
-  /* Tanda status di atas kertas: versi pekat dari warna kapur, supaya kontras dengan krem. */
-  --color-mark-none: #a9700f;
-  --color-mark-explained: #1d8a57;
-  --color-mark-wrong: #d23f33;
-  /* Kapur dan tombol sama di kedua mode, karena papan selalu hijau. */
-  --color-chalk: #f4f7f0;
-  --color-chalk-dim: #b9d3c4;
-  --color-chalk-yellow: #ffe27a;
-  --color-chalk-blue: #9bd8ff;
-  --color-chalk-pink: #ffb3d1;
-  --color-chalk-mint: #9ee8c0;
-  --color-go: #3ccb7f;
-  --color-go-ink: #0e3b22;
-  --color-stop: #ff7a6e;
-  --color-stop-ink: #3b0d0e;
-  --font-sans: 'Nunito Variable', system-ui, sans-serif;
-  --font-display: 'Fredoka Variable', 'Nunito Variable', system-ui, sans-serif;
+  --color-go: #22c55e;
+  --color-go-edge: #16994a;
+  --color-stop: #f04438;
+  --color-stop-edge: #b42318;
+  --color-focus: #4b7bff;
+  /* Satu keluarga huruf untuk seluruh aplikasi: Lexend, dirancang untuk keterbacaan. */
+  --font-sans: 'Lexend Variable', system-ui, sans-serif;
+  --font-display: 'Lexend Variable', system-ui, sans-serif;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
   html {
-    background: var(--wall) var(--wallpaper);
+    background: var(--bg);
     color: var(--ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
   body {
     caret-color: var(--color-go);
-    scrollbar-color: var(--line-strong) transparent;
+    scrollbar-color: var(--line) transparent;
   }
   ::selection {
-    background: var(--color-chalk-yellow);
-    color: var(--color-go-ink);
+    background: #ffe27a;
+    color: #16161d;
   }
   :focus-visible {
-    outline: 3px solid var(--color-chalk-blue);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
     border-radius: 12px;
   }
 }
 
 @layer components {
-  /* Tombol tebal yang terasa bisa ditekan: tepi bawah lebih gelap, turun saat ditekan. */
+  /* Tombol pil yang terasa bisa ditekan: tepi bawah lebih gelap, turun saat ditekan. Tanpa garis luar. */
   .btn {
+    --edge: var(--line);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 16px;
-    padding: 0.8rem 1.6rem;
+    border-radius: 999px;
+    padding: 0.85rem 1.8rem;
     font-family: var(--font-display);
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    border: 3px solid var(--outline);
-    box-shadow: 0 4px 0 var(--outline);
+    box-shadow: 0 5px 0 var(--edge);
     transition:
       transform 80ms ease-out,
       box-shadow 80ms ease-out,
@@ -125,8 +95,8 @@
     filter: brightness(1.04);
   }
   .btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 0 0 var(--outline);
+    transform: translateY(5px);
+    box-shadow: 0 0 0 var(--edge);
   }
   /* Tombol nonaktif harus jelas beda dari tombol aktif: abu-abu, pudar, dan tidak bereaksi. */
   .btn:disabled {
@@ -139,68 +109,77 @@
   }
   .btn:disabled:active {
     transform: none;
-    box-shadow: 0 4px 0 var(--outline);
+    box-shadow: 0 5px 0 var(--edge);
   }
   .btn-go {
+    --edge: var(--color-go-edge);
     background: var(--color-go);
-    color: var(--color-go-ink);
+    color: #fff;
   }
   .btn-stop {
+    --edge: var(--color-stop-edge);
     background: var(--color-stop);
-    color: var(--color-stop-ink);
+    color: #fff;
   }
   .btn-plain {
-    background: var(--surface);
+    --edge: var(--card-2);
+    background: var(--card);
     color: var(--ink);
   }
-  /* Kolom isian sebagai stiker: garis luar 3px dan tepi bawah tebal, seperti chip. */
+  /* Kolom isian: garis tipis, sudut membulat, fokus ditandai cincin biru dari :focus-visible. */
   .field {
     width: 100%;
-    border: 3px solid var(--outline);
-    border-bottom-width: 5px;
+    border: 1.5px solid var(--line);
     border-radius: 16px;
     background: var(--surface);
     color: var(--ink);
-    padding: 0.65rem 0.95rem;
-    font-size: 1.125rem;
-    font-weight: 500;
+    padding: 0.7rem 1rem;
+    font-size: 1.0625rem;
   }
   .field::placeholder {
-    color: var(--ink-2);
+    color: var(--ink-3);
     opacity: 1;
   }
-  /* Chip dengan gaya yang sama dengan ilustrasi: garis luar 3px dan tepi bawah tebal. */
+  /* Fokus pada kolom: garis berubah biru dengan cahaya lembut, mengikuti sudut kolom. */
+  .field:focus-visible {
+    outline: none;
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 22%, transparent);
+  }
+  /* Pil bergaris tipis untuk kontrol kecil di bilah atas. */
   .chip {
-    border: 3px solid var(--outline);
-    border-bottom-width: 5px;
-    border-radius: 16px;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
     background: var(--surface);
   }
 }
 
-/* Kertas buku catatan: kotak-kotak biru pucat. */
-.paper-grid {
-  background-color: var(--paper);
-  background-image:
-    linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px),
-    linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
-  background-size: 26px 26px;
-  background-position: -1px -1px;
+/* Zona unggah: berdenyut pelan saat file diseret di jendela, bergetar sekali saat format ditolak. */
+@keyframes drop-ready {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-focus) 18%, transparent);
+  }
 }
-
-/* Stabilo di belakang judul: warna kapur, hanya di separuh bawah huruf. */
-.highlight {
-  background-image: linear-gradient(transparent 55%, var(--hl, var(--color-chalk-yellow)) 55%, var(--hl, var(--color-chalk-yellow)) 92%, transparent 92%);
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-  padding-inline: 0.12em;
-  /* Stabilo melebar ke samping tanpa menggeser huruf, supaya baris tetap rata kiri. */
-  margin-inline: -0.12em;
+@keyframes drop-shake {
+  20%,
+  60% {
+    translate: -6px 0;
+  }
+  40%,
+  80% {
+    translate: 6px 0;
+  }
+}
+.drop-ready {
+  animation: drop-ready 1.2s ease-in-out infinite;
+}
+.drop-shake {
+  animation: drop-shake 360ms ease-in-out;
 }
 
 /* Filler di transkrip: garis bawah bergelombang merah muda, beda bentuk dengan garis istilah. */
 .chalk-filler {
-  text-decoration: underline wavy var(--color-chalk-pink);
+  text-decoration: underline wavy #ff93ae;
   text-decoration-thickness: 2px;
   text-underline-offset: 6px;
 }
@@ -213,21 +192,6 @@
 }
 .write-in {
   animation: write-in 520ms var(--ease-out-expo) calc(var(--i, 0) * 140ms) both;
-}
-
-/* Garis tulisan yang terus digores ulang saat Si Kapur masih menulis. */
-@keyframes scribble {
-  0% {
-    stroke-dashoffset: 1;
-  }
-  70%,
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-.scribble {
-  stroke-dasharray: 1;
-  animation: scribble 1.8s var(--ease-out-expo) infinite;
 }
 
 /* Tiga titik saat Si Kapur membaca atau menulis. */
@@ -267,43 +231,64 @@
   animation: chalk-draw 300ms var(--ease-out-expo) var(--draw-delay, 0ms) both;
 }
 
-.chalk-letter {
-  filter: url(#chalk-text);
-}
-
-/* Serat kayu pada bingkai papan. */
-.wood-grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='40'%3E%3Cg fill='none' stroke='%23000' stroke-opacity='.1' stroke-width='1.5'%3E%3Cpath d='M0 8C60 4 120 12 240 7'/%3E%3Cpath d='M0 21C80 25 150 16 240 22'/%3E%3Cpath d='M0 33C50 30 170 37 240 32'/%3E%3C/g%3E%3C/svg%3E");
-}
-
 /* Si Kapur berjalan ke baris agenda: ujung tangan kanannya menjadi titik putar. */
 .kapur-actor {
   transform-origin: 99% 53%;
   transition: transform 480ms var(--ease-out-expo);
 }
-
-/* Garis bawah kapur kuning pada istilah konsep di transkrip. */
-@keyframes underline-draw {
-  from {
-    background-size: 0% 0.5em;
+/* Tanpa tangan: Empur miring dengan ujung bawah di kotak (transform-origin di ujung itu, diisi dari
+   LiveScreen), lalu badannya bergerak membentuk centang, seperti kapur yang menulis. Properti translate
+   terpisah dari transform, jadi gerak ini berjalan di atas perpindahan ke baris tanpa saling menimpa. */
+@keyframes kapur-scribble {
+  25% {
+    translate: -7px -2px;
+  }
+  50% {
+    translate: -1px 6px;
+  }
+  90%,
+  100% {
+    translate: 10px -9px;
   }
 }
-.chalk-term {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='1' seed='2'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='1.4'/%3E%3C/filter%3E%3Cpath d='M1.5 6.4C17 4.2 33 7.4 51 5.2S83 4.4 98.5 6' fill='none' stroke='%23FFE27A' stroke-width='2.6' stroke-linecap='round' vector-effect='non-scaling-stroke' filter='url(%23r)'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 100% 0.5em;
-  padding-bottom: 0.12em;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-  animation: underline-draw 420ms var(--ease-out-expo) both;
-}
-.chalk-rule {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M1.5 6.4C17 4.2 33 7.4 51 5.2S83 4.4 98.5 6' fill='none' stroke='%23F4F7F0' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+.kapur-scribble {
+  animation: kapur-scribble 700ms ease-in-out 380ms both;
 }
 
+/* Menu Empur menempel di bawah tombolnya. Browser tanpa anchor CSS menampilkannya di tengah layar. */
+.empur-anchor {
+  anchor-name: --empur;
+}
+@supports (anchor-name: --empur) {
+  .empur-menu {
+    position-anchor: --empur;
+    inset: auto;
+    top: anchor(bottom);
+    left: anchor(left);
+    margin: 8px 0 0;
+    /* Di layar lebar tombolnya di kanan: balik supaya tepi kanan menu sejajar tepi kanan tombol. */
+    position-try-fallbacks: flip-inline;
+  }
+}
+
+/* Garis bawah kapur kuning pada istilah konsep di transkrip. */
+/* Istilah konsep di transkrip: sorotan stabilo kuning di separuh bawah huruf, tergores dari kiri. */
+@keyframes mark-in {
+  from {
+    background-size: 0% 100%;
+  }
+}
+.term-mark {
+  background-image: linear-gradient(transparent 58%, rgb(255 216 77 / 0.6) 58%, rgb(255 216 77 / 0.6) 92%, transparent 92%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: mark-in 420ms var(--ease-out-expo) both;
+}
+[data-theme='dark'] .term-mark {
+  background-image: linear-gradient(transparent 58%, rgb(255 216 77 / 0.32) 58%, rgb(255 216 77 / 0.32) 92%, transparent 92%);
+}
 /* Kepulan debu kapur saat konsep dijelaskan. */
 @keyframes dust {
   0% {
@@ -320,15 +305,15 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: var(--color-chalk);
+  background: #ffd34d;
   opacity: 0;
   animation: dust 750ms ease-out var(--draw-delay, 0ms) both;
 }
 
-/* Si Kapur. */
-@keyframes kapur-bob {
+/* Empur: badan bernapas, tangan bergerak dari bahu, properti ikut hidup. */
+@keyframes kapur-breathe {
   50% {
-    transform: translateY(-3px);
+    scale: 1 1.025;
   }
 }
 @keyframes kapur-hop {
@@ -353,33 +338,117 @@
     transform: scaleY(0.1);
   }
 }
-@keyframes kapur-wave {
-  50% {
-    transform: rotate(-28deg);
+@keyframes kapur-glance {
+  0%,
+  40%,
+  100% {
+    translate: 0 0;
+  }
+  50%,
+  90% {
+    translate: -1.6px -0.6px;
   }
 }
-@keyframes bubble-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px) scale(0.96);
+/* Tangan berputar di bahu. --dir bernilai 1 untuk tangan kanan dan -1 untuk tangan kiri,
+   jadi kedua tangan bergerak seperti cermin. Sudut positif searah jarum jam. */
+@keyframes kapur-arm-wave {
+  0%,
+  50%,
+  100% {
+    rotate: 0deg;
+  }
+  12%,
+  36% {
+    rotate: 16deg;
+  }
+  24% {
+    rotate: 2deg;
+  }
+}
+@keyframes kapur-arm-sway {
+  50% {
+    rotate: calc(var(--dir) * 5deg);
+  }
+}
+@keyframes kapur-arm-cup {
+  50% {
+    rotate: calc(var(--dir) * -5deg);
+  }
+}
+@keyframes kapur-arm-tap {
+  0%,
+  45%,
+  100% {
+    rotate: 0deg;
+  }
+  12%,
+  32% {
+    rotate: calc(var(--dir) * 7deg);
+  }
+  22% {
+    rotate: 0deg;
+  }
+}
+@keyframes kapur-arm-rub {
+  50% {
+    rotate: calc(var(--dir) * 4deg);
+  }
+}
+@keyframes kapur-arm-pump {
+  50% {
+    rotate: calc(var(--dir) * -12deg);
+  }
+}
+@keyframes kapur-arm-clap {
+  50% {
+    rotate: calc(var(--dir) * 6deg);
+  }
+}
+@keyframes kapur-arm-thumb {
+  50% {
+    rotate: calc(var(--dir) * 10deg);
+  }
+}
+@keyframes kapur-pulse {
+  50% {
+    opacity: 0.2;
+  }
+}
+@keyframes kapur-twinkle {
+  50% {
+    scale: 0.7;
+    rotate: 20deg;
+  }
+}
+@keyframes kapur-drift {
+  50% {
+    translate: 0 -3px;
+  }
+}
+@keyframes kapur-confetti {
+  50% {
+    translate: 0 3px;
+    rotate: 30deg;
   }
 }
 .kapur {
   transform-box: fill-box;
   transform-origin: 50% 100%;
   transition: rotate 300ms var(--ease-out-expo);
-}
-.kapur-listen,
-.kapur-wave,
-.kapur-proud,
-.kapur-think {
-  animation: kapur-bob 2.6s ease-in-out infinite;
+  animation: kapur-breathe 3.2s ease-in-out infinite;
 }
 .kapur-happy {
-  animation: kapur-hop 560ms var(--ease-out-expo);
+  animation:
+    kapur-hop 560ms var(--ease-out-expo),
+    kapur-breathe 3.2s ease-in-out 560ms infinite;
 }
 .kapur-cheer {
-  animation: kapur-hop 560ms var(--ease-out-expo) 3;
+  animation:
+    kapur-hop 560ms var(--ease-out-expo) 3,
+    kapur-breathe 3.2s ease-in-out 1680ms infinite;
+}
+.kapur-listen {
+  rotate: 3deg;
 }
 .kapur-curious {
   rotate: -6deg;
@@ -392,10 +461,67 @@
   transform-origin: center;
   animation: kapur-blink 4.2s infinite;
 }
-.kapur-wave-arm {
+.kapur-glance {
+  animation: kapur-glance 3.6s ease-in-out infinite;
+}
+/* transform-origin diisi per tangan (titik bahu) dari komponen. */
+.kapur-arm {
+  transform-box: view-box;
+  animation: 3.2s ease-in-out infinite;
+}
+.kapur-arm-wave {
+  animation-name: kapur-arm-wave;
+  animation-duration: 2.8s;
+}
+.kapur-arm-sway {
+  animation-name: kapur-arm-sway;
+}
+.kapur-arm-cup {
+  animation-name: kapur-arm-cup;
+  animation-duration: 1.6s;
+}
+.kapur-arm-tap {
+  animation-name: kapur-arm-tap;
+  animation-duration: 2.4s;
+}
+.kapur-arm-rub {
+  animation-name: kapur-arm-rub;
+  animation-duration: 1.8s;
+}
+.kapur-arm-pump {
+  animation-name: kapur-arm-pump;
+  animation-duration: 0.9s;
+}
+.kapur-arm-clap {
+  animation-name: kapur-arm-clap;
+  animation-duration: 0.9s;
+}
+.kapur-arm-thumb {
+  animation-name: kapur-arm-thumb;
+  animation-duration: 0.7s;
+}
+.kapur-pulse {
+  animation: kapur-pulse 1.2s ease-in-out infinite;
+}
+.kapur-twinkle,
+.kapur-confetti {
   transform-box: fill-box;
-  transform-origin: 0% 100%;
-  animation: kapur-wave 560ms ease-in-out 4;
+  transform-origin: center;
+}
+.kapur-twinkle {
+  animation: kapur-twinkle 1.6s ease-in-out infinite;
+}
+.kapur-drift {
+  animation: kapur-drift 2s ease-in-out infinite;
+}
+.kapur-confetti {
+  animation: kapur-confetti 1.2s ease-in-out infinite;
+}
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
 }
 .bubble {
   animation: bubble-in 260ms var(--ease-out-expo) both;
@@ -403,19 +529,28 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chalk-draw,
-  .chalk-term,
+  .term-mark,
   .dust i,
   .kapur,
   .kapur-eyes,
-  .kapur-wave-arm,
+  .kapur-glance,
+  .kapur-arm,
+  .kapur-pulse,
+  .kapur-twinkle,
+  .kapur-drift,
+  .kapur-confetti,
   .bubble,
   .write-in,
-  .scribble,
   .dots i {
     animation: none;
   }
   .kapur-actor {
     transition: none;
+  }
+  .kapur-scribble,
+  .drop-ready,
+  .drop-shake {
+    animation: none;
   }
   .dust {
     display: none;
