@@ -138,7 +138,7 @@ export default function SetupScreen() {
         )}
 
         <div className="mt-8 flex items-center gap-4 md:gap-6">
-          <Kapur key={step} mood={MOOD[step]} className="h-28 w-[5.6rem] shrink-0 md:h-36 md:w-28" />
+          <Kapur mood={MOOD[step]} className="h-28 w-[5.6rem] shrink-0 md:h-36 md:w-28" />
           <h2 key={`q-${step}`} className="bubble text-[1.4rem] font-semibold leading-snug tracking-tight md:text-[1.75rem]">
             {question[step]}
           </h2>

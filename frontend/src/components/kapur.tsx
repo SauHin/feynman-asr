@@ -1,5 +1,6 @@
-import { useId, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { MOOD_LABEL, TONES, useKapurPrefs, type KapurMood, type KapurTone, type Tone } from '../lib/kapur'
+import { reducedMotion, useSpring } from '../lib/spring'
 
 // Empur: sebatang kapur dalam gaya datar (B2 di eksplorasi maskot): gradasi diagonal, tutup elips
 // dua warna, tanpa garis luar dan tanpa kilau di sisi badan. Tangan samping digambar di belakang
@@ -21,7 +22,7 @@ const BODY = `M${CX - W} ${TOP}V${BOT - 14.7}C${CX - W} ${BOT - 5.3} ${CX - W * 
 // Tangan kanan: bahu (x, y) di dalam badan, sudut a dari arah bawah (positif ke luar badan,
 // negatif ke depan badan), panjang len. bend melengkungkan lengan dan curl membelokkan ujungnya
 // (pecahan dari len; positif ke arah jarum jam dilihat dari bahu). Tangan kiri dicerminkan terhadap x = 60.
-// thumb: tonjolan jempol di sisi datar kepalan yang menghadap ke atas.
+// thumb: besar tonjolan jempol (0..1) di sisi datar kepalan yang menghadap ke atas.
 type ArmPose = {
   x: number
   y: number
@@ -31,7 +32,7 @@ type ArmPose = {
   curl: number
   front?: boolean
   hold?: boolean
-  thumb?: boolean
+  thumb?: number
 }
 const ARM = {
   down: { x: 80, y: 72, a: 20, len: 23, bend: 0.2, curl: -0.08 },
@@ -43,7 +44,7 @@ const ARM = {
   chin: { x: 82, y: 86, a: -104, len: 23, bend: 0.25, curl: -0.1, front: true },
   clasp: { x: 84, y: 92, a: -133, len: 21.5, bend: 0.35, curl: 0, front: true },
   tick: { x: 80, y: 78, a: 90, len: 27, bend: -0.12, curl: 0.04 },
-  thumb: { x: 80, y: 76, a: 100, len: 21, bend: -0.2, curl: 0.35, thumb: true },
+  thumb: { x: 80, y: 76, a: 100, len: 21, bend: -0.2, curl: 0.35, thumb: 1 },
 } satisfies Record<string, ArmPose>
 type Pose = keyof typeof ARM
 const RIGHT: Record<KapurMood, Pose> = {
@@ -106,7 +107,7 @@ function arm(p: ArmPose, side: 1 | -1) {
   const spread = (0.75 * r) / speed
   const up: 1 | -1 = world(rim(tThumb, 1, r))[1] < world(rim(tThumb, -1, r))[1] ? 1 : -1
   const width = (t: number, dir: 1 | -1) =>
-    base(t) + (p.thumb && dir === up ? 3.8 * Math.exp(-(((t - tThumb) / spread) ** 2)) : 0)
+    base(t) + (dir === up ? 3.8 * (p.thumb ?? 0) * Math.exp(-(((t - tThumb) / spread) ** 2)) : 0)
   const edge = (t: number, dir: 1 | -1) => rim(t, dir, width(t, dir))
 
   const K = 24
@@ -137,6 +138,22 @@ function arm(p: ArmPose, side: 1 | -1) {
   return { d, front, behind: !p.front }
 }
 
+// Pose sebagai deret angka untuk pegas. front dan hold ikut dipadukan dan berganti di tengah jalan,
+// jadi urutan gambar (di belakang atau di depan badan) berpindah saat tangan sudah setengah jalan.
+const ARM_LEN = 9
+const armVec = (p: ArmPose) => [p.x, p.y, p.a, p.len, p.bend, p.curl, p.front ? 1 : 0, p.hold ? 1 : 0, p.thumb ?? 0]
+const armOf = ([x, y, a, len, bend, curl, front, hold, thumb]: number[]): ArmPose => ({
+  x,
+  y,
+  a,
+  len,
+  bend,
+  curl,
+  front: front > 0.5,
+  hold: hold > 0.5,
+  thumb,
+})
+
 const SPARKLE = 'M0-14C2-4 4-2 14 0C4 2 2 4 0 14C-2 4-4 2-14 0C-4-2-2-4 0-14Z'
 
 // Tanpa mulut dan tanpa alis, jadi mata membawa seluruh ekspresi. Semua mata satu keluarga: pil
@@ -146,24 +163,53 @@ type Eye = { w?: number; h?: number; dx?: number; dy?: number; lid?: number; til
 const [EL, ER] = [CX - W * 0.35, CX + W * 0.35]
 const EYE_Y = 61
 
-function pill(x: number, e: Eye) {
-  const { w = 6.6, h = 13, dx = 0, dy = 0, lid, tilt = 0, smile } = e
+// Mata sebagai deret angka untuk pegas. lidK dan smileK (0..1) memadukan lengkung bulat dengan kelopak
+// datar di atas dan dengan lengkung pipi di bawah, jadi setiap mata bisa berubah mulus ke mata lain.
+const EYE_LEN = 10
+const eyeVec = (e: Eye) => [
+  e.w ?? 6.6,
+  e.h ?? 13,
+  e.dx ?? 0,
+  e.dy ?? 0,
+  e.lid ?? 0,
+  e.lid === undefined ? 0 : 1,
+  e.tilt ?? 0,
+  e.smile ?? 0,
+  e.smile === undefined ? 0 : 1,
+  e.rot ?? 0,
+]
+const mix = (a: number, b: number, t: number) => a + (b - a) * t
+
+function pill(x: number, [w, h, dx, dy, lid, lidK, tilt, smile, smileK]: number[]) {
   const cx = x + dx
   const r = w / 2
   const top = EYE_Y + dy - h / 2
   const bot = EYE_Y + dy + h / 2
-  const head = lid === undefined ? `M${cx - r} ${top + r}A${r} ${r} 0 0 1 ${cx + r} ${top + r}` : `M${cx - r} ${top + lid - tilt / 2}L${cx + r} ${top + lid + tilt / 2}`
-  const foot = smile === undefined ? `L${cx + r} ${bot - r}A${r} ${r} 0 0 1 ${cx - r} ${bot - r}Z` : `L${cx + r} ${bot}Q${cx} ${bot - 2 * smile} ${cx - r} ${bot}Z`
+  const N = 12
+  const pts: Pt[] = []
+  // Atas, kiri ke kanan: setengah lingkaran atau garis kelopak (miring sebesar tilt).
+  for (let i = 0; i <= N; i++) {
+    const q = Math.PI * (1 - i / N)
+    const u = Math.cos(q)
+    pts.push([cx + r * u, mix(top + r - r * Math.sin(q), top + lid + (tilt * u) / 2, lidK)])
+  }
+  // Bawah, kanan ke kiri: setengah lingkaran atau lengkung pipi yang terangkat sebesar smile.
+  for (let i = 0; i <= N; i++) {
+    const q = (Math.PI * i) / N
+    const u = Math.cos(q)
+    pts.push([cx + r * u, mix(bot - r + r * Math.sin(q), bot - smile * (1 - u * u), smileK)])
+  }
+  const d = `M${pts.map((p) => p.map((v) => v.toFixed(2)).join(' ')).join('L')}Z`
   // Titik cahaya di kiri atas bagian yang terlihat: di bawah kelopak jika ada, di lengkung atas jika
   // tidak. Mata yang sempit (menyipit atau lengkung senang) mendapat titik yang lebih kecil.
-  const k = h - (lid ?? 0) - 2 * (smile ?? 0) >= 7 ? 1 : 0.7
+  const k = 0.7 + 0.3 * Math.min(1, Math.max(0, h - lid * lidK - 2 * smile * smileK - 6))
   const glint = {
-    cx: cx - r * (lid === undefined ? 0.3 : 0.4),
-    cy: lid === undefined ? top + r * 0.85 : top + lid - 0.15 * tilt + 1.2 + 1.1 * k,
+    cx: cx - r * mix(0.3, 0.4, lidK),
+    cy: mix(top + r * 0.85, top + lid - 0.15 * tilt + 1.2 + 1.1 * k, lidK),
     rx: w * 0.15 * k,
     ry: w * 0.24 * k,
   }
-  return { d: head + foot, glint }
+  return { d, glint }
 }
 
 const EYES: Record<KapurMood, [left: Eye, right: Eye]> = {
@@ -183,16 +229,16 @@ const EYES: Record<KapurMood, [left: Eye, right: Eye]> = {
   think: [{ dx: -1.5, dy: -2, h: 11 }, { w: 7.5, h: 8, dy: 1, lid: 3, smile: 1 }],
 }
 
-function Eyes({ mood, ink }: { mood: KapurMood; ink: string }) {
-  const closed = mood === 'happy' || mood === 'cheer'
+// gaze: lirikan kedua mata (dx, dy). blink hanya untuk mata terbuka; mata senang sudah berupa lengkung.
+function Eyes({ eyes, gaze, blink, ink }: { eyes: number[][]; gaze: number[]; blink?: boolean; ink: string }) {
   return (
-    <g className={mood === 'think' ? 'kapur-glance' : undefined}>
-      <g className={closed ? undefined : 'kapur-eyes'}>
+    <g transform={`translate(${gaze[0].toFixed(2)} ${gaze[1].toFixed(2)})`}>
+      <g className={blink === undefined ? undefined : `kapur-eyes ${blink ? 'kapur-blink' : ''}`}>
         {[EL, ER].map((x, i) => {
-          const e = EYES[mood][i]
-          const { d, glint } = pill(x, e)
+          const { d, glint } = pill(x, eyes[i])
+          const rot = eyes[i][9]
           return (
-            <g key={x} transform={e.rot ? `rotate(${e.rot} ${x} ${EYE_Y})` : undefined}>
+            <g key={x} transform={Math.abs(rot) > 0.01 ? `rotate(${rot.toFixed(2)} ${x} ${EYE_Y})` : undefined}>
               <path d={d} fill={ink} />
               <ellipse {...glint} fill="#fff" opacity="0.9" />
             </g>
@@ -201,6 +247,107 @@ function Eyes({ mood, ink }: { mood: KapurMood; ink: string }) {
       </g>
     </g>
   )
+}
+
+// Hidup saat diam, seperti idle panjang Koji: kedip dengan jeda acak (kadang dua kali) dan sesekali
+// melirik, lalu kembali ke depan. Setiap Empur punya jadwal acak sendiri, jadi tidak ada yang serempak.
+function useIdle() {
+  const [blink, setBlink] = useState(false)
+  const [gaze, setGaze] = useState([0, 0])
+  useEffect(() => {
+    if (reducedMotion()) return
+    let timer = 0
+    const after = (ms: number, fn: () => void) => {
+      timer = window.setTimeout(fn, ms)
+    }
+    const spread = (n: number) => (Math.random() * 2 - 1) * n
+    const shut = (times: number) => {
+      setBlink(true)
+      after(110, () => {
+        setBlink(false)
+        if (times > 1) after(150, () => shut(times - 1))
+        else rest()
+      })
+    }
+    const look = () => {
+      setGaze([spread(1.8), spread(1.2)])
+      after(800 + Math.random() * 1400, () => {
+        setGaze([0, 0])
+        rest()
+      })
+    }
+    const rest = () =>
+      after(1400 + Math.random() * 3200, () => (Math.random() < 0.4 ? look() : shut(Math.random() < 0.25 ? 2 : 1)))
+    rest()
+    return () => clearTimeout(timer)
+  }, [])
+  return { blink, gaze }
+}
+
+// Condong badan per mood (derajat, berputar di ujung bawah badan). Badan juga ikut condong sedikit ke
+// arah lirikan, tapi lewat pegas yang lebih lambat: mata bergerak dulu, badan menyusul.
+const LEAN: Partial<Record<KapurMood, number>> = { wave: -6, listen: 3, curious: -6, confused: 7 }
+
+// Reaksi sekali jalan saat mood berganti: antisipasi, lalu lewat sedikit dan mengendap (squash dan
+// stretch). Setiap reaksi terdiri dari beberapa animasi Web Animations yang berjalan bersamaan, satu per
+// properti, supaya tiap properti punya kurvanya sendiri. Semua berpusat di ujung bawah badan (.kapur-react).
+type Anim = [frames: Keyframe[], ms: number, times?: number]
+const inOut = 'cubic-bezier(0.37, 0, 0.63, 1)'
+const eased = (...frames: Keyframe[]) => frames.map((f) => ({ easing: inOut, ...f }))
+const SETTLE: Anim[] = [[eased({ scale: '1 1' }, { scale: '1.05 0.94', offset: 0.25 }, { scale: '0.98 1.03', offset: 0.6 }, { scale: '1 1' }), 480]]
+// Lompat: naik melambat, turun makin cepat; badan memampat sebelum lepas landas dan saat mendarat.
+const hop = (times = 1): Anim[] => [
+  [
+    [
+      { translate: '0 0' },
+      { translate: '0 0', offset: 0.2, easing: 'cubic-bezier(0.33, 1, 0.68, 1)' },
+      { translate: '0 -16px', offset: 0.55, easing: 'cubic-bezier(0.32, 0, 0.67, 0)' },
+      { translate: '0 0', offset: 0.84 },
+      { translate: '0 0' },
+    ],
+    720,
+    times,
+  ],
+  [
+    eased(
+      { scale: '1 1' },
+      { scale: '1.1 0.88', offset: 0.2 },
+      { scale: '0.94 1.08', offset: 0.32 },
+      { scale: '1 1', offset: 0.55 },
+      { scale: '0.96 1.05', offset: 0.76 },
+      { scale: '1.1 0.9', offset: 0.86 },
+      { scale: '0.98 1.02', offset: 0.94 },
+      { scale: '1 1' },
+    ),
+    720,
+    times,
+  ],
+]
+const REACTION: Record<KapurMood | 'tick' | 'enter', Anim[]> = {
+  enter: [
+    [[{ translate: '0 8px', opacity: 0 }, { translate: '0 0', opacity: 1, offset: 0.5, easing: inOut }, { translate: '0 0', opacity: 1 }], 560],
+    [eased({ scale: '0.6 0.6' }, { scale: '1.06 0.95', offset: 0.55 }, { scale: '0.98 1.03', offset: 0.78 }, { scale: '1 1' }), 560],
+  ],
+  wave: SETTLE,
+  tick: SETTLE,
+  happy: hop(),
+  cheer: hop(2),
+  // Tegak dan sedikit melonjak: "hm?".
+  curious: [
+    [eased({ scale: '1 1' }, { scale: '1.05 0.93', offset: 0.2 }, { scale: '0.95 1.08', offset: 0.45 }, { scale: '1.01 0.99', offset: 0.75 }, { scale: '1 1' }), 560],
+    [eased({ translate: '0 0' }, { translate: '0 0', offset: 0.2 }, { translate: '0 -4px', offset: 0.45 }, { translate: '0 0' }), 560],
+  ],
+  // Goyang yang makin kecil.
+  confused: [
+    [eased({ rotate: '0deg' }, { rotate: '-6deg', offset: 0.18 }, { rotate: '5deg', offset: 0.42 }, { rotate: '-3deg', offset: 0.64 }, { rotate: '1deg', offset: 0.82 }, { rotate: '0deg' }), 800],
+  ],
+  // Mengangguk kecil.
+  listen: [
+    [eased({ scale: '1 1' }, { scale: '1.03 0.97', offset: 0.3 }, { scale: '1 1' }), 420],
+    [eased({ translate: '0 0' }, { translate: '0 2px', offset: 0.3 }, { translate: '0 0' }), 420],
+  ],
+  // Merendah pelan: "hmm".
+  think: [[eased({ scale: '1 1' }, { scale: '1.04 0.95', offset: 0.45 }, { scale: '1 1' }), 700]],
 }
 
 // Properti per mood, dalam gaya datar yang sama. Kelas kapur-pulse, -twinkle, -drift, dan -confetti
@@ -302,11 +449,34 @@ export function Kapur({
   const left: Pose = tick ? 'thumb' : (LEFT[mood] ?? 'down')
   // Saat mencentang tangan penunjuk diam supaya tepat di kotak; jempol yang bergerak.
   const [mRight, mLeft] = tick ? [undefined, 'thumb' as const] : MOTION[mood]
+
+  // Rig: mata dan tangan mengejar pose mood lewat pegas yang sedikit lewat lalu mengendap. Lirikan memakai
+  // pegas cepat, condong badan memakai pegas lambat, jadi mata memimpin dan badan menyusul.
+  const idle = useIdle()
+  // Saat mencentang, mata melirik ke tangan penunjuk.
+  const look = tick ? [2, 1] : idle.gaze
+  const rig = useSpring([...EYES[mood].flatMap(eyeVec), ...armVec(ARM[right]), ...armVec(ARM[left])], 140, 15)
+  const gaze = useSpring(look, 500, 40)
+  // Saat mencentang badan tegak, supaya ujung tangan tepat di KAPUR_HAND.
+  const [lean] = useSpring([tick ? 0 : (LEAN[mood] ?? 0) + look[0] * 1.5], 120, 14)
+  const eyes = [rig.slice(0, EYE_LEN), rig.slice(EYE_LEN, 2 * EYE_LEN)]
+  const open = mood !== 'happy' && mood !== 'cheer'
+
+  const react = useRef<SVGGElement>(null)
+  const shown = useRef<string>(null)
+  useEffect(() => {
+    const now = tick ? 'tick' : mood
+    const name = shown.current === null ? 'enter' : shown.current === now ? null : now
+    shown.current = now
+    if (!name || reducedMotion()) return
+    for (const [frames, duration, iterations = 1] of REACTION[name]) react.current?.animate?.(frames, { duration, iterations })
+  }, [mood, tick])
+
   const arms = [
-    { pose: right, side: 1 as const, motion: mRight },
-    { pose: left, side: -1 as const, motion: mLeft },
+    { v: rig.slice(2 * EYE_LEN, 2 * EYE_LEN + ARM_LEN), side: 1 as const, motion: mRight },
+    { v: rig.slice(2 * EYE_LEN + ARM_LEN), side: -1 as const, motion: mLeft },
   ].map((a) => {
-    const p: ArmPose = ARM[a.pose]
+    const p = armOf(a.v)
     const style = { '--dir': a.side, transformOrigin: `${a.side === 1 ? p.x : 2 * CX - p.x}px ${p.y}px` } as CSSProperties
     return { ...a, ...arm(p, a.side), style }
   })
@@ -361,15 +531,21 @@ export function Kapur({
         </clipPath>
       </defs>
 
-      <g key={`${mood}-${tick}`} className={`kapur kapur-${tick ? 'tick' : mood}`}>
-        <g transform={mood === 'wave' && !tick ? 'rotate(-6 60 130)' : undefined}>
-          {withArms && back}
-          <path d={BODY} fill={`url(#${id}base)`} />
-          <ellipse cx={CX} cy={TOP} rx={W} ry={RY} fill={t.cap} />
-          <ellipse cx={CX - 2.7} cy={TOP - 1.3} rx={W * 0.75} ry={RY * 0.65} fill={t.capHi} />
-          <Eyes mood={mood} ink={t.ink} />
-          {withArms && front}
-          {!quiet && <Props mood={mood} t={t} id={id} />}
+      <g className="kapur">
+        <g ref={react} className="kapur-react">
+          <g transform={`rotate(${lean.toFixed(2)} ${CX} ${BOT})`}>
+            {withArms && back}
+            <path d={BODY} fill={`url(#${id}base)`} />
+            <ellipse cx={CX} cy={TOP} rx={W} ry={RY} fill={t.cap} />
+            <ellipse cx={CX - 2.7} cy={TOP - 1.3} rx={W * 0.75} ry={RY * 0.65} fill={t.capHi} />
+            <Eyes eyes={eyes} gaze={gaze} blink={open ? idle.blink : undefined} ink={t.ink} />
+            {withArms && front}
+            {!quiet && (
+              <g key={mood} className="kapur-prop-in">
+                <Props mood={mood} t={t} id={id} />
+              </g>
+            )}
+          </g>
         </g>
       </g>
     </svg>
