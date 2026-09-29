@@ -18,8 +18,12 @@ colors:
   ink-2-malam: "#a8a8b3"
   ink-3: "#8c8c9c"
   ink-3-malam: "#7c7c88"
-  go: "#22c55e"
-  go-edge: "#16994a"
+  go: "#22775b"
+  go-edge: "#17523f"
+  go-ink: "#22775b"
+  go-ink-malam: "#4fae8a"
+  done: "#22775b"
+  done-malam: "#27825f"
   stop: "#f04438"
   stop-edge: "#b42318"
   focus: "#4b7bff"
@@ -30,10 +34,6 @@ colors:
   pause-bg-malam: "#1c2748"
   pause-ink: "#3656c9"
   pause-ink-malam: "#9db6ff"
-  selected-top: "#ecebff"
-  selected-bottom: "#b8e9da"
-  selected-top-malam: "#2b2f58"
-  selected-bottom-malam: "#154a3c"
   empur-jingga-top: "#ffd84d"
   empur-jingga-bottom: "#ff7f3f"
 typography:
@@ -195,11 +195,11 @@ Ada dua mode, Siang dan Malam, dengan kontrol bersegmen di bilah atas. Tema awal
 - Satu keluarga huruf, Lexend, untuk seluruh aplikasi.
 - Empur: maskot datar bergradasi dengan tujuh mood, pilihan warna, dan pilihan tampil dengan atau tanpa tangan.
 - Status konsep selalu memakai bentuk sekaligus warna: cincin kosong, setengah terisi, centang, dan silang.
-- Semua ilustrasi dan ikon adalah SVG di kode. Tidak ada aset raster yang ikut dikirim.
+- Semua ilustrasi dan ikon adalah SVG. Satu-satunya aset raster adalah ikon Apple, karena iOS mewajibkan PNG.
 
 ## Colors
 
-Putih atau hampir hitam sebagai latar, abu muda untuk kartu, dan hijau untuk aksi utama. Warna kapur (jingga, kuning, biru, merah muda, mint, lilac) dipakai untuk ilustrasi dan ikon.
+Putih atau hampir hitam sebagai latar, abu muda untuk kartu, dan hijau papan tulis sebagai warna tema. Warna tema mengisi sekitar 10% layar: tombol utama dan elemen kecil yang bisa diklik. Latar dan kartu tetap netral. Warna kapur (jingga, kuning, biru, merah muda, mint, lilac) dipakai untuk ilustrasi dan ikon.
 
 ### Neutral
 - **Latar** (`bg`, Malam `bg-malam`): latar halaman.
@@ -209,7 +209,9 @@ Putih atau hampir hitam sebagai latar, abu muda untuk kartu, dan hijau untuk aks
 - **Tinta** (`ink`, `ink-2`, `ink-3`): teks utama, teks sekunder, dan teks kecil seperti label, catatan, serta placeholder.
 
 ### Aksi
-- **Hijau** (`go`, tepi `go-edge`): tombol utama (Mulai sesi, Lanjut, Ambil konsep, Mulai, Jelaskan ulang), isi bilah kemajuan, centang dijelaskan, dan warna kursor teks.
+- **Hijau papan tulis** (`go`, tepi `go-edge`): tombol utama (Mulai sesi, Lanjut, Ambil konsep, Mulai, Jelaskan ulang), bilah kemajuan setup, latar logo, dan latar hijau muda (`go` 10%) untuk kartu pilihan aktif dan zona unggah saat file di atasnya. Teks putih di atasnya 5,44:1.
+- **Teks dan garis hijau** (`go-ink`, Malam `go-ink-malam`): tautan "Ubah", garis bawah tautan, garis kartu pilihan aktif, hover "Tambah konsep", dan kursor teks. Di Malam warnanya lebih terang supaya terbaca (6,07:1 di atas `card-malam`).
+- **Hijau dijelaskan** (`done`, Malam `done-malam`): centang dijelaskan, bagian bilah konsep live yang sudah dijelaskan, pil "+n dari sesi pertama", dan gradasi kartu skor. Di Siang warnanya sama dengan hijau papan tulis. Di Malam sedikit lebih terang (#27825F) supaya lingkaran centang terlihat di kartu gelap (3,67:1), dan teks putih di atasnya tetap 4,72:1. Hijau terang #22C55E tidak dipakai lagi, karena centang putih di atasnya hanya 2,28:1 dan terangnya hampir sama dengan kuning "disebut" (1,25:1).
 - **Merah** (`stop`, tepi `stop-edge`): tombol Berhenti, titik rekam yang berdenyut, pesan kesalahan, dan silang dijelaskan keliru.
 - **Biru fokus** (`focus`): cincin fokus dan garis isian yang sedang aktif.
 
@@ -218,11 +220,12 @@ Putih atau hampir hitam sebagai latar, abu muda untuk kartu, dan hijau untuk aks
 - **Stabilo** (`marker`): sorotan istilah konsep di transkrip, 60% di Siang dan 32% di Malam. Juga titik debu saat konsep dijelaskan dan warna seleksi teks.
 - **Filler** (`filler`): garis bawah bergelombang di bawah filler pada lampiran transkrip.
 - **Jeda** (`pause-bg`, `pause-ink`): chip jeda panjang di transkrip.
-- **Terpilih** (`selected-top` ke `selected-bottom`): gradasi lavender ke mint pada kartu pilihan yang aktif, seperti kartu terpilih di Brilliant.
 
 ### Ilustrasi
 - **Gradasi ikon:** setiap ikon ilustrasi berupa bentuk datar dengan gradasi diagonal dari warna muda ke warna tua. Pasangannya adalah kuning ke jingga (#FFE27A ke #FF9F43), biru muda ke biru (#9FDBFF ke #4B7BFF), dan merah muda (#FFC1D3 ke #FF5A8A). Dua lainnya adalah mint (#B8F5D6 ke #12B886) dan lilac (#DCC2FF ke #8B5CF6).
-- **Tanda aplikasi dan favicon:** kotak bergradasi jingga (#FFD84D ke #FF7F3F) dengan centang putih.
+- **Logo (`public/logo.svg`):** Empur kuning tanpa tangan di tengah kotak hijau papan tulis (`go`, radius 23%), miring 6° dan terpotong di tepi bawah. Badannya mengisi sekitar 84% lebar kotak. Mata memakai mood melambai, diperbesar 1,4 kali supaya terbaca di 36px. Kapur kuning di atas hijau papan tulis kontrasnya 3,37:1.
+- **Favicon (`public/favicon.svg`):** wajah Empur kuning memenuhi ikon tanpa latar: tutup elips di atas, dua mata pil di tengah, dan badan terpotong di bawah. Latar transparan membuatnya terbaca di tab terang dan gelap.
+- **Ikon Apple (`public/apple-touch-icon.png`):** logo yang sama dalam kotak penuh 180 × 180 px tanpa sudut bulat, karena iOS memotong sudutnya sendiri. Ini satu-satunya aset raster, karena iOS tidak menerima SVG untuk ikon layar utama.
 - **Warna Empur:** lihat bagian Empur.
 
 ### Named Rules
@@ -283,7 +286,7 @@ Hampir semua benda datar. Kedalaman datang dari tiga hal: warna kartu yang berbe
 
 Bulat dan lega. Tombol, chip, pil status, kontrol bersegmen, chip jawaban, dan chip jeda bulat penuh. Kartu utama 28px, kartu skor 24px, kartu pilihan dan kartu tahap 22px, ubin angka 20px, dan baris serta isian 16px. Zona unggah 24px dengan garis putus-putus 2px.
 
-Ikon kontrol (panah, pensil, sampah, jam, mikrofon) adalah SVG garis dengan ujung bulat dalam `currentColor`. Ikon ilustrasi (tahap, pilihan materi, tanda aplikasi) adalah bentuk datar bergradasi tanpa garis luar.
+Ikon kontrol (panah, pensil, sampah, jam, mikrofon) adalah SVG garis dengan ujung bulat dalam `currentColor`. Ikon ilustrasi (tahap dan pilihan materi) adalah bentuk datar bergradasi tanpa garis luar. Logo dan favicon memakai Empur sendiri.
 
 ## Components
 
@@ -304,24 +307,24 @@ Pil yang terasa bisa ditekan, seperti tombol Continue di Brilliant.
 - **Error:** garis `stop` dan pesan `stop` tebal di bawah isian, dengan kalimat yang menjelaskan cara memperbaikinya.
 
 ### Navigation
-- **Bilah atas:** tanda aplikasi 36px di beranda, atau tombol kembali berupa lingkaran 40px bergaris tipis di layar lain. Judul 1.125rem tebal dengan subjudul `ink-3`. Di kanan ada menu Empur dan kontrol tema, berkelompok supaya tetap bersama saat bilah terlipat.
+- **Bilah atas:** logo 36px di beranda, atau tombol kembali berupa lingkaran 40px bergaris tipis di layar lain. Judul 1.125rem tebal dengan subjudul `ink-3`. Di kanan ada menu Empur dan kontrol tema, berkelompok supaya tetap bersama saat bilah terlipat.
 - **Kontrol bersegmen (tema, tangan Empur, keadaan contoh):** wadah `card` bulat penuh. Pilihan aktif berupa pil `surface` (Malam `card-2`) dengan bayangan kecil. Pilihan lain berisi teks `ink-3`.
-- **Menu Empur:** tombol pil dengan titik gradasi warna Empur. Menu adalah popover bawaan browser yang menempel di tombol lewat anchor CSS dan menutup sendiri saat klik di luar atau Esc. Isinya pratinjau Empur, tujuh titik warna, dan pilihan dengan atau tanpa tangan. Warna yang terpilih diberi cincin dan centang, bukan warna saja.
+- **Menu Empur:** tombol pil dengan titik gradasi warna Empur. Menu adalah popover bawaan browser yang menempel di tombol lewat anchor CSS dan menutup sendiri saat klik di luar atau Esc. Isinya pratinjau Empur, tujuh titik warna, dan pilihan dengan atau tanpa tangan. Di layar di bawah 640px, menu dibentangkan dengan tepi 16px. Warna yang terpilih diberi cincin dan centang, bukan warna saja.
 
 ### Cards / Containers
 - **Kartu putih:** `surface`, garis 1px `line`, radius 28px, padding 20px sampai 28px. Dipakai untuk kartu penjelasan live dan kartu isi feedback.
 - **Kartu abu:** `card`, tanpa garis, radius 28px. Dipakai untuk agenda live dan lampiran transkrip. Baris di dalamnya berupa `surface` radius 16px.
-- **Kartu pilihan:** `card`, radius 22px, ikon gradasi di atas dan label di bawah. Pilihan aktif memakai gradasi terpilih, teks `ink`, dan centang hijau di sudut kanan atas.
+- **Kartu pilihan:** `card`, radius 22px, ikon gradasi di atas dan label di bawah. Pilihan aktif memakai latar hijau muda (`go` 10%), garis dalam 2px `go-ink`, teks `ink`, dan centang `go` di sudut kanan atas.
 - **Kartu tahap (beranda):** `card`, radius 22px, ikon gradasi 48px di atas, lalu nomor `ink-3` dan judul tahap.
-- **Kartu skor (feedback):** radius 24px dengan gradasi dari `card` ke hijau muda. Isinya angka besar dengan penyebut `ink-3`, label, dan deretan tanda status 24px. Di sesi ke-2 ada pil hijau "+n dari sesi pertama". Sebelum Gemini selesai, labelnya diberi "(perkiraan live)".
+- **Kartu skor (feedback):** radius 24px dengan gradasi dari `card` ke `done` 15%. Isinya angka besar dengan penyebut `ink-3`, label, dan deretan tanda status 24px. Di sesi ke-2 ada pil hijau "+n dari sesi pertama". Sebelum Gemini selesai, labelnya diberi "(perkiraan live)".
 - **Ubin kelancaran:** empat ubin `card` radius 20px (durasi, kata/menit, jeda panjang, filler). Setiap ubin berisi angka besar rata kiri, lalu ikon dan label di bawahnya. Tidak ada satuan di samping angka, supaya semua angka segaris. Di sesi ke-2, angka sesi sebelumnya ditulis kecil di bawah label.
 - **Kutipan:** garis kiri 4px biru muda dengan teks `ink-2` dalam tanda kutip. Pembaca layar mendengar "Kutipan dari transkripmu".
 - **Lipatan:** `<details>` bawaan dengan chevron yang berputar 90 derajat saat terbuka. Kutipan konsep yang sudah dijelaskan dilipat. Kutipan konsep yang baru disebut atau keliru langsung terbuka.
 
 ### Setup
-- **Bilah kemajuan:** tiga bagian (Topik, Materi, Konsep) setinggi 8px. Bagian selesai terisi penuh hijau dan bagian aktif terisi sebagian. Pembaca layar mendengar "Langkah 2 dari 3: Materi".
+- **Bilah kemajuan:** tiga bagian (Topik, Materi, Konsep) setinggi 8px. Bagian selesai terisi penuh `go` dan bagian aktif terisi sebagian. Pembaca layar mendengar "Langkah 2 dari 3: Materi".
 - **Chip jawaban:** pil `card` berisi label, jawaban, dan tombol "Ubah". Mengubah jawaban lama memulai ulang dari langkah itu.
-- **Zona unggah:** kotak radius 24px dengan garis putus-putus 2px, ikon unggah, dan teks "Tarik file ke sini". Diklik atau ditekan Enter, zona membuka pemilih file. Ada tiga keadaan. Siap: biru dan berdenyut saat file diseret di jendela. Di atas zona: hijau, sedikit membesar, dan ikon terangkat. Ditolak: merah dan bergetar sekali. File yang dilepas di luar zona tidak dibuka browser.
+- **Zona unggah:** kotak radius 24px dengan garis putus-putus 2px, ikon unggah, dan teks "Tarik file ke sini". Diklik atau ditekan Enter, zona membuka pemilih file. Ada tiga keadaan. Siap: biru dan berdenyut saat file diseret di jendela. Di atas zona: garis `go-ink` dengan latar hijau muda, sedikit membesar, dan ikon terangkat. Ditolak: merah dan bergetar sekali. File yang dilepas di luar zona tidak dibuka browser.
 - **Pilihan halaman:** satu isian gaya dialog cetak ("1-5, 8, 11-13"). Kosong berarti semua halaman. Di bawahnya ada ringkasan langsung ("9 halaman dipilih: 1–5, 8, 11–13") atau pesan kesalahan.
 - **Daftar konsep:** baris `card` berisi nomor dalam lingkaran, nama tebal, alias dan deskripsi, lalu tombol ubah dan hapus. Baris muncul satu per satu dari kiri saat daftar pertama kali tampil. Hapus bisa dibatalkan.
 
@@ -370,4 +373,4 @@ Easing utama `cubic-bezier(0.16, 1, 0.3, 1)`.
 - **Don't** ubah Empur menjadi gumpalan mengilap berkaki. Siluetnya harus tetap sebatang kapur.
 - **Don't** beri Empur mulut, alis, pipi merah muda, atau mata dari bentuk lain selain keluarga pil.
 - **Don't** tambahkan XP, streak, hati, atau lencana. Progres cukup lewat bilah konsep dan perayaan kecil.
-- **Don't** kirim aset raster, atau pakai emoji dan huruf sebagai ikon.
+- **Don't** kirim aset raster selain ikon Apple, atau pakai emoji dan huruf sebagai ikon.

@@ -214,7 +214,7 @@ function TopBar({
           {concepts.map((c, i) => (
             <span key={c.id} className="h-2.5 flex-1 overflow-hidden rounded-full bg-card-2">
               <span
-                className={`block h-full rounded-full transition-[width,background-color] duration-500 ease-out ${i < explained ? 'bg-go' : 'bg-[#FFB020]'}`}
+                className={`block h-full rounded-full transition-[width,background-color] duration-500 ease-out ${i < explained ? 'bg-done' : 'bg-[#FFB020]'}`}
                 style={{ width: i < explained ? '100%' : i < explained + mentioned ? '50%' : '0%' }}
               />
             </span>

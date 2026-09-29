@@ -308,7 +308,7 @@ function ScoreCard({
     ? correct - Object.values(previous.coverage).filter((s) => s === 'explained_correct').length
     : 0
   return (
-    <section className="flex flex-col justify-between gap-4 rounded-[24px] bg-gradient-to-b from-card to-[#DDF6E7] p-5 dark:to-[#15321f]">
+    <section className="flex flex-col justify-between gap-4 rounded-[24px] bg-gradient-to-b from-card to-done/15 p-5">
       <div>
         <p className="text-5xl font-bold leading-none tabular-nums tracking-tight">
           {correct}
@@ -326,7 +326,7 @@ function ScoreCard({
           ))}
         </span>
         {gained > 0 && (
-          <span className="rounded-full bg-go px-3 py-0.5 text-sm font-semibold text-white">+{gained} dari sesi pertama</span>
+          <span className="rounded-full bg-done px-3 py-0.5 text-sm font-semibold text-white">+{gained} dari sesi pertama</span>
         )}
       </div>
     </section>

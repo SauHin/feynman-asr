@@ -11,7 +11,7 @@ export function StatusIcon({ status, draw = false, className = 'size-7' }: { sta
     <svg viewBox="0 0 24 24" aria-hidden="true" data-mark className={`shrink-0 ${className}`}>
       {status === 'explained' && (
         <>
-          <circle cx="12" cy="12" r="11" fill="#22C55E" />
+          <circle cx="12" cy="12" r="11" fill="var(--color-done)" />
           <path
             d="M7 12.5l3.2 3.2L17 9"
             pathLength={1}

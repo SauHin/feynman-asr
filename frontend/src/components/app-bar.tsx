@@ -44,25 +44,15 @@ export function AppBar({
   )
 }
 
-// Tanda aplikasi, sama dengan favicon: kotak bergradasi warna kapur dengan centang putih.
+// Logo aplikasi: Empur kuning besar di tengah kotak hijau papan tulis, sedikit miring dan terpotong di bawah.
+// Favicon memakai wajah Empur yang memenuhi ikon tanpa latar (public/favicon.svg).
 export function BrandMark({ className = '' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" aria-hidden="true" className={className}>
-      <defs>
-        <linearGradient id="brand-mark" x1="0" y1="0" x2="0.4" y2="1">
-          <stop offset="0" stopColor="#FFD84D" />
-          <stop offset="1" stopColor="#FF7F3F" />
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="9" fill="url(#brand-mark)" />
-      <path d="M9.5 16.5l4.5 4.5 8.5-10" fill="none" stroke="#fff" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+  return <img src="/logo.svg" alt="" className={className} />
 }
 
 // Pilihan di dalam kontrol bersegmen: pil putih (atau abu gelap di malam hari) untuk yang aktif.
 const segment = (on: boolean) =>
-  `flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${
+  `flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${
     on ? 'bg-surface text-ink shadow-[0_1px_3px_rgba(0,0,0,0.12)] dark:bg-card-2' : 'text-ink-3 hover:text-ink'
   }`
 

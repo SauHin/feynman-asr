@@ -30,6 +30,22 @@
   --surface: #1a1a1d;
 }
 
+/* Warna tema: hijau papan tulis untuk tombol utama, bilah kemajuan setup, zona unggah, kartu pilihan
+   aktif, tautan, dan kursor teks. go-ink untuk teks dan garis hijau: di Malam lebih terang supaya terbaca.
+   done: hijau yang sama untuk status "dijelaskan". Di Malam sedikit lebih terang supaya lingkaran centang
+   tetap terlihat di kartu gelap, tapi teks putih di atasnya masih lolos 4,5:1. */
+:root {
+  --go: #22775b;
+  --go-edge: #17523f;
+  --go-ink: #22775b;
+  --done: #22775b;
+}
+
+[data-theme='dark'] {
+  --go-ink: #4fae8a;
+  --done: #27825f;
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-card: var(--card);
@@ -39,8 +55,10 @@
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-surface: var(--surface);
-  --color-go: #22c55e;
-  --color-go-edge: #16994a;
+  --color-go: var(--go);
+  --color-go-edge: var(--go-edge);
+  --color-go-ink: var(--go-ink);
+  --color-done: var(--done);
   --color-stop: #f04438;
   --color-stop-edge: #b42318;
   --color-focus: #4b7bff;
@@ -58,7 +76,7 @@
     -webkit-font-smoothing: antialiased;
   }
   body {
-    caret-color: var(--color-go);
+    caret-color: var(--color-go-ink);
     scrollbar-color: var(--line) transparent;
   }
   ::selection {
@@ -268,6 +286,15 @@
     margin: 8px 0 0;
     /* Di layar lebar tombolnya di kanan: balik supaya tepi kanan menu sejajar tepi kanan tombol. */
     position-try-fallbacks: flip-inline;
+  }
+  /* Di layar HP menu lebih lebar dari ruang di kedua sisi tombol: bentangkan dengan tepi 16px. */
+  @media (width < 40rem) {
+    .empur-menu {
+      left: 16px;
+      right: 16px;
+      width: auto;
+      position-try-fallbacks: none;
+    }
   }
 }
 

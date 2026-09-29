@@ -274,7 +274,7 @@ function Answer({ label, onEdit, children }: { label: string; onEdit: () => void
       <button
         onClick={onEdit}
         aria-label={`Ubah ${label}`}
-        className="flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 font-medium text-ink-2 transition-colors duration-150 hover:bg-card-2 hover:text-ink"
+        className="flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 font-medium text-go-ink transition-colors duration-150 hover:bg-card-2"
       >
         <PencilIcon className="size-3.5" />
         Ubah
@@ -385,7 +385,7 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Kartu pilihan seperti Brilliant: abu muda, pilihan aktif bergradasi lembut dan bercentang. */}
+      {/* Kartu pilihan seperti Brilliant: abu muda. Pilihan aktif diberi warna tema: latar hijau muda, garis, dan centang. */}
       <div className="grid grid-cols-3 gap-2.5 md:gap-3">
         {options.map((o) => {
           const on = mode === o.kind
@@ -396,13 +396,13 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
               onClick={() => setMode(o.kind)}
               className={`relative flex flex-col items-center gap-3 rounded-[22px] px-2 py-5 text-center font-semibold transition-colors duration-150 md:py-6 ${
                 on
-                  ? 'bg-gradient-to-b from-[#ECEBFF] to-[#B8E9DA] text-ink dark:from-[#2B2F58] dark:to-[#154A3C]'
+                  ? 'bg-go/10 text-ink ring-2 ring-go-ink ring-inset'
                   : 'bg-card text-ink-2 hover:bg-card-2 hover:text-ink'
               }`}
             >
               {on && (
                 <svg viewBox="0 0 24 24" aria-hidden="true" className="absolute right-3 top-3 size-5">
-                  <circle cx="12" cy="12" r="11" fill="#22C55E" />
+                  <circle cx="12" cy="12" r="11" fill="var(--color-go)" />
                   <path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
@@ -575,7 +575,7 @@ function DropZone({
         aria-describedby="format-materi"
         className={`group flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed px-6 py-10 text-center transition-[scale,background-color,border-color] duration-200 ease-out ${
           state === 'over'
-            ? 'scale-[1.02] border-go bg-go/10'
+            ? 'scale-[1.02] border-go-ink bg-go/10'
             : state === 'ready'
               ? 'drop-ready border-focus bg-focus/5'
               : error
@@ -590,7 +590,7 @@ function DropZone({
           {state === 'over' ? 'Lepaskan file di sini' : state === 'ready' ? 'Seret ke sini' : 'Tarik file ke sini'}
         </span>
         <span className="text-sm text-ink-3">
-          atau <span className="font-medium text-ink underline decoration-2 underline-offset-4">klik untuk memilih file</span>
+          atau <span className="font-medium text-ink underline decoration-go-ink decoration-2 underline-offset-4">klik untuk memilih file</span>
         </span>
       </button>
       {error ? (
@@ -702,7 +702,7 @@ function ConceptEditor({
         <p role="status" className="mt-3 flex flex-wrap items-center gap-x-3 text-sm text-ink-2">
           {removed.concept.name} dihapus.
           <button
-            className="font-semibold text-ink underline decoration-2 underline-offset-4"
+            className="font-semibold text-ink underline decoration-go-ink decoration-2 underline-offset-4"
             onClick={() => {
               const next = [...concepts]
               next.splice(removed.index, 0, removed.concept)
@@ -717,7 +717,7 @@ function ConceptEditor({
 
       {editing !== 'new' && (
         <button
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line py-3.5 font-semibold text-ink-2 transition-colors duration-150 hover:border-ink-3 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line py-3.5 font-semibold text-ink-2 transition-colors duration-150 hover:border-go-ink hover:text-go-ink disabled:cursor-not-allowed disabled:opacity-50"
           disabled={full || editing !== null}
           onClick={() => setEditing('new')}
         >
