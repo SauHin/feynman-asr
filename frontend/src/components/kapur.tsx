@@ -180,7 +180,17 @@ const eyeVec = (e: Eye) => [
 ]
 const mix = (a: number, b: number, t: number) => a + (b - a) * t
 
-function pill(x: number, [w, h, dx, dy, lid, lidK, tilt, smile, smileK]: number[]) {
+// Ukuran mata di EYES dikali EYE_SCALE (posisinya tidak), supaya sama dengan mata di logo
+// (public/logo.svg: mata `wave` x 1,4).
+const EYE_SCALE = 1.4
+
+function pill(x: number, v: number[]) {
+  const [, h0, , , lid0, lidK, , smile0, smileK] = v
+  // Mata yang sempit (menyipit atau lengkung senang) mendapat titik cahaya yang lebih kecil. Dihitung
+  // dalam ukuran sebelum dikali, jadi batasnya tidak ikut bergeser.
+  const k = 0.7 + 0.3 * Math.min(1, Math.max(0, h0 - lid0 * lidK - 2 * smile0 * smileK - 6))
+  const [, , dx, dy] = v
+  const [w, h, lid, tilt, smile] = [v[0], v[1], v[4], v[6], v[7]].map((n) => n * EYE_SCALE)
   const cx = x + dx
   const r = w / 2
   const top = EYE_Y + dy - h / 2
@@ -200,12 +210,10 @@ function pill(x: number, [w, h, dx, dy, lid, lidK, tilt, smile, smileK]: number[
     pts.push([cx + r * u, mix(bot - r + r * Math.sin(q), bot - smile * (1 - u * u), smileK)])
   }
   const d = `M${pts.map((p) => p.map((v) => v.toFixed(2)).join(' ')).join('L')}Z`
-  // Titik cahaya di kiri atas bagian yang terlihat: di bawah kelopak jika ada, di lengkung atas jika
-  // tidak. Mata yang sempit (menyipit atau lengkung senang) mendapat titik yang lebih kecil.
-  const k = 0.7 + 0.3 * Math.min(1, Math.max(0, h - lid * lidK - 2 * smile * smileK - 6))
+  // Titik cahaya di kiri atas bagian yang terlihat: di bawah kelopak jika ada, di lengkung atas jika tidak.
   const glint = {
     cx: cx - r * mix(0.3, 0.4, lidK),
-    cy: mix(top + r * 0.85, top + lid - 0.15 * tilt + 1.2 + 1.1 * k, lidK),
+    cy: mix(top + r * 0.85, top + lid - 0.15 * tilt + (1.2 + 1.1 * k) * EYE_SCALE, lidK),
     rx: w * 0.15 * k,
     ry: w * 0.24 * k,
   }
