@@ -343,39 +343,6 @@
     scale: 1 1.025;
   }
 }
-@keyframes kapur-hop {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  35% {
-    transform: translateY(-16px) rotate(-3deg);
-  }
-  60% {
-    transform: translateY(-10px) rotate(2deg);
-  }
-}
-@keyframes kapur-blink {
-  0%,
-  93%,
-  100% {
-    transform: scaleY(1);
-  }
-  96% {
-    transform: scaleY(0.1);
-  }
-}
-@keyframes kapur-glance {
-  0%,
-  40%,
-  100% {
-    translate: 0 0;
-  }
-  50%,
-  90% {
-    translate: -1.6px -0.6px;
-  }
-}
 /* Tangan berputar di bahu. --dir bernilai 1 untuk tangan kanan dan -1 untuk tangan kiri,
    jadi kedua tangan bergerak seperti cermin. Sudut positif searah jarum jam. */
 @keyframes kapur-arm-wave {
@@ -461,35 +428,30 @@
 .kapur {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  transition: rotate 300ms var(--ease-out-expo);
   animation: kapur-breathe 3.2s ease-in-out infinite;
 }
-.kapur-happy {
-  animation:
-    kapur-hop 560ms var(--ease-out-expo),
-    kapur-breathe 3.2s ease-in-out 560ms infinite;
+/* Reaksi saat mood berganti diputar dari komponen (Web Animations), berpusat di ujung bawah badan. */
+.kapur-react {
+  transform-box: view-box;
+  transform-origin: 60px 132px;
 }
-.kapur-cheer {
-  animation:
-    kapur-hop 560ms var(--ease-out-expo) 3,
-    kapur-breathe 3.2s ease-in-out 1680ms infinite;
-}
-.kapur-listen {
-  rotate: 3deg;
-}
-.kapur-curious {
-  rotate: -6deg;
-}
-.kapur-confused {
-  rotate: 7deg;
-}
+/* Kedip dengan jeda acak dari komponen: kelas kapur-blink dipasang sebentar. */
 .kapur-eyes {
   transform-box: fill-box;
   transform-origin: center;
-  animation: kapur-blink 4.2s infinite;
+  transition: scale 70ms ease-in;
 }
-.kapur-glance {
-  animation: kapur-glance 3.6s ease-in-out infinite;
+.kapur-blink {
+  scale: 1 0.1;
+}
+@keyframes kapur-prop-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+.kapur-prop-in {
+  animation: kapur-prop-in 360ms var(--ease-out-expo) both;
 }
 /* transform-origin diisi per tangan (titik bahu) dari komponen. */
 .kapur-arm {
@@ -559,8 +521,7 @@
   .term-mark,
   .dust i,
   .kapur,
-  .kapur-eyes,
-  .kapur-glance,
+  .kapur-prop-in,
   .kapur-arm,
   .kapur-pulse,
   .kapur-twinkle,
@@ -571,7 +532,8 @@
   .dots i {
     animation: none;
   }
-  .kapur-actor {
+  .kapur-actor,
+  .kapur-eyes {
     transition: none;
   }
   .kapur-scribble,
