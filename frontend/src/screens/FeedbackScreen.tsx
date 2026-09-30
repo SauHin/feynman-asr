@@ -31,8 +31,8 @@ const COVERAGE_MARK: Record<CoverageStatus, Mark> = {
 const MARK_TEXT: Record<Mark, string> = {
   none: 'belum',
   mentioned: 'disebut',
-  explained: 'dijelaskan',
-  wrong: 'dijelaskan keliru',
+  explained: 'jelas',
+  wrong: 'masih keliru',
 }
 
 // Penanda <details> bawaan disembunyikan, diganti ikon chevron yang berputar saat terbuka.
@@ -83,10 +83,10 @@ export default function FeedbackScreen() {
 
         {view === 'memuat' && (
           <>
-            <Card title="Yang perlu diperbaiki dulu">
+            <Card title="Perbaiki ini dulu">
               <Writing />
             </Card>
-            <Card title="Yang sudah bagus">
+            <Card title="Ini udah keren">
               <Writing />
             </Card>
           </>
@@ -94,7 +94,7 @@ export default function FeedbackScreen() {
 
         {feedback && (
           <>
-            <Card title="Yang perlu diperbaiki dulu">
+            <Card title="Perbaiki ini dulu">
               <ol className="flex flex-col gap-3">
                 {feedback.improvements.map((s, i) => (
                   <li key={s} className="flex gap-3 text-[1.05rem] leading-relaxed">
@@ -106,7 +106,7 @@ export default function FeedbackScreen() {
                 ))}
               </ol>
             </Card>
-            <Card title="Yang sudah bagus">
+            <Card title="Ini udah keren">
               <ul className="flex flex-col gap-3">
                 {feedback.strengths.map((s) => (
                   <li key={s} className="flex gap-3 text-[1.05rem] leading-relaxed">
@@ -124,19 +124,19 @@ export default function FeedbackScreen() {
         {view !== 'gagal' && (
           <div className="mt-4 flex items-center gap-3 text-sm text-ink-3" role="presentation">
             <span className="h-px flex-1 bg-line" />
-            Rincian
+            Detailnya
             <span className="h-px flex-1 bg-line" />
           </div>
         )}
 
         <Card
-          title="Cakupan konsep"
+          title="Konsep yang kamu bahas"
           note={
             feedback
-              ? 'Diperiksa ulang oleh Gemini dari teks transkrip. Istilah yang salah tulis di kutipan adalah kesalahan transkripsi, bukan kesalahanmu.'
+              ? 'Udah dicek ulang Gemini. Kalau ada istilah salah ketik di kutipan, itu salah transkrip, bukan salahmu.'
               : view === 'memuat'
-                ? 'Ini hasil checklist live. Gemini sedang memeriksanya ulang.'
-                : 'Belum diperiksa Gemini, jadi anggap hasil checklist live ini sebagai perkiraan.'
+                ? 'Ini masih centang dari sesi live. Gemini lagi ngecek ulang.'
+                : 'Belum dicek Gemini, jadi anggap ini perkiraan dulu.'
           }
         >
           <ul className="flex flex-col gap-2">
@@ -176,14 +176,14 @@ export default function FeedbackScreen() {
 
         {view === 'memuat' && (
           <Card title="Isi dan istilah">
-            <Writing label="Kesalahan isi, istilah, dan kesederhanaan menyusul" />
+            <Writing label="Bagian ini nyusul, ya." />
           </Card>
         )}
 
         {feedback && (
           <>
             {feedback.factual_errors.length > 0 && (
-              <Card title="Yang keliru">
+              <Card title="Yang masih keliru">
                 <div className="flex flex-col gap-6">
                   {feedback.factual_errors.map((e) => (
                     <div key={e.statement} className="flex flex-col gap-3">
@@ -197,7 +197,7 @@ export default function FeedbackScreen() {
                       <div className="flex gap-3">
                         <StatusIcon status="explained" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm text-ink-3">Yang benar</p>
+                          <p className="text-sm text-ink-3">Harusnya</p>
                           <p className="mt-1 text-[1.05rem] leading-relaxed">{e.correction}</p>
                         </div>
                       </div>
@@ -208,7 +208,7 @@ export default function FeedbackScreen() {
             )}
 
             {feedback.unexplained_jargon.length > 0 && (
-              <Card title="Istilah yang belum kamu jelaskan">
+              <Card title="Istilah yang belum kamu jelasin">
                 <ul className="flex flex-col gap-3">
                   {feedback.unexplained_jargon.map((j) => (
                     <li key={j.term} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -222,7 +222,7 @@ export default function FeedbackScreen() {
               </Card>
             )}
 
-            <Card title="Seberapa sederhana?">
+            <Card title="Udah cukup sederhana?">
               <p className="text-[1.05rem] leading-relaxed">{feedback.simplicity_note}</p>
             </Card>
           </>
@@ -234,10 +234,10 @@ export default function FeedbackScreen() {
           <div className="pb-3">
             <p className="text-[1.05rem] leading-relaxed">
               {view === 'gagal'
-                ? 'Transkripmu aman di laptop ini. Coba lagi sebentar lagi, ya.'
+                ? 'Transkripmu aman di laptop ini. Coba lagi nanti, ya.'
                 : view === 'memuat'
-                  ? 'Tunggu sebentar, feedback-nya belum selesai.'
-                  : 'Semangat! Saat menjelaskan ulang, mulai dari poin nomor 1, ya.'}
+                  ? 'Sambil nunggu, cek transkripmu di bawah.'
+                  : 'Semangat! Pas coba lagi, fokus dulu ke perbaikan nomor 1, ya.'}
             </p>
             <p className="mt-2 text-sm text-ink-3">Salam kapur,</p>
             <p className="text-lg font-semibold">Empur</p>
@@ -249,13 +249,13 @@ export default function FeedbackScreen() {
 
       {/* Tombol lanjut selalu terjangkau, seperti tombol Continue di Brilliant. */}
       <footer className="sticky bottom-0 z-30 flex flex-col gap-3 border-t border-line bg-surface px-4 py-3 sm:flex-row sm:items-center sm:gap-4 md:px-8 md:py-4">
-        <p className="mr-auto text-sm text-ink-3 max-sm:hidden">Jelaskan ulang dengan {concepts.length} konsep yang sama.</p>
+        <p className="mr-auto text-sm text-ink-3 max-sm:hidden">Coba lagi dengan {concepts.length} konsep yang sama?</p>
         <div className="flex gap-3 *:whitespace-nowrap max-sm:*:flex-1 max-sm:*:px-4">
           <Link to="/setup" className="btn btn-plain">
             Ganti topik
           </Link>
           <Link to="/live" className="btn btn-go px-8">
-            Jelaskan ulang
+            Jelasin lagi
           </Link>
         </div>
       </footer>
@@ -273,20 +273,20 @@ function Hero({ view, mood, onRetry }: { view: View; mood: 'happy' | 'think' | '
       </div>
       {view === 'memuat' ? (
         <div role="status" className="mt-4">
-          <h2 className="text-[1.9rem] font-bold leading-tight tracking-tight">Aku masih menulis feedback-nya.</h2>
-          <p className="mt-2 text-ink-2">Kelancaran dan checklist live sudah siap. Gemini sedang menganalisis isi transkripmu.</p>
+          <h2 className="text-[1.9rem] font-bold leading-tight tracking-tight">Bentar, feedback-nya lagi aku tulis…</h2>
+          <p className="mt-2 text-ink-2">Angka kelancaran udah siap. Isinya lagi dicek Gemini.</p>
         </div>
       ) : view === 'gagal' ? (
         <div role="alert" className="mt-4 flex flex-col items-center">
-          <h2 className="text-[1.9rem] font-bold leading-tight tracking-tight">Maaf, feedback isinya belum bisa aku tulis.</h2>
-          <p className="mt-2 text-ink-2">Batas pemakaian gratis Gemini sedang tercapai. Checklist live, kelancaran, dan transkrip tetap ada.</p>
+          <h2 className="text-[1.9rem] font-bold leading-tight tracking-tight">Yah, feedback isinya belum bisa aku tulis.</h2>
+          <p className="mt-2 text-ink-2">Kuota gratis Gemini lagi habis. Tenang, checklist, kelancaran, dan transkripmu tetap ada.</p>
           <button className="btn btn-plain mt-5" onClick={onRetry}>
             <RetryIcon className="size-5" />
             Coba lagi
           </button>
         </div>
       ) : (
-        <h2 className="mt-4 text-[1.9rem] font-bold leading-tight tracking-tight">Hai, ini feedback-ku untuk penjelasanmu.</h2>
+        <h2 className="mt-4 text-[1.9rem] font-bold leading-tight tracking-tight">Penjelasanmu udah aku baca. Ini feedback-nya!</h2>
       )}
     </section>
   )
@@ -315,8 +315,8 @@ function ScoreCard({
           <span className="text-2xl text-ink-3">/{marks.length}</span>
         </p>
         <p className="mt-2 font-medium leading-snug">
-          konsep dijelaskan dengan benar
-          {!feedback && <span className="text-ink-3"> (perkiraan live)</span>}
+          konsep udah tepat
+          {!feedback && <span className="text-ink-3"> (perkiraan)</span>}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -326,7 +326,7 @@ function ScoreCard({
           ))}
         </span>
         {gained > 0 && (
-          <span className="rounded-full bg-done px-3 py-0.5 text-sm font-semibold text-white">+{gained} dari sesi pertama</span>
+          <span className="rounded-full bg-done px-3 py-0.5 text-sm font-semibold text-white">+{gained} dari sesi lalu</span>
         )}
       </div>
     </section>
@@ -367,7 +367,7 @@ function FluencyTiles({ fluency, previous, concepts }: { fluency: FluencyReport;
       <p className="px-1 text-xs leading-relaxed text-ink-3">
         Dihitung di laptopmu.
         {longest && ` Jeda terlama ${decimal(longest.duration)} dtk${beforeConcept ? `, sebelum ${beforeConcept}` : ''}.`} Filler
-        hanya indikasi: “jadi” juga bisa kata biasa.
+        cuma perkiraan, soalnya “jadi” juga bisa kata biasa.
       </p>
     </section>
   )
@@ -393,7 +393,7 @@ function Quote({ children }: { children: ReactNode }) {
 }
 
 // Bagian yang masih ditulis: tiga titik dan baris abu yang berdenyut.
-function Writing({ label = 'Empur sedang menulis bagian ini' }: { label?: string }) {
+function Writing({ label = 'Lagi aku tulis…' }: { label?: string }) {
   return (
     <div className="flex flex-col gap-2.5">
       <p className="text-ink-3">
@@ -436,7 +436,7 @@ function ComparisonCard({
 }) {
   const now = (id: string) => current.concept_coverage.find((c) => c.concept_id === id)?.status ?? 'not_covered'
   return (
-    <Card title="Dibanding sesi pertama">
+    <Card title="Dibanding sesi lalu">
       <ul className="grid gap-2 sm:grid-cols-2">
         {concepts.map((c) => {
           const was = COVERAGE_MARK[previous.coverage[c.id] ?? 'not_covered']
@@ -484,7 +484,7 @@ function TranscriptAppendix({ concepts }: { concepts: Concept[] }) {
             <span className="group-open:hidden">Lihat transkrip lengkap</span>
             <span className="hidden group-open:inline">Tutup transkrip</span>
           </span>
-          <span className="block text-sm text-ink-3">Semua ucapanmu, dengan jeda dan filler ditandai.</span>
+          <span className="block text-sm text-ink-3">Semua yang kamu ucapkan, plus tanda jeda dan filler.</span>
         </span>
         <ChevronIcon className="ml-auto size-5 shrink-0 text-ink-3 transition-transform group-open:rotate-90" />
       </summary>
@@ -494,7 +494,7 @@ function TranscriptAppendix({ concepts }: { concepts: Concept[] }) {
             <h2 id="transkrip-title" className="text-lg font-semibold">
               Transkrip lengkap
             </h2>
-            <p className="text-sm text-ink-3">Hasil Whisper di laptopmu.</p>
+            <p className="text-sm text-ink-3">Ditulis Whisper di laptopmu.</p>
           </div>
           <p className="mt-4 text-[1.15rem] leading-[1.8]">
             {segments.map((seg, i) =>
@@ -512,11 +512,11 @@ function TranscriptAppendix({ concepts }: { concepts: Concept[] }) {
               <span className="term-mark text-ink">istilah</span> konsep
             </li>
             <li>
-              <span className="chalk-filler text-ink">filler</span> (indikasi)
+              <span className="chalk-filler text-ink">filler</span> (perkiraan)
             </li>
             <li className="flex items-center">
               <PauseChip />
-              panjang, 2 detik atau lebih
+              jeda 2 detik lebih
             </li>
           </ul>
         </div>

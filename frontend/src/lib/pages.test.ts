@@ -10,7 +10,7 @@ test('halaman tunggal dan rentang digabung, diurutkan, dan tanpa duplikat', () =
 test('masukan yang salah memberi pesan', () => {
   expect(parsePages('5-2')).toEqual({ error: '5–2: angka awal harus lebih kecil.' })
   expect(parsePages('1, bab 2')).toEqual({ error: '"bab" bukan nomor atau rentang.' })
-  expect(parsePages('0')).toEqual({ error: 'Nomor dimulai dari 1.' })
+  expect(parsePages('0')).toEqual({ error: 'Mulai dari 1, ya.' })
 })
 
 test('ringkasan memadatkan halaman berurutan menjadi rentang', () => {

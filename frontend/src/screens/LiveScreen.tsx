@@ -121,8 +121,6 @@ export default function LiveScreen() {
           {/* Empur di pojok kiri bawah kartu, dengan balon di sampingnya. */}
           <div className="relative z-20 mt-4 flex shrink-0 items-end gap-2">
             <div ref={kapurRef} className="relative shrink-0">
-              {/* Bayangan tetap di tempat saat Empur pergi mencentang. */}
-              <span aria-hidden="true" className="absolute bottom-3 left-1/2 h-2.5 w-16 -translate-x-1/2 rounded-full bg-ink/10" />
               <div
                 className={`kapur-actor ${reach && !arms ? 'kapur-scribble' : ''}`}
                 style={{
@@ -180,9 +178,9 @@ function TopBar({
     )
   }, [explained])
   const recording = state.status === 'listening'
-  const label = recording ? 'Merekam' : state.status === 'processing' ? 'Memproses' : sessionDone ? 'Selesai' : 'Siap'
+  const label = recording ? 'Merekam' : state.status === 'processing' ? 'Menyusun' : sessionDone ? 'Selesai' : 'Siap'
   const latency = state.latencyMs === null ? '–' : `${decimal(state.latencyMs / 1000)} dtk`
-  const summary = `${explained} dari ${concepts.length} konsep dijelaskan`
+  const summary = `${explained} dari ${concepts.length} konsep jelas`
 
   return (
     <header className="flex flex-wrap items-center gap-x-3 gap-y-3 px-4 py-3 md:gap-x-5 md:px-8 md:py-4">
@@ -236,7 +234,7 @@ function TopBar({
         </p>
         <span aria-hidden="true" className="h-4 w-px bg-line" />
         <p className="flex items-baseline gap-1 text-ink-3">
-          Latensi
+          Delay
           <FixedWidth options={['0,0 dtk']} value={latency} className="font-medium tabular-nums text-ink" />
         </p>
       </div>
@@ -248,7 +246,7 @@ function TopBar({
   )
 }
 
-const STATUS_LABELS = ['Siap', 'Merekam', 'Memproses', 'Selesai']
+const STATUS_LABELS = ['Siap', 'Merekam', 'Menyusun', 'Selesai']
 
 // Semua kemungkinan teks ditumpuk di satu sel grid dan hanya satu yang terlihat,
 // jadi lebarnya selalu selebar teks terpanjang.
@@ -278,7 +276,7 @@ function Agenda({
       <h2 id="agenda-title" className="text-lg font-semibold">
         Agenda
       </h2>
-      <p className="mt-0.5 text-sm text-ink-3">Perkiraan langsung, diperiksa lagi setelah sesi.</p>
+      <p className="mt-0.5 text-sm text-ink-3">Centangnya sementara, nanti dicek ulang.</p>
       {/* ponytail: 5-6 konsep muat di 1366x768; daftar yang lebih panjang menggulir di dalam agenda. */}
       <ol className="-mx-2 mt-4 flex flex-col gap-2 px-2 py-1 md:min-h-0 md:overflow-y-auto md:overflow-x-hidden">
         {concepts.map((c) => {
@@ -321,16 +319,16 @@ function Legend({ className = '' }: { className?: string }) {
 
 function Guidance() {
   const steps = [
-    'Tekan Mulai. Kalau browser meminta izin mikrofon, izinkan.',
-    'Bicara seperti biasa. Kamu tidak perlu terus melihat layar.',
-    'Sesekali lirik agenda. Cincin kosong berarti konsep itu belum kamu bahas.',
+    'Klik Mulai, terus izinkan mikrofon kalau diminta.',
+    'Ngomong santai aja, nggak usah terus lihat layar.',
+    'Sesekali lirik agenda. Lingkaran kosong artinya belum dibahas.',
   ]
   return (
     <div className="flex flex-1 flex-col gap-6 md:min-h-0 md:overflow-y-auto">
       <div>
         <h2 className="text-lg font-semibold">Sebelum mulai</h2>
         <p className="mt-2 text-[1.2rem] leading-relaxed text-ink-2">
-          Jelaskan {BACKPROP_TOPIC} dengan suaramu sendiri, seolah ke teman yang belum paham.
+          Jelasin {BACKPROP_TOPIC} kayak lagi ngajarin teman yang belum paham.
         </p>
       </div>
       {/* Mengisi lebar kartu: bertumpuk di layar sempit, tiga kolom dari 1024px. */}
@@ -379,11 +377,11 @@ function Transcript({ state, concepts }: { state: LiveState; concepts: Concept[]
     <>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4">
         <h2 className="text-lg font-semibold">Penjelasanmu</h2>
-        <p className="text-sm text-ink-3">Teks samar masih bisa berubah.</p>
+        <p className="text-sm text-ink-3">Teks yang pudar masih bisa berubah.</p>
       </div>
       <div ref={ref} className="mt-4 flex-1 md:overflow-y-auto md:pr-2">
         <p className="max-w-[64ch] text-[1.3rem] leading-[1.7]">
-          {empty && <span className="text-ink-3">Mendengarkan… mulai jelaskan kapan saja.</span>}
+          {empty && <span className="text-ink-3">Kata-katamu muncul di sini.</span>}
           {segments.map(({ seg, key }) =>
             seg.kind === 'pause' ? (
               <PauseChip key={key} duration={seg.duration} />
@@ -421,8 +419,8 @@ function Footer({
     >
       {!started ? (
         <p className="mr-auto max-w-[56rem] text-sm leading-relaxed text-ink-3">
-          Suaramu diproses di laptop ini. Setelah kamu berhenti, transkrip, daftar konsep, metrik, dan materimu dikirim
-          ke Gemini untuk feedback, dan Gemini versi gratis bisa memakai data itu. Untuk sekarang, aplikasi memutar sesi
+          Suaramu diproses di laptop ini. Setelah selesai, transkrip, konsep, angka, dan materimu dikirim ke Gemini
+          buat bikin feedback. Gemini versi gratis bisa memakai data itu. Untuk sekarang, aplikasi memutar sesi
           contoh sekitar 90 detik.
         </p>
       ) : (
@@ -446,7 +444,7 @@ function Footer({
         )}
         {state.status === 'processing' && (
           <button className="btn btn-stop px-8" disabled>
-            Memproses…
+            Bentar, ya…
           </button>
         )}
         {sessionDone && (

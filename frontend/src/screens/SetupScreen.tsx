@@ -41,7 +41,7 @@ const size = (bytes: number) =>
 
 function describe(m: Material) {
   if (m.kind === 'none') return 'Tanpa materi'
-  if (m.kind === 'text') return `Teks tempelan · ${m.text.length.toLocaleString('id-ID')} karakter`
+  if (m.kind === 'text') return `Teks · ${m.text.length.toLocaleString('id-ID')} karakter`
   const picked = parsePages(m.pages)
   const range = !m.unit
     ? ''
@@ -91,11 +91,11 @@ export default function SetupScreen() {
   const ready = step === 'review' && concepts.length > 0 && editing === null
 
   const question: Record<Step, ReactNode> = {
-    topic: 'Halo! Mau menjelaskan topik apa hari ini?',
-    material: 'Punya materi kuliahnya? Aku ambil konsep dari situ.',
+    topic: 'Halo! Mau jelasin topik apa hari ini?',
+    material: 'Ada materi kuliahnya? Kasih aku, biar konsepnya pas.',
     extracting: (
       <>
-        {material?.kind === 'none' ? `Sebentar, aku susun konsep dasar ${topic} dulu` : 'Sebentar, aku baca materimu dulu'}
+        {material?.kind === 'none' ? `Bentar, aku susun konsep dasar ${topic} dulu` : 'Bentar, aku baca materimu dulu'}
         <span aria-hidden="true" className="dots">
           <i />
           <i />
@@ -103,15 +103,15 @@ export default function SetupScreen() {
         </span>
       </>
     ),
-    failed: 'Aku gagal menghubungi Gemini karena batas pemakaian gratis sedang tercapai.',
+    failed: 'Yah, kuota gratis Gemini lagi habis.',
     review: found
-      ? `Aku menemukan ${found} konsep. Cek dulu, ya.`
-      : 'Tulis konsep yang harus kamu jelaskan. Nanti aku mencentangnya di agenda.',
+      ? `Ketemu ${found} konsep! Cek dulu, ya.`
+      : 'Tulis konsep yang mau kamu bahas. Nanti aku centang satu-satu.',
   }
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <AppBar back={{ to: '/', label: 'Kembali ke beranda' }} title="Siapkan topik" subtitle="Mockup: konsep contoh, belum dari Gemini">
+      <AppBar back={{ to: '/', label: 'Kembali ke beranda' }} title="Pilih topik" subtitle="Mockup: konsep contoh, belum dari Gemini">
         <MockStateSwitch
           options={[
             { value: 'normal', label: 'Normal' },
@@ -173,14 +173,14 @@ export default function SetupScreen() {
               ))}
               <p role="status" className="mt-3 flex items-center gap-2 text-sm text-ink-3">
                 <CloudIcon className="size-5 shrink-0" />
-                {material?.kind === 'none' ? 'Topikmu' : 'Teks materimu'} dikirim ke Gemini untuk mengambil konsep.
+                {material?.kind === 'none' ? 'Topikmu' : 'Teks materimu'} aku kirim ke Gemini buat dicariin konsepnya.
               </p>
             </div>
           )}
 
           {step === 'failed' && (
             <div role="alert" className="flex flex-col gap-4">
-              <p className="text-lg text-ink-2">Coba lagi sebentar lagi, atau tulis konsepnya sendiri.</p>
+              <p className="text-lg text-ink-2">Tunggu sebentar terus coba lagi, atau tulis konsepnya sendiri.</p>
               <div className="flex flex-wrap gap-3">
                 <button
                   className="btn btn-go"
@@ -224,11 +224,11 @@ export default function SetupScreen() {
                   aria-describedby={ready ? undefined : 'syarat-mulai'}
                   onClick={() => navigate('/live')}
                 >
-                  Mulai menjelaskan
+                  Mulai jelasin
                 </button>
                 {!ready && (
                   <p id="syarat-mulai" className="text-sm text-ink-3">
-                    {concepts.length ? 'Selesaikan dulu konsep yang sedang diubah.' : 'Tambah minimal satu konsep.'}
+                    {concepts.length ? 'Simpan dulu konsep yang lagi diubah, ya.' : 'Tambahin minimal satu konsep dulu.'}
                   </p>
                 )}
               </div>
@@ -238,8 +238,8 @@ export default function SetupScreen() {
 
         {(step === 'material' || step === 'review') && (
           <p className="mt-10 text-center text-xs leading-relaxed text-ink-3">
-            Materi dan daftar konsep dikirim ke Gemini. Gemini versi gratis bisa memakai data itu untuk meningkatkan
-            layanan Google. Suaramu tetap diproses di laptop ini.
+            Suaramu tetap di laptop ini. Materi dan daftar konsep dikirim ke Gemini, dan Gemini versi gratis bisa
+            memakainya untuk ningkatin layanan Google.
           </p>
         )}
       </main>
@@ -304,10 +304,10 @@ function TopicForm({ initial, onSubmit }: { initial: string; onSubmit: (topic: s
         maxLength={80}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Contoh: Backpropagation"
+        placeholder="Misalnya: Backpropagation"
         className="field px-5 py-4 text-xl"
       />
-      <p className="text-sm text-ink-3">Satu subtopik saja, supaya bisa kamu jelaskan dalam 2–5 menit.</p>
+      <p className="text-sm text-ink-3">Satu subtopik aja, biar cukup 2–5 menit.</p>
       <button className="btn btn-go mx-auto mt-8 w-full max-w-80 text-lg" disabled={!topic}>
         Lanjut
       </button>
@@ -363,7 +363,7 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
     if (!f) return
     const ext = f.name.split('.').pop()?.toLowerCase() ?? ''
     if (!FORMATS.includes(ext))
-      return setError({ text: 'Format ini belum didukung. Pakai PDF, PPTX, TXT, atau MD.', n: (error?.n ?? 0) + 1 })
+      return setError({ text: 'Yah, aku belum bisa baca format ini. Coba PDF, PPTX, TXT, atau MD.', n: (error?.n ?? 0) + 1 })
     setError(null)
     setMode('file')
     setFile({
@@ -377,7 +377,7 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
   const picked = file ? parsePages(file.pages) : null
   const badRange = !!picked && 'error' in picked
   const options = [
-    { kind: 'file', label: 'Unggah file' },
+    { kind: 'file', label: 'Upload file' },
     { kind: 'text', label: 'Tempel teks' },
     { kind: 'none', label: 'Tanpa materi' },
   ] as const
@@ -421,8 +421,8 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
         aria-label="Pilih file materi"
         onChange={(e) => pick(e.target.files?.[0])}
       />
-      {mode === 'none' && <p className="text-sm text-ink-3">Tanpa materi, konsep diambil dari pengetahuan umum Gemini.</p>}
-      {!mode && <p className="text-sm text-ink-3">Pilih salah satu.</p>}
+      {mode === 'none' && <p className="text-sm text-ink-3">Nggak apa-apa. Konsepnya nanti dari pengetahuan umum Gemini.</p>}
+      {!mode && <p className="text-sm text-ink-3">Pilih satu, ya.</p>}
 
       {mode === 'file' && !file && <DropZone onPick={pick} onBrowse={() => input.current?.click()} error={error} />}
 
@@ -447,7 +447,7 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
           {file.unit && (
             <div className="flex flex-col gap-1.5">
               <label htmlFor="halaman" className="text-sm font-semibold">
-                {file.unit} yang dipakai
+                {file.unit} mana aja?
               </label>
               <input
                 id="halaman"
@@ -464,7 +464,7 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
                   ? picked.error
                   : picked && picked.pages.length
                     ? `${picked.pages.length} ${file.unit.toLowerCase()} dipilih: ${formatPages(picked.pages)}`
-                    : 'Contoh: 1-5, 8, 11-13. Kosongkan untuk memakai semua.'}
+                    : 'Misalnya 1-5, 8, 11-13. Kosongin kalau mau semua.'}
               </p>
             </div>
           )}
@@ -497,7 +497,7 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
           onSubmit(mode === 'file' && file ? file : mode === 'text' ? { kind: 'text', text: text.trim() } : { kind: 'none' })
         }
       >
-        {mode === 'none' ? 'Lanjut tanpa materi' : 'Ambil konsep'}
+        {mode === 'none' ? 'Lanjut tanpa materi' : 'Cari konsepnya'}
       </button>
     </div>
   )
@@ -587,10 +587,10 @@ function DropZone({
           <OptionIcon kind="file" className="size-14" />
         </span>
         <span className="text-lg font-semibold">
-          {state === 'over' ? 'Lepaskan file di sini' : state === 'ready' ? 'Seret ke sini' : 'Tarik file ke sini'}
+          {state === 'over' ? 'Lepas di sini!' : state === 'ready' ? 'Bawa ke sini' : 'Tarik file ke sini'}
         </span>
         <span className="text-sm text-ink-3">
-          atau <span className="font-medium text-ink underline decoration-go-ink decoration-2 underline-offset-4">klik untuk memilih file</span>
+          atau <span className="font-medium text-ink underline decoration-go-ink decoration-2 underline-offset-4">klik buat pilih file</span>
         </span>
       </button>
       {error ? (
@@ -622,6 +622,8 @@ function ConceptEditor({
   // Baris muncul satu per satu hanya saat daftar pertama kali tampil.
   const [touched, setTouched] = useState(false)
   const [removed, setRemoved] = useState<{ concept: Concept; index: number } | null>(null)
+  // Berapa kali tombol tambah dipencet saat sudah penuh. Dipakai sebagai key supaya goyangannya bisa diulang.
+  const [bump, setBump] = useState(0)
   const full = concepts.length >= MAX_CONCEPTS
 
   const save = (c: Concept) => {
@@ -638,13 +640,13 @@ function ConceptEditor({
           Daftar konsep
         </h3>
         <p className="text-sm tabular-nums text-ink-3">
-          {concepts.length} dari maksimal {MAX_CONCEPTS}
+          {concepts.length}/{MAX_CONCEPTS}
         </p>
       </div>
 
       {noMaterial && (
         <p className="mt-3 rounded-2xl bg-[#FFF4D6] px-4 py-3 text-sm leading-relaxed text-[#6B4A00] dark:bg-[#33290f] dark:text-[#FFD98A]">
-          Konsep ini dari pengetahuan umum Gemini, bukan dari materimu. Cocokkan dengan catatan kuliahmu.
+          Konsep ini dari pengetahuan umum Gemini, bukan materimu. Cocokin dulu sama catatan kuliahmu, ya.
         </p>
       )}
 
@@ -677,6 +679,7 @@ function ConceptEditor({
                   disabled={editing !== null}
                   onClick={() => {
                     setTouched(true)
+                    setBump(0)
                     setRemoved({ concept: c, index: i })
                     onChange(concepts.filter((x) => x.id !== c.id))
                   }}
@@ -716,18 +719,33 @@ function ConceptEditor({
       )}
 
       {editing !== 'new' && (
+        // Saat penuh, tombol tetap bisa dipencet (aria-disabled, bukan disabled), supaya pencetannya bisa
+        // dijawab dengan goyangan merah yang menunjuk ke pesan batas di bawahnya.
         <button
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line py-3.5 font-semibold text-ink-2 transition-colors duration-150 hover:border-go-ink hover:text-go-ink disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={full || editing !== null}
-          onClick={() => setEditing('new')}
+          key={bump}
+          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed py-3.5 font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+            !full
+              ? 'border-line text-ink-2 hover:border-go-ink hover:text-go-ink'
+              : bump
+                ? 'drop-shake cursor-not-allowed border-stop bg-stop/5 text-stop'
+                : 'cursor-not-allowed border-line text-ink-2 opacity-50'
+          }`}
+          disabled={editing !== null}
+          aria-disabled={full || undefined}
+          aria-describedby={full ? 'batas-konsep' : undefined}
+          onClick={() => (full ? setBump(bump + 1) : setEditing('new'))}
         >
           <PlusIcon className="size-5" />
           Tambah konsep
         </button>
       )}
       <p className="mt-4 text-sm leading-relaxed text-ink-3">
-        {full ? 'Sudah 8 konsep. Hapus satu dulu sebelum menambah, supaya agenda tetap terbaca sekilas. ' : ''}
-        Empur mencentang konsep ini di layar live. Nama dan alias juga membantu Whisper mengenali istilahnya.
+        {full && (
+          <span id="batas-konsep" className={bump ? 'font-semibold text-stop' : undefined}>
+            Udah 8, nih. Hapus satu dulu biar agendanya gak kebanyakan.{' '}
+          </span>
+        )}
+        Empur centang konsep ini selama kamu ngomong. Nama lainnya juga bantu Whisper nangkep istilah.
       </p>
     </section>
   )
@@ -800,28 +818,28 @@ function ConceptForm({
           value={name}
           maxLength={60}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Contoh: Learning rate"
+          placeholder="Misalnya: Learning rate"
           className="field font-normal"
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm font-semibold">
         <span>
-          Alias <span className="font-normal text-ink-3">(pisahkan dengan koma)</span>
+          Nama lain <span className="font-normal text-ink-3">(pisah pakai koma)</span>
         </span>
         <input
           value={aliases}
           onChange={(e) => setAliases(e.target.value)}
-          placeholder="Contoh: laju belajar, step size"
+          placeholder="Misalnya: laju belajar, step size"
           className="field font-normal"
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm font-semibold">
-        Deskripsi singkat
+        Penjelasan singkat
         <textarea
           rows={2}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Satu atau dua kalimat. Dipakai untuk menilai apakah konsep ini sudah kamu jelaskan."
+          placeholder="Satu-dua kalimat. Aku pakai ini buat ngecek penjelasanmu."
           className="field resize-y font-normal leading-snug"
         />
       </label>

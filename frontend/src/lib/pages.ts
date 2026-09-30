@@ -10,10 +10,10 @@ export function parsePages(spec: string): { pages: number[] } | { error: string 
     if (!m) return { error: `"${p}" bukan nomor atau rentang.` }
     const a = Number(m[1])
     const b = m[2] ? Number(m[2]) : a
-    if (a < 1) return { error: 'Nomor dimulai dari 1.' }
+    if (a < 1) return { error: 'Mulai dari 1, ya.' }
     if (a > b) return { error: `${a}–${b}: angka awal harus lebih kecil.` }
     // ponytail: batas 2000 menjaga loop tetap kecil; jumlah halaman asli baru diketahui di backend.
-    if (b > 2000) return { error: 'Nomor terlalu besar.' }
+    if (b > 2000) return { error: 'Nomornya kebesaran.' }
     for (let i = a; i <= b; i++) pages.add(i)
   }
   return { pages: [...pages].sort((x, y) => x - y) }

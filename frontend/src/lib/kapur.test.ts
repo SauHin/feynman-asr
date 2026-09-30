@@ -23,8 +23,8 @@ test('konsep yang baru dijelaskan membuat Kapur senang, lalu kembali menyimak', 
     { type: 'transcript', confirmed: 'forward pass', partial: '', t: 12, latency_ms: 500 },
     { type: 'concept', concept_id: 'forward-pass', status: 'explained', t: 20 },
   ]
-  expect(at(actions, 22)).toEqual({ mood: 'happy', text: 'Yes! Forward pass sudah jelas.' })
-  expect(at(actions, 30)).toEqual({ mood: 'listen', text: 'Aku menyimak. Yang belum dibahas: Loss function.' })
+  expect(at(actions, 22)).toEqual({ mood: 'happy', text: 'Yes! Forward pass beres.' })
+  expect(at(actions, 30)).toEqual({ mood: 'listen', text: 'Lanjut! Habis ini bisa bahas Loss function.' })
 })
 
 test('jeda panjang yang lebih baru dari event konsep membuat Kapur bingung', () => {
@@ -60,7 +60,7 @@ test('sesi selesai menyebut jumlah konsep yang sudah jelas', () => {
   })
   expect(done).toEqual({
     mood: 'happy',
-    text: 'Sesi selesai! 1 dari 5 konsep jelas, tapi Loss function belum dibahas.',
+    text: 'Selesai! 1 dari 5 konsep udah jelas. Loss function masih ketinggalan.',
   })
 })
 

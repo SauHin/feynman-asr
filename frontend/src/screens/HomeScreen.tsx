@@ -5,7 +5,7 @@ import { Kapur } from '../components/kapur'
 import { StatusIcon } from '../components/marks'
 import { MARK_LABEL } from '../lib/format'
 
-const STEPS = ['Siapkan topik', 'Jelaskan 2–5 menit', 'Baca feedback', 'Jelaskan ulang'] as const
+const STEPS = ['Pilih topik', 'Jelasin 2–5 menit', 'Cek feedback', 'Jelasin lagi'] as const
 const STEP_COLORS: [string, string][] = [
   ['#FFE27A', '#FF9F43'],
   ['#9FDBFF', '#4B7BFF'],
@@ -16,7 +16,7 @@ const STEP_COLORS: [string, string][] = [
 export default function HomeScreen() {
   return (
     <div className="flex min-h-dvh flex-col">
-      <AppBar title="Feynman Speech Coach" />
+      <AppBar title="Empur" />
 
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center gap-14 px-5 pb-14 pt-6 md:px-8">
         <section aria-labelledby="judul-beranda" className="grid items-center gap-36 md:grid-cols-2 md:gap-14">
@@ -25,14 +25,14 @@ export default function HomeScreen() {
               Belajar dengan menjelaskan
             </h2>
             <p className="mt-5 max-w-[26rem] text-lg leading-relaxed text-ink-2 md:text-xl">
-              Jelaskan satu topik kuliah dengan suaramu. Empur mendengarkan, lalu memberi feedback.
+              Jelasin satu topik pakai suaramu. Empur bakal nyimak, terus kasih feedback.
             </p>
             <Link to="/setup" className="btn btn-go mt-9 w-full max-w-72 text-lg">
-              Mulai sesi
+              Yuk, mulai
             </Link>
             <p className="mt-4 flex items-start gap-2 text-sm leading-snug text-ink-3">
               <LaptopIcon className="size-5 shrink-0" />
-              Suaramu tetap di laptop. Hanya teks yang dikirim ke Gemini.
+              Suaramu tetap di laptop. Yang dikirim ke Gemini cuma teksnya.
             </p>
           </div>
           <AgendaPreview />
