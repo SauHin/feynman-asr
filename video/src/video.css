@@ -1,0 +1,41 @@
+/* Salinan animasi properti Empur dari frontend/src/index.css. empur.tsx menjedanya dan mengatur
+   waktunya per frame, jadi animasi ini tidak pernah berjalan sendiri. */
+@keyframes kapur-pulse {
+  50% {
+    opacity: 0.2;
+  }
+}
+@keyframes kapur-twinkle {
+  50% {
+    scale: 0.7;
+    rotate: 20deg;
+  }
+}
+@keyframes kapur-drift {
+  50% {
+    translate: 0 -3px;
+  }
+}
+@keyframes kapur-confetti {
+  50% {
+    translate: 0 3px;
+    rotate: 30deg;
+  }
+}
+.kapur-twinkle,
+.kapur-confetti {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.kapur-pulse {
+  animation: kapur-pulse 1.2s ease-in-out infinite;
+}
+.kapur-twinkle {
+  animation: kapur-twinkle 1.6s ease-in-out infinite;
+}
+.kapur-drift {
+  animation: kapur-drift 2s ease-in-out infinite;
+}
+.kapur-confetti {
+  animation: kapur-confetti 1.2s ease-in-out infinite;
+}
