@@ -1,8 +1,8 @@
 import { useId, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react'
-import { random, useCurrentFrame } from 'remotion'
+import { random, useCurrentFrame, useVideoConfig } from 'remotion'
 import { Eyes, KAPUR_RIG, Props } from '../../frontend/src/components/kapur'
-import { TONES, type KapurMood, type KapurTone } from '../../frontend/src/lib/kapur'
-import { armSwing, breathe, FPS, reactionAt, springAt, type Motion } from './motion'
+import { TONES, type KapurMood, type KapurTone, type Tone } from '../../frontend/src/lib/kapur'
+import { armSwing, breathe, reactionAt, springAt, type Motion } from './motion'
 
 // Empur yang digerakkan per frame. Bentuk, pose, pegas, dan reaksinya diambil dari rig aplikasi
 // (KAPUR_RIG), jadi Empur di video sama dengan Empur di aplikasi. Yang diganti hanya jamnya: di sini
@@ -21,7 +21,7 @@ const motions = (c: Cue): [Motion | undefined, Motion | undefined] => (c.tick ? 
 const look = (c: Cue) => (c.tick ? [2, 1] : (c.gaze ?? [0, 0]))
 const reactionName = (c: Cue) => (c.tick ? 'tick' : c.mood)
 
-// Kedip dengan jeda acak tapi tetap (seed), kadang dua kali. Nilai: skala tinggi mata per frame.
+// Kedip dengan jeda acak tapi tetap (seed), kadang dua kali. Nilai: skala tinggi mata per frame 30 fps.
 const BLINKS = (() => {
   const at: number[] = []
   for (let f = 40, i = 0; f < 4000; i++) {
@@ -43,21 +43,32 @@ export function Empur({
   enter = true,
   quiet = false,
   mirror = false,
+  arms: withArms = true,
+  eyesOpen = 1,
+  armGrow = 1,
+  blinks = true,
   style,
 }: {
   cues: Cue[]
-  tone?: KapurTone
+  tone?: KapurTone | Tone
   // Reaksi masuk (muncul dari kecil) di isyarat pertama.
   enter?: boolean
   // Tanpa properti mood (gelombang suara, bintang, konfeti).
   quiet?: boolean
   // Dicerminkan saat mencentang dari kanan, seperti di layar live.
   mirror?: boolean
+  arms?: boolean
+  // 0..1: mata membuka dan tangan tumbuh dari bahu, untuk kelahiran Empur di showreel.
+  eyesOpen?: number
+  armGrow?: number
+  // false: tidak berkedip, misalnya saat kamera masuk ke mata.
+  blinks?: boolean
   style?: CSSProperties
 }) {
   const frame = useCurrentFrame()
+  const { fps } = useVideoConfig()
   const id = useId().replace(/[^a-zA-Z0-9]/g, '')
-  const t = TONES[tone]
+  const t = typeof tone === 'string' ? TONES[tone] : tone
   const cueIndex = (f: number) => Math.max(0, cues.findLastIndex((c) => c.at <= f))
   const i = cueIndex(frame)
   const cue = cues[i]
@@ -69,36 +80,37 @@ export function Empur({
     const [right, left] = poses(c)
     return [...R.EYES[c.mood].flatMap(R.eyeVec), ...R.armVec(R.ARM[right]), ...R.armVec(R.ARM[left])]
   }
-  const rig = springAt(target, frame, 140, 15)
-  const gaze = springAt((f) => look(cues[cueIndex(f)]), frame, 500, 40)
+  const rig = springAt(target, frame, 140, 15, fps)
+  const gaze = springAt((f) => look(cues[cueIndex(f)]), frame, 500, 40, fps)
   const [lean] = springAt((f) => {
     const c = cues[cueIndex(f)]
     return [c.tick ? 0 : (R.LEAN[c.mood] ?? 0) + look(c)[0] * 1.5]
-  }, frame, 120, 14)
+  }, frame, 120, 14, fps)
   const eyes = [rig.slice(0, EYE_LEN), rig.slice(EYE_LEN, 2 * EYE_LEN)]
   const open = cue.mood !== 'happy' && cue.mood !== 'cheer'
 
   // Reaksi sekali jalan saat isyarat berganti (antisipasi, lewat, mengendap).
   const prev = cues[i - 1]
   const name = !prev ? (enter ? 'enter' : null) : reactionName(prev) === reactionName(cue) ? null : reactionName(cue)
-  const react = name ? reactionAt(R.REACTION[name as keyof typeof R.REACTION], (since / FPS) * 1000) : {}
+  const react = name ? reactionAt(R.REACTION[name as keyof typeof R.REACTION], (since / fps) * 1000) : {}
   const [tx, ty] = react.translate ?? [0, 0]
   const [sx, sy = sx] = react.scale ?? [1, 1]
   const reactTransform = `translate(${CX + tx} ${BOT + ty}) rotate(${react.rotate?.[0] ?? 0}) scale(${sx} ${sy}) translate(${-CX} ${-BOT})`
 
   // Gerak tangan dari bahu. Gerak baru masuk perlahan sambil gerak lama memudar, jadi tidak ada lompatan.
-  const blend = Math.min(1, since / 10)
+  const blend = Math.min(1, since / (fps / 3))
   const swing = (side: 0 | 1) => {
     const dir = side === 0 ? 1 : -1
-    const now = armSwing(motions(cue)[side], since / FPS, dir)
-    const before = prev ? armSwing(motions(prev)[side], (frame - prev.at) / FPS, dir) : 0
+    const now = armSwing(motions(cue)[side], since / fps, dir)
+    const before = prev ? armSwing(motions(prev)[side], (frame - prev.at) / fps, dir) : 0
     return before + (now - before) * blend
   }
 
   const arms = ([0, 1] as const).map((s) => {
     const side = s === 0 ? 1 : -1
     const v = s === 0 ? rig.slice(2 * EYE_LEN, 2 * EYE_LEN + ARM_LEN) : rig.slice(2 * EYE_LEN + ARM_LEN)
-    const p = R.armOf(v)
+    const p = { ...R.armOf(v) }
+    p.len *= armGrow
     const shoulder = [side === 1 ? p.x : 2 * CX - p.x, p.y]
     return { side, ...R.arm(p, side), rotate: `rotate(${swing(s).toFixed(2)} ${shoulder[0]} ${shoulder[1]})` }
   })
@@ -126,12 +138,12 @@ export function Empur({
   useLayoutEffect(() => {
     for (const a of svg.current?.getAnimations({ subtree: true }) ?? []) {
       a.pause()
-      a.currentTime = (since / FPS) * 1000
+      a.currentTime = (since / fps) * 1000
     }
   })
-  const propIn = Math.min(1, since / 10)
-  const blink = open ? blinkAt(frame) : 1
-  const breath = breathe(frame / FPS)
+  const propIn = Math.min(1, since / (fps / 3))
+  const blink = (open && blinks ? blinkAt(Math.floor((frame * 30) / fps)) : 1) * eyesOpen
+  const breath = breathe(frame / fps)
 
   const eyesNode: ReactNode = <Eyes eyes={eyes} gaze={gaze} ink={t.ink} />
   return (
@@ -157,12 +169,12 @@ export function Empur({
         <g transform={`translate(0 ${BOT}) scale(1 ${breath}) translate(0 ${-BOT})`}>
           <g transform={reactTransform}>
             <g transform={`rotate(${lean.toFixed(2)} ${CX} ${BOT})`}>
-              {back}
+              {withArms && armGrow > 0.02 && back}
               <path d={BODY} fill={`url(#${id}base)`} />
               <ellipse cx={CX} cy={TOP} rx={W} ry={RY} fill={t.cap} />
               <ellipse cx={CX - 2.7} cy={TOP - 1.3} rx={W * 0.75} ry={RY * 0.65} fill={t.capHi} />
               <g transform={`translate(0 61) scale(1 ${blink}) translate(0 -61)`}>{eyesNode}</g>
-              {front}
+              {withArms && armGrow > 0.02 && front}
               {!quiet && !cue.tick && (
                 <g key={cue.mood} opacity={propIn} transform={`translate(0 ${(1 - propIn) * 4})`}>
                   <Props mood={cue.mood} t={t} id={id} />

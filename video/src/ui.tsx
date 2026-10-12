@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { Easing, Html5Audio, interpolate, Sequence, spring, staticFile, useCurrentFrame } from 'remotion'
+import { Easing, Html5Audio, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion'
 import { FPS } from './motion'
 
 // Token warna dan huruf dari DESIGN.md (arah A, terang dan bersih).
@@ -24,13 +24,16 @@ export const FONT = "'Lexend Variable', system-ui, sans-serif"
 export const outExpo = Easing.bezier(0.16, 1, 0.3, 1)
 export const inOut = Easing.bezier(0.65, 0, 0.35, 1)
 
+// Durasi di file ini ditulis untuk 30 fps. k mengubahnya ke fps komposisi.
+const useK = () => useVideoConfig().fps / 30
+
 // interpolate yang selalu dijepit di kedua ujung.
 export const tween = (frame: number, range: [number, number], out: [number, number], easing = outExpo) =>
   interpolate(frame, range, out, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing })
 
 // Pegas 0..1 yang mulai di frame `at`. bounce: sedikit lewat lalu mengendap.
-export const pop = (frame: number, at: number, bounce = true) =>
-  spring({ frame: frame - at, fps: FPS, config: bounce ? { damping: 12, stiffness: 170, mass: 0.7 } : { damping: 200 } })
+export const pop = (frame: number, at: number, bounce = true, fps = FPS) =>
+  spring({ frame: frame - at, fps, config: bounce ? { damping: 12, stiffness: 170, mass: 0.7 } : { damping: 200 } })
 
 // Keluar ke atas sambil memudar dan kabur, dipakai untuk mengganti judul.
 export const leave = (frame: number, at: number, dur = 12): CSSProperties => {
@@ -60,10 +63,11 @@ export function Words({
   mark?: Record<string, CSSProperties>
 }) {
   const frame = useCurrentFrame()
+  const k = useK()
   return (
     <div style={{ fontSize: size, fontWeight: weight, color, lineHeight: 1.12, letterSpacing: '-0.025em', ...style }}>
       {text.split(' ').map((w, i) => {
-        const p = tween(frame, [at + i * stagger, at + i * stagger + 20], [0, 1])
+        const p = tween(frame, [at + i * stagger, at + i * stagger + 20 * k], [0, 1])
         return (
           <span key={i} style={{ display: 'inline-block', overflow: 'hidden', padding: '0.06em 0.02em 0.14em', margin: '-0.06em 0 -0.14em', verticalAlign: 'top' }}>
             <span
@@ -90,8 +94,9 @@ export function Words({
 // dan centang yang menggambar dirinya sendiri mulai frame `drawAt`.
 export function StatusIcon({ status, size = 34, drawAt = -99 }: { status: 'none' | 'mentioned' | 'explained'; size?: number; drawAt?: number }) {
   const frame = useCurrentFrame()
-  const s = pop(frame, drawAt)
-  const draw = tween(frame, [drawAt + 2, drawAt + 12], [1, 0])
+  const k = useK()
+  const s = pop(frame, drawAt, true, 30 * k)
+  const draw = tween(frame, [drawAt + 2 * k, drawAt + 12 * k], [1, 0])
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} style={{ flexShrink: 0, overflow: 'visible' }}>
       {status === 'explained' && (
@@ -115,7 +120,7 @@ export function StatusIcon({ status, size = 34, drawAt = -99 }: { status: 'none'
 // mulai frame `at`. Garisnya ada di salinan kata yang transparan, jadi hanya garis yang terpotong.
 export function Wavy({ at, children }: { at: number; children: string }) {
   const frame = useCurrentFrame()
-  const hide = tween(frame, [at, at + 12], [100, 0])
+  const hide = tween(frame, [at, at + 12 * useK()], [100, 0])
   return (
     <span style={{ position: 'relative', display: 'inline-block' }}>
       {children}
@@ -140,10 +145,10 @@ export function Wavy({ at, children }: { at: number; children: string }) {
 }
 
 // Sorotan stabilo kuning di separuh bawah huruf (.term-mark), tergores dari kiri mulai frame `at`.
-export const marker = (frame: number, at: number): CSSProperties => ({
+export const marker = (frame: number, at: number, k = 1): CSSProperties => ({
   backgroundImage: 'linear-gradient(transparent 58%, rgb(255 216 77 / 0.6) 58%, rgb(255 216 77 / 0.6) 92%, transparent 92%)',
   backgroundRepeat: 'no-repeat',
-  backgroundSize: `${tween(frame, [at, at + 12], [0, 100])}% 100%`,
+  backgroundSize: `${tween(frame, [at, at + 12 * k], [0, 100])}% 100%`,
   boxDecorationBreak: 'clone',
   WebkitBoxDecorationBreak: 'clone',
 })
@@ -175,7 +180,7 @@ export function Pill({ children, bg = C.go, edge = C.goEdge, color = '#fff', siz
 
 // Efek suara satu kali di frame `at` (lokal di Sequence tempat ia dipasang).
 export const Sfx = ({ at, name, volume = 0.6 }: { at: number; name: string; volume?: number }) => (
-  <Sequence from={Math.round(at)} durationInFrames={FPS * 3} layout="none">
+  <Sequence from={Math.round(at)} durationInFrames={useVideoConfig().fps * 3} layout="none">
     <Html5Audio src={staticFile(`sfx/${name}.wav`)} volume={volume} />
   </Sequence>
 )

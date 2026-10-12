@@ -23,13 +23,14 @@ export function stops(t: number, s: [number, number][], ease = cssInOut) {
 }
 
 // Pegas yang sama dengan rig aplikasi (lib/spring.ts), disimulasikan dari frame 0 sampai `frame`.
-// goal(f) memberi target di frame f. Dua langkah per frame supaya setara dengan 60 fps di browser.
-export function springAt(goal: (f: number) => number[], frame: number, k: number, c: number, sub = 2) {
+// goal(f) memberi target di frame f. Langkahnya dipecah supaya setara dengan 60 fps di browser.
+export function springAt(goal: (f: number) => number[], frame: number, k: number, c: number, fps = FPS) {
+  const sub = Math.max(1, Math.round(60 / fps))
   const x = [...goal(0)]
   const v = x.map(() => 0)
   for (let f = 0; f < frame; f++) {
     const g = goal(f)
-    for (let i = 0; i < sub; i++) springStep(x, v, g, k, c, 1 / FPS / sub)
+    for (let i = 0; i < sub; i++) springStep(x, v, g, k, c, 1 / fps / sub)
   }
   return x
 }
