@@ -3,3 +3,11 @@ project-guideline.md
 .playwright-mcp/
 .impeccable/questions/
 .impeccable/review/
+
+# Backend
+.env
+backend/.venv/
+__pycache__/
+.pytest_cache/
+# Rekaman suara peserta tidak di-commit
+eval/data/

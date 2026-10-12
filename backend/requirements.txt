@@ -1,0 +1,6 @@
+faster-whisper==1.2.1
+# av 19 menghapus argumen metadata_errors yang masih dipakai faster-whisper 1.2.1
+av==17.1.0
+# cuBLAS untuk CTranslate2 di GPU, tanpa perlu install CUDA Toolkit
+nvidia-cublas-cu12==12.9.2.10
+pytest==9.1.1
