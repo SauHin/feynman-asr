@@ -10,7 +10,7 @@ Feynman Speech Coach adalah aplikasi latihan menjelaskan materi secara lisan. Uc
 
 Masalahnya, model sering salah mendengar istilah Inggris di tengah kalimat bahasa Indonesia. Contoh dari rekaman pilot: "output layer" jadi "octave layer", "weight" jadi "width", dan "label" jadi "lambe".
 
-Fine-tuning diwajibkan untuk tugas ini. Tujuannya membuat model lebih akurat untuk penjelasan CS yang santai dan bercampur istilah Inggris. Kita memakai LoRA: bobot asli model dibekukan, dan yang dilatih hanya adapter kecil. Datanya juga kecil, sekitar 40 menit audio dari empat pembaca. Karena itu, setiap label harus benar, dan data uji harus terpisah dari data latih.
+Fine-tuning diwajibkan untuk tugas ini. Tujuannya membuat model lebih akurat untuk penjelasan CS yang santai dan bercampur istilah Inggris. Kita memakai LoRA: bobot asli model dibekukan, dan yang dilatih hanya adapter kecil. Datanya juga kecil, sekitar 13 menit audio dari tiga pembaca, karena setiap naskah hanya dibaca satu orang. Karena itu, setiap label harus benar, dan data uji harus terpisah dari data latih.
 
 Hasil akhirnya adalah model `turbo-ft`. Model ini bisa menggantikan `large-v3-turbo` di aplikasi cukup dengan mengubah `ASR_MODEL` di `backend/config.py`. Setelah itu, model ini dibandingkan dengan model asli di tahap evaluasi.
 
@@ -18,7 +18,7 @@ Hasil akhirnya adalah model `turbo-ft`. Model ini bisa menggantikan `large-v3-tu
 
 | Istilah | Arti |
 | --- | --- |
-| Pembaca | Orang yang membaca dan merekam naskah. Tiga anggota tim (`s02`, `s03`, `s04`) membaca 8 naskah. Koordinator (`s01`) hanya membaca 2 naskah: `transformer` dan `precision-recall` |
+| Pembaca | Orang yang membaca dan merekam naskah. Ada tiga pembaca (`s01`, `s02`, `s03`). Setiap naskah dibaca satu orang, sesuai tabel pembagian naskah di langkah 0 |
 | Koordinator | Orang yang menjalankan training dan memasang model. Koordinator juga pembaca, dengan ID `s01` |
 | Naskah | Teks penjelasan satu topik CS, sekitar 190 kata, di `finetune/naskah/<topik>.txt` |
 | Naskah hasil edit | Salinan naskah yang sudah disesuaikan dengan gaya bicara satu pembaca, `finetune/naskah/<topik>.<id>.txt` |
@@ -70,25 +70,27 @@ Semua aturan di panduan ini berasal dari lima prinsip berikut. Kalau ada situasi
 | 6. Training | Koordinator | Model `turbo-ft-<waktu>.zip` di Drive |
 | 7. Pasang dan uji | Koordinator | Model jalan di laptop, siap dievaluasi |
 
-Untuk pembaca 8 naskah, langkah 1–5 memakan waktu kira-kira 1,5–2 jam.
+Untuk 3 naskah, langkah 1–5 memakan waktu kira-kira 45–60 menit.
 
 ## 0. Persiapan
 
 Tujuan: semua pembaca punya repo dan environment Python yang sama dengan backend. Dengan begitu, pemotong memakai model dan versi library yang sama di semua laptop.
 
+### Pembagian naskah
+
+| ID | Peran | Naskah |
+| --- | --- | --- |
+| `s01` | Koordinator dan pembaca | `transformer`, `precision-recall` |
+| `s02` | Pembaca | `overfitting`, `database-index`, `deadlock` |
+| `s03` | Pembaca | `cnn`, `git-branch`, `hash-table` |
+
+Nama pemilik setiap ID dikirim lewat chat tim, tidak ditulis di sini, karena repo ini publik.
+
 ### Koordinator
 
-1. Isi tabel ID di bawah, lalu bagikan ke pembaca.
-
-   | ID | Nama |
-   | --- | --- |
-   | s01 | Koordinator |
-   | s02 | |
-   | s03 | |
-   | s04 | |
-
+1. Kirim ID setiap pembaca dan link folder Drive lewat chat tim.
 2. Buat folder `feynman-finetune` di Google Drive, dengan tiga subfolder: `raw`, `segments`, dan `models`.
-3. Bagikan folder `feynman-finetune` ke tiga pembaca lain sebagai Editor.
+3. Bagikan folder `feynman-finetune` ke dua pembaca lain sebagai Editor.
 
 ### Pembaca
 
@@ -131,9 +133,9 @@ Selesai kalau: perintah tes menulis `passed` dan tidak ada `failed`.
 
 Tujuan: naskah sesuai dengan cara bicara pembaca. Rekaman jadi lebih natural, dan pembaca lebih jarang salah ucap. Naskah hasil edit juga menjadi sumber label. Makin mirip dengan ucapan, makin sedikit yang perlu dikoreksi di langkah 4.
 
-Ada 8 naskah di `finetune/naskah/`. Pembaca `s02`, `s03`, dan `s04` mengerjakan semuanya. Koordinator (`s01`) hanya mengerjakan `transformer` dan `precision-recall`.
+Ada 8 naskah di `finetune/naskah/`. Kerjakan hanya naskah bagianmu, sesuai tabel pembagian naskah di langkah 0.
 
-1. Salin `<topik>.txt` jadi `<topik>.<id>.txt`. Contoh: `cnn.txt` jadi `cnn.s02.txt`.
+1. Salin `<topik>.txt` jadi `<topik>.<id>.txt`. Contoh: `cnn.txt` jadi `cnn.s03.txt`.
 2. Baca keras naskahmu sekali.
 3. Ganti kata yang tidak biasa kamu ucapkan. Contoh: "nggak" jadi "enggak", atau "bandingin" jadi "bandingkan".
 4. Jangan ganti istilah yang ada di `<topik>.terms.txt` (prinsip 4). Istilah Inggris tetap Inggris: "weight" tetap "weight", bukan "bobot".
@@ -166,12 +168,12 @@ Cara merekam:
 | Bagian nama | Isi | Contoh |
 | --- | --- | --- |
 | `T` | Penanda data latih, selalu `T` | `T` |
-| `<id>` | ID pembicaramu | `s02` |
+| `<id>` | ID pembicaramu | `s03` |
 | `<topik>` | Sama persis dengan nama naskah | `hash-table` |
 | `<mic>` | Jenis mic | `laptop` |
 | `<lokasi>` | Tempat rekaman | `kos` |
 
-Contoh lengkap: `T_s02_hash-table_laptop_kos.wav`. Jangan pakai garis bawah `_` di dalam satu bagian nama, karena skrip memakai `_` untuk memisahkan bagian.
+Contoh lengkap: `T_s03_hash-table_laptop_kos.wav`. Jangan pakai garis bawah `_` di dalam satu bagian nama, karena skrip memakai `_` untuk memisahkan bagian.
 
 Selesai kalau: setiap naskah bagianmu punya satu rekaman di `finetune/data/` dengan nama sesuai format.
 
@@ -197,10 +199,10 @@ Kalau laptopmu tidak punya GPU NVIDIA, tambahkan `--device cpu`. Proses pertama 
 Untuk tiap rekaman, skrip menulis satu baris seperti ini:
 
 ```
-T_s02_cnn_laptop_kos.wav: 9 potongan, 2 perlu dicek, 0 dibuang otomatis
+T_s03_cnn_laptop_kos.wav: 9 potongan, 2 perlu dicek, 0 dibuang otomatis
 ```
 
-Hasilnya ada di `finetune/data/segments/T_s02_cnn_laptop_kos/`: file `001.wav`, `002.wav`, dan seterusnya, ditambah `segments.csv`. Kalau ada baris yang diawali `gagal`, lihat tabel masalah di bagian bawah.
+Hasilnya ada di `finetune/data/segments/T_s03_cnn_laptop_kos/`: file `001.wav`, `002.wav`, dan seterusnya, ditambah `segments.csv`. Kalau ada baris yang diawali `gagal`, lihat tabel masalah di bagian bawah.
 
 Selesai kalau: setiap rekaman punya folder di `finetune/data/segments/`, dan tidak ada baris `gagal`.
 
@@ -254,7 +256,7 @@ Aturan menulis `text`:
 Kalau hampir semua potongan di satu rekaman berstatus `cek`, mungkin rekaman itu dipasangkan dengan naskah yang salah. Periksa nama file dan naskahnya, lalu potong ulang:
 
 ```powershell
-.\backend\.venv\Scripts\python.exe finetune\segment.py --force T_s02_cnn_laptop_kos.wav
+.\backend\.venv\Scripts\python.exe finetune\segment.py --force T_s03_cnn_laptop_kos.wav
 ```
 
 `--force` menghapus hasil potong dan hasil cek lama untuk rekaman itu.
@@ -336,7 +338,7 @@ Tujuan: memastikan model hasil training berjalan di laptop dengan backend yang s
 
 4. Untuk memakai model di aplikasi, ubah `ASR_MODEL` di `backend/config.py` jadi `"finetune/models/turbo-ft"`. Path ini relatif terhadap root repo, karena backend dijalankan dari sana.
 
-Evaluasi lengkapnya membandingkan `large-v3-turbo` dengan `turbo-ft`, masing-masing tanpa dan dengan hotwords, di Set A dan Set B. Hasil Set A dari empat pembaca (`s01` sampai `s04`) dilaporkan terpisah, karena suara mereka ikut dilatih.
+Evaluasi lengkapnya membandingkan `large-v3-turbo` dengan `turbo-ft`, masing-masing tanpa dan dengan hotwords, di Set A dan Set B. Hasil Set A dari tiga pembaca (`s01` sampai `s03`) dilaporkan terpisah, karena suara mereka ikut dilatih.
 
 Selesai kalau: perintah uji menulis WER dan term recall tanpa error.
 
@@ -368,8 +370,8 @@ Salin prompt di bawah ke AI-mu, misalnya ChatGPT, Claude, atau Gemini. Isi bagia
 Kamu akan membimbing saya mengerjakan bagian pembaca dari panduan fine-tuning ASR proyek Feynman Speech Coach. Panduannya adalah finetune/README.md.
 
 Tentang saya:
-- ID pembicara: [s02 / s03 / s04 / s01]
-- Naskah bagian saya: [semua 8 naskah / transformer dan precision-recall]
+- ID pembicara: [s01 / s02 / s03]
+- Naskah bagian saya: [tulis topiknya, sesuai tabel pembagian naskah di langkah 0]
 - Sistem operasi: [Windows / macOS / Linux]
 - GPU NVIDIA di laptop: [ada / tidak ada / tidak tahu]
 
