@@ -1,0 +1,11 @@
+Oke, saya mau jelasin cara kerja Git, terutama branch dan merge. Git itu version control system, jadi semua perubahan di project kita kecatet dan bisa dibalikin kapan aja.
+
+Unit dasarnya namanya commit. Commit itu snapshot dari file-file kita di satu waktu, lengkap sama pesan yang jelasin apa yang berubah. Semua commit ini disimpen di repository.
+
+Nah, biar bisa kerja bareng tanpa saling ganggu, kita pakai branch. Branch itu cabang dari history commit. Misalnya main branch isinya kode yang udah stabil, terus saya bikin branch baru buat ngerjain fitur login. Semua commit saya masuk ke branch itu dulu, jadi main branch tetap aman.
+
+Kalau fiturnya udah selesai, branch-nya digabung balik ke main pakai merge. Biasanya lewat pull request di GitHub, biar teman satu tim bisa review kodenya dulu sebelum di-merge.
+
+Kadang dua orang ngubah baris yang sama di file yang sama. Git nggak tahu mana yang bener, jadi muncul merge conflict. Kita harus buka file-nya, pilih perubahan mana yang dipakai, terus commit hasilnya.
+
+Buat sinkron sama remote repository, kita pakai push buat ngirim commit, dan pull buat ngambil commit terbaru dari teman. Ada juga rebase, yang mindahin commit kita ke atas commit terbaru, biar history-nya lurus. Kurang lebih gitu alurnya.

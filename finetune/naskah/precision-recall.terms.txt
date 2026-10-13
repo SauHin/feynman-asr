@@ -1,0 +1,17 @@
+precision
+recall
+metric
+classification
+imbalanced
+confusion matrix
+email
+spam
+true positive
+false positive
+false negative
+true negative
+accuracy
+positive
+threshold
+f1 score
+harmonic mean

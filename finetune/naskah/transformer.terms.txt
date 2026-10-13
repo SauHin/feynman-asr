@@ -1,0 +1,24 @@
+transformer
+large language model
+token
+tokenizer
+vector
+embedding
+rnn
+positional encoding
+self-attention
+query
+key
+value
+dot product
+attention score
+score
+softmax
+weight
+attention
+multi-head attention
+encoder
+decoder
+input
+output
+gpt

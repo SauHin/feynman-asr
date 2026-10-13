@@ -1,0 +1,19 @@
+hash table
+key
+value
+array
+slot
+bucket
+hash function
+string
+modulo
+index
+hash
+lookup
+collision
+chaining
+linked list
+open addressing
+load factor
+rehash
+worst case

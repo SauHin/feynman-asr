@@ -9,5 +9,8 @@ project-guideline.md
 backend/.venv/
 __pycache__/
 .pytest_cache/
-# Rekaman suara peserta tidak di-commit
+# Rekaman suara peserta dan tim tidak di-commit
 eval/data/
+finetune/data/
+# Model hasil fine-tuning terlalu besar untuk git, simpan di Google Drive
+finetune/models/

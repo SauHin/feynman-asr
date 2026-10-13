@@ -1,0 +1,11 @@
+Oke, kali ini saya bahas index di database. Bayangin kita punya table user yang isinya jutaan row, terus kita jalanin query SELECT pakai WHERE buat nyari satu email.
+
+Kalau nggak ada index, database harus ngecek row satu per satu dari awal sampai akhir. Ini namanya full table scan. Makin besar table-nya, makin lambat query-nya.
+
+Index itu struktur data tambahan yang nyimpen nilai kolom tertentu dalam keadaan udah terurut, plus pointer ke row aslinya. Mirip daftar istilah di bagian belakang buku teks. Kita nggak baca bukunya dari depan, tapi langsung lompat ke halaman yang kita cari.
+
+Kebanyakan database pakai B-tree buat index. B-tree itu tree yang seimbang, jadi jumlah langkah buat nyari data tetap sedikit walaupun datanya banyak banget. Kompleksitasnya logaritmik.
+
+Primary key biasanya otomatis dapet index. Foreign key yang sering dipakai buat join juga sebaiknya dikasih index, biar join antar table nggak lambat.
+
+Tapi index ada harganya. Tiap kali kita insert, update, atau delete data, index-nya juga harus ikut di-update. Index juga makan storage tambahan. Jadi jangan semua kolom dikasih index, cukup kolom yang sering muncul di WHERE, join, atau ORDER BY. Ya gitu sih konsep index.

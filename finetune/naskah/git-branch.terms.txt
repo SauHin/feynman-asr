@@ -1,0 +1,21 @@
+git
+branch
+merge
+version control system
+project
+commit
+snapshot
+file
+repository
+history
+main branch
+main
+login
+pull request
+github
+review
+merge conflict
+remote repository
+push
+pull
+rebase

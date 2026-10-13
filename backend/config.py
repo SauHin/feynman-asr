@@ -12,3 +12,15 @@ ASR_LANGUAGE = "id"
 ASR_BEAM_SIZE = 5
 
 SAMPLE_RATE = 16_000
+
+# Fine-tuning: pemotong rekaman naskah latih (finetune/segment.py).
+# Potongan dibatasi 20 detik, dekat dengan panjang buffer audio yang ditranskrip ulang saat streaming.
+FT_MAX_SEGMENT_S = 20.0
+# Jeda antarkalimat lebih pendek dari ini membuat titik potong tidak pasti, jadi potongannya ditandai "cek".
+FT_MIN_GAP_S = 0.15
+# WER transkrip ASR terhadap naskah di atas ini membuat potongan ditandai "cek". Pada pilot backprop,
+# 0,15 menandai 2 dari 7 potongan, yaitu yang menyimpang beberapa kata dari naskah. Penyimpangan satu
+# kata tidak bisa dibedakan dari salah dengar ASR, jadi semua potongan tetap didengar saat cek.
+FT_FLAG_WER = 0.15
+# Audio yang disisakan sebelum kata pertama dan sesudah kata terakhir rekaman.
+FT_EDGE_PAD_S = 0.3

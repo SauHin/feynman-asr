@@ -1,0 +1,21 @@
+index
+database
+table
+user
+row
+query
+select
+where
+email
+full table scan
+pointer
+b-tree
+tree
+primary key
+foreign key
+join
+insert
+update
+delete
+storage
+order by
