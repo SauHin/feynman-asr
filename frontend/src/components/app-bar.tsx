@@ -51,7 +51,9 @@ export function BrandMark({ className = '' }: { className?: string }) {
 }
 
 // Pilihan di dalam kontrol bersegmen: pil putih (atau abu gelap di malam hari) untuk yang aktif.
-const segment = (on: boolean) =>
+// Juga dipakai toggle sumber suara di layar live.
+// oxlint-disable-next-line react/only-export-components
+export const segment = (on: boolean) =>
   `flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${
     on ? 'bg-surface text-ink shadow-[0_1px_3px_rgba(0,0,0,0.12)] dark:bg-card-2' : 'text-ink-3 hover:text-ink'
   }`

@@ -12,5 +12,7 @@ __pycache__/
 # Rekaman suara peserta dan tim tidak di-commit
 eval/data/
 finetune/data/
+# Log replay berisi transkrip ucapan peserta
+eval/runs/
 # Model hasil fine-tuning terlalu besar untuk git, simpan di Google Drive
 finetune/models/
