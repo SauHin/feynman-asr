@@ -22,7 +22,7 @@ Sebagian besar arsitektur sudah final; dua keputusan masih bergantung pada konfi
 
 | Topik | Keputusan | Status |
 | --- | --- | --- |
-| Model ASR | Whisper pretrained via faster-whisper, dijalankan lokal | Masih mencari model terbaik di huggingface yang dapat digunakan untuk kasus ini |
+| Model ASR | Whisper pretrained via faster-whisper, dijalankan lokal | Default `large-v3-turbo` dari pilot 2026-10-13 (`docs/eksperimen/2026-10-13-pilot-model.md`). Fine-tune Indonesia `cahya/faster-whisper-medium-id` lebih buruk untuk istilah Inggris. Dipastikan di E1 |
 | Fine-tuning Whisper | Tidak dilakukan dulu; ditambahkan hanya jika diwajibkan eksplisit | Menunggu konfirmasi |
 | Detektor filler terlatih | Dibatalkan; filler dideteksi secara heuristik, detektor terlatih jadi future work | Final |
 | LLM analisis isi | Gemini (Flash) via Google AI Studio free tier, tanpa kartu kredit | Final, perlu dikonfirmasi boleh dipakai |

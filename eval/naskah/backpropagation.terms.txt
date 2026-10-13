@@ -1,0 +1,21 @@
+backpropagation
+neural network
+network
+forward pass
+input
+layer
+output layer
+loss function
+loss
+label
+backward pass
+chain rule
+gradient
+weight
+bias
+error
+hidden layer
+gradient descent
+learning rate
+training
+epoch

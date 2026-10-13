@@ -1,0 +1,13 @@
+Oke, jadi di sini saya mau jelasin backpropagation. Backpropagation itu algoritma yang dipakai buat melatih neural network, biar network-nya bisa belajar dari kesalahannya sendiri.
+
+Langkah pertama namanya forward pass. Input masuk ke network, terus dihitung layer demi layer sampai keluar prediksi di output layer.
+
+Nah, prediksi ini belum tentu benar. Makanya kita bandingin sama label pakai loss function. Loss function itu ngukur seberapa jauh prediksi kita dari jawaban yang seharusnya. Kalau loss-nya besar, berarti modelnya masih banyak salah.
+
+Habis itu baru masuk ke backward pass. Di sini kita pakai chain rule dari kalkulus buat ngitung gradient loss terhadap setiap weight dan bias. Chain rule itu intinya turunan fungsi gabungan sama dengan hasil kali turunan tiap bagiannya. Jadi error-nya dirambatkan mundur, dari output layer balik ke hidden layer, sampai ke layer paling awal.
+
+Gradient itu nunjukin arah di mana loss naik paling cepat. Jadi weight-nya kita geser ke arah sebaliknya supaya loss turun. Cara update ini namanya gradient descent.
+
+Seberapa besar langkahnya diatur sama learning rate. Kalau learning rate terlalu besar, training-nya bisa loncat-loncat dan nggak konvergen. Kalau terlalu kecil, training-nya jadi lama banget.
+
+Terus proses ini diulang terus, epoch demi epoch, sampai loss-nya cukup kecil. Ya kurang lebih gitu sih backpropagation.
