@@ -3,4 +3,8 @@ faster-whisper==1.2.1
 av==17.1.0
 # cuBLAS untuk CTranslate2 di GPU, tanpa perlu install CUDA Toolkit
 nvidia-cublas-cu12==12.9.2.10
+fastapi==0.143.0
+uvicorn[standard]==0.54.0
 pytest==9.1.1
+# TestClient FastAPI
+httpx==0.28.1
