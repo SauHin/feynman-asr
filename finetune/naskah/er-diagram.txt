@@ -1,0 +1,9 @@
+Oke, sekarang saya mau jelasin ER diagram, atau entity relationship diagram. ER diagram itu gambaran rancangan database sebelum kita bikin table-nya.
+
+Ada tiga komponen utama. Yang pertama entity, yaitu objek yang datanya mau kita simpan, misalnya mahasiswa atau mata kuliah. Biasanya digambar pakai kotak. Yang kedua attribute, yaitu informasi yang dimiliki entity, misalnya nama, alamat, atau tanggal lahir. Yang ketiga relationship, yaitu hubungan antar entity, misalnya mahasiswa mengambil mata kuliah.
+
+Tiap entity harus punya attribute yang unik buat ngebedain satu data dengan data lain. Attribute ini nanti jadi primary key.
+
+Nah, relationship punya yang namanya cardinality, yaitu berapa banyak data yang bisa saling terhubung. Ada one to one, misalnya satu orang cuma punya satu KTP. Ada one to many, misalnya satu dosen bisa ngajar banyak kelas. Terus ada many to many, misalnya satu mahasiswa ambil banyak mata kuliah, dan satu mata kuliah diambil banyak mahasiswa.
+
+Waktu diubah jadi table, relationship one to many cukup ditulis pakai foreign key di sisi many. Tapi many to many nggak bisa langsung. Kita butuh table tambahan yang namanya junction table, yang isinya foreign key ke dua table tadi. Kurang lebih gitu ER diagram.

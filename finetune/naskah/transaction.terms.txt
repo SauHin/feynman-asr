@@ -1,0 +1,19 @@
+transaction
+database
+transfer
+acid
+atomicity
+error
+rollback
+commit
+consistency
+constraint
+foreign key
+isolation
+durability
+server
+log
+dirty read
+isolation level
+read uncommitted
+serializable

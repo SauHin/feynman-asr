@@ -1,0 +1,9 @@
+Oke, sekarang saya mau jelasin k-means clustering. Beda sama supervised learning, k-means itu unsupervised learning, jadi datanya nggak punya label sama sekali. Tujuannya ngelompokin data yang mirip ke dalam cluster yang sama.
+
+Pertama, kita tentuin dulu nilai k, yaitu jumlah cluster yang kita mau. Terus kita pilih k titik secara random sebagai centroid awal. Centroid itu titik tengah dari tiap cluster.
+
+Habis itu ada dua langkah yang diulang terus. Langkah pertama namanya assignment. Tiap data dimasukin ke cluster dengan centroid paling dekat, biasanya pakai Euclidean distance. Langkah kedua namanya update. Tiap centroid dipindah ke rata-rata semua data di cluster-nya.
+
+Dua langkah ini diulang sampai centroid-nya udah nggak pindah lagi. Kalau udah gitu, berarti algoritmanya udah converge.
+
+Masalahnya, hasil k-means bisa beda-beda tergantung centroid awalnya. Makanya ada teknik inisialisasi yang milih centroid awal yang saling berjauhan. Terus gimana caranya milih k yang pas? Salah satu caranya elbow method. Kita coba beberapa nilai k, terus kita lihat inertia-nya, yaitu total jarak data ke centroid-nya. Nilai k yang dipilih ada di titik di mana penurunan inertia mulai melambat, bentuknya kayak siku. Ya gitu sih k-means.

@@ -1,0 +1,20 @@
+decision tree
+flowchart
+classification
+regression
+root node
+node
+feature
+split
+leaf node
+entropy
+gini impurity
+information gain
+tree
+training data
+overfitting
+max depth
+pruning
+random forest
+bagging
+voting

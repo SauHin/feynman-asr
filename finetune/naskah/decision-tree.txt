@@ -1,0 +1,9 @@
+Oke, topik saya decision tree. Decision tree itu model yang bikin keputusan lewat serangkaian pertanyaan, mirip flowchart. Model ini bisa dipakai buat classification maupun regression.
+
+Bagian paling atas namanya root node. Di setiap node, data dibagi berdasarkan satu feature, misalnya umur di atas tiga puluh atau nggak. Proses pembagian ini namanya split. Node paling bawah yang udah nggak dibagi lagi namanya leaf node, dan di situ ada hasil prediksinya.
+
+Pertanyaannya, feature mana yang dipilih buat split? Kita pilih split yang bikin data di tiap cabang paling homogen. Buat ngukur seberapa campur aduk datanya, ada entropy dan ada Gini impurity. Terus selisih entropy sebelum dan sesudah split disebut information gain. Jadi kita pilih split dengan information gain paling besar.
+
+Kalau tree-nya dibiarin tumbuh terus, dia bakal hafal training data dan jadi overfitting. Makanya kita batasi max depth-nya, atau kita pangkas cabang yang nggak terlalu berguna. Cara ini namanya pruning.
+
+Satu decision tree biasanya kurang stabil. Jadi sering dipakai random forest, yaitu gabungan banyak tree yang dilatih pakai sampel data yang beda-beda. Teknik ini namanya bagging, dan hasil akhirnya diambil dari voting semua tree. Kurang lebih gitu decision tree.

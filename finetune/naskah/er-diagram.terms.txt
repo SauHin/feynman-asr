@@ -1,0 +1,14 @@
+er diagram
+entity relationship diagram
+database
+table
+entity
+attribute
+relationship
+primary key
+cardinality
+one to one
+one to many
+many to many
+foreign key
+junction table

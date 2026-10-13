@@ -1,0 +1,17 @@
+linear regression
+machine learning
+parameter
+slope
+intercept
+input
+feature
+target
+multiple linear regression
+weight
+residual
+mean squared error
+cost function
+training
+normal equation
+gradient descent
+r squared

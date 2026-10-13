@@ -10,7 +10,7 @@ Feynman Speech Coach adalah aplikasi latihan menjelaskan materi secara lisan. Uc
 
 Masalahnya, model sering salah mendengar istilah Inggris di tengah kalimat bahasa Indonesia. Contoh dari rekaman pilot: "output layer" jadi "octave layer", "weight" jadi "width", dan "label" jadi "lambe".
 
-Fine-tuning diwajibkan untuk tugas ini. Tujuannya membuat model lebih akurat untuk penjelasan CS yang santai dan bercampur istilah Inggris. Kita memakai LoRA: bobot asli model dibekukan, dan yang dilatih hanya adapter kecil. Datanya juga kecil, sekitar 13 menit audio dari tiga pembaca, karena setiap naskah hanya dibaca satu orang. Karena itu, setiap label harus benar, dan data uji harus terpisah dari data latih.
+Fine-tuning diwajibkan untuk tugas ini. Tujuannya membuat model lebih akurat untuk penjelasan CS yang santai dan bercampur istilah Inggris. Kita memakai LoRA: bobot asli model dibekukan, dan yang dilatih hanya adapter kecil. Datanya juga kecil, sekitar 22 menit audio dari 14 naskah. Setiap naskah dibaca satu orang, supaya model mendapat kalimat dan istilah sebanyak mungkin. Karena itu, setiap label harus benar, dan data uji harus terpisah dari data latih.
 
 Hasil akhirnya adalah model `turbo-ft`. Model ini bisa menggantikan `large-v3-turbo` di aplikasi cukup dengan mengubah `ASR_MODEL` di `backend/config.py`. Setelah itu, model ini dibandingkan dengan model asli di tahap evaluasi.
 
@@ -33,7 +33,7 @@ Hasil akhirnya adalah model `turbo-ft`. Model ini bisa menggantikan `large-v3-tu
 
 | Path | Isi |
 | --- | --- |
-| `finetune/naskah/<topik>.txt` | 8 naskah asli. Jangan diubah |
+| `finetune/naskah/<topik>.txt` | 14 naskah asli, sebagian besar dari mata kuliah Machine Learning dan Basis Data. Jangan diubah |
 | `finetune/naskah/<topik>.terms.txt` | Istilah di naskah itu yang tidak boleh diganti |
 | `finetune/naskah/<topik>.<id>.txt` | Naskah hasil edit tiap pembaca, dibuat di langkah 1 |
 | `finetune/data/` | Rekaman, dibuat di langkah 2. Tidak di-commit |
@@ -50,9 +50,9 @@ Semua aturan di panduan ini berasal dari lima prinsip berikut. Kalau ada situasi
 
 1. Label harus sama persis dengan audionya. Model belajar dari pasangan audio dan teks, jadi label yang salah mengajarkan kesalahan. Kalau ragu, buang potongannya.
 2. Kalimat yang dipakai untuk menguji model tidak boleh pernah dilatih. Model bisa menghafal kalimat, sehingga WER-nya terlihat lebih bagus dari kenyataan. Karena itu:
-   - delapan topik naskah latih tidak boleh dipakai untuk naskah evaluasi,
+   - keempat belas topik naskah latih tidak boleh dipakai untuk naskah evaluasi,
    - naskah di `eval/naskah/` tidak boleh direkam untuk training,
-   - topik `hash-table` hanya dipakai untuk validasi.
+   - topik `decision-tree` dan `sql-join` hanya dipakai untuk validasi.
 3. Rekaman harus mirip pemakaian aplikasi: mic laptop, ruang biasa, dan gaya bicara seperti menjelaskan ke teman.
 4. Istilah Inggris dipertahankan, karena istilah inilah yang mau diperbaiki pengenalannya.
 5. Rekaman suara dan model tidak masuk git. Rekaman adalah data pribadi, dan model terlalu besar untuk git. Keduanya disimpan di Google Drive.
@@ -70,7 +70,7 @@ Semua aturan di panduan ini berasal dari lima prinsip berikut. Kalau ada situasi
 | 6. Training | Koordinator | Model `turbo-ft-<waktu>.zip` di Drive |
 | 7. Pasang dan uji | Koordinator | Model jalan di laptop, siap dievaluasi |
 
-Untuk 3 naskah, langkah 1–5 memakan waktu kira-kira 45–60 menit.
+Untuk 5 naskah, langkah 1–5 memakan waktu kira-kira 1–1,25 jam.
 
 ## 0. Persiapan
 
@@ -80,9 +80,9 @@ Tujuan: semua pembaca punya repo dan environment Python yang sama dengan backend
 
 | ID | Peran | Naskah |
 | --- | --- | --- |
-| `s01` | Koordinator dan pembaca | `transformer`, `precision-recall` |
-| `s02` | Pembaca | `overfitting`, `database-index`, `deadlock` |
-| `s03` | Pembaca | `cnn`, `git-branch`, `hash-table` |
+| `s01` | Koordinator dan pembaca | `k-means`, `transformer`, `precision-recall`, `transaction` |
+| `s02` | Pembaca | `overfitting`, `linear-regression`, `database-index`, `sql-join`, `deadlock` |
+| `s03` | Pembaca | `cnn`, `decision-tree`, `er-diagram`, `git-branch`, `hash-table` |
 
 Nama pemilik setiap ID dikirim lewat chat tim, tidak ditulis di sini, karena repo ini publik.
 
@@ -133,7 +133,7 @@ Selesai kalau: perintah tes menulis `passed` dan tidak ada `failed`.
 
 Tujuan: naskah sesuai dengan cara bicara pembaca. Rekaman jadi lebih natural, dan pembaca lebih jarang salah ucap. Naskah hasil edit juga menjadi sumber label. Makin mirip dengan ucapan, makin sedikit yang perlu dikoreksi di langkah 4.
 
-Ada 8 naskah di `finetune/naskah/`. Kerjakan hanya naskah bagianmu, sesuai tabel pembagian naskah di langkah 0.
+Ada 14 naskah di `finetune/naskah/`. Kerjakan hanya naskah bagianmu, sesuai tabel pembagian naskah di langkah 0.
 
 1. Salin `<topik>.txt` jadi `<topik>.<id>.txt`. Contoh: `cnn.txt` jadi `cnn.s03.txt`.
 2. Baca keras naskahmu sekali.
@@ -290,7 +290,7 @@ Tujuan: melatih adapter LoRA dengan potongan dari semua pembaca, lalu menghasilk
 Cara kerja notebook:
 
 1. Notebook membaca semua `segments.csv` dari Drive, dan berhenti kalau masih ada status `cek`.
-2. Notebook memisahkan topik `hash-table` sebagai data validasi (prinsip 2). Topik lain menjadi data latih.
+2. Notebook memisahkan topik `decision-tree` (Machine Learning) dan `sql-join` (Basis Data) sebagai data validasi (prinsip 2). Topik lain menjadi data latih.
 3. Notebook melatih adapter LoRA sampai 5 epoch, dan menghitung WER validasi setelah setiap epoch.
 4. Notebook menyimpan adapter dari epoch dengan WER validasi terendah. Training berhenti sendiri kalau WER validasi tidak membaik selama 2 epoch berturut-turut.
 5. Notebook menggabungkan adapter ke model, lalu mengonversinya ke format CTranslate2 untuk faster-whisper.
