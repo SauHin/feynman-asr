@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { Link } from 'react-router'
-import { EmpurMenu, ThemeToggle } from '../components/app-bar'
+import { Link, useSearchParams } from 'react-router'
+import { EmpurMenu, segment, ThemeToggle } from '../components/app-bar'
 import { CloseIcon, FillerIcon, PauseIcon, SpeedIcon, type MarkStatus } from '../components/chalk'
 import { Kapur } from '../components/kapur'
 import { PauseChip, StatusIcon } from '../components/marks'
@@ -10,8 +10,16 @@ import { initialLiveState, liveReducer, type LiveState } from '../lib/live-state
 import type { TranscriptSource } from '../lib/transcript-source'
 import { buildSegments, type Segment } from '../lib/transcript-segments'
 import { BACKPROP_CONCEPTS, BACKPROP_TOPIC } from '../mocks/backprop'
+import { WebSocketTranscriptSource } from '../lib/ws-transcript-source'
 import { MockTranscriptSource } from '../mocks/mock-transcript-source'
 import type { Concept } from '../types/feedback'
+
+// Contoh: sesi rekaman yang diputar ulang. Mic: suara user ditranskrip backend lokal (?sumber=mic).
+type Mode = 'contoh' | 'mic'
+const MODES: { value: Mode; label: string }[] = [
+  { value: 'contoh', label: 'Contoh' },
+  { value: 'mic', label: 'Mic' },
+]
 
 const DUST = [
   [-26, -18],
@@ -31,12 +39,20 @@ const origin = (p: { x: number; y: number }) => `${(p.x / 120) * 100}% ${(p.y / 
 // Layar live dalam gaya terang dan bersih (rasa Brilliant): agenda di kartu abu muda, penjelasan di
 // kartu putih besar, Empur di pojok kiri bawah kartu penjelasan dengan balon di sampingnya.
 export default function LiveScreen() {
-  // ponytail: sumber dan konsep masih mock; Fase 1 ganti ke WebSocket, Fase 4 ke daftar konsep dari setup.
-  const [source] = useState<TranscriptSource>(() => new MockTranscriptSource())
+  const [params, setParams] = useSearchParams()
+  const mode: Mode = params.get('sumber') === 'mic' ? 'mic' : 'contoh'
+  const source = useMemo<TranscriptSource>(
+    () => (mode === 'mic' ? new WebSocketTranscriptSource() : new MockTranscriptSource()),
+    [mode],
+  )
+  // ponytail: konsep masih mock; Fase 4 ganti ke daftar konsep dari setup.
   const concepts = BACKPROP_CONCEPTS
   const [state, dispatch] = useReducer(liveReducer, initialLiveState)
   const [startedAt, setStartedAt] = useState<number | null>(null)
   const [now, setNow] = useState(0)
+  // Mode mic butuh waktu untuk menyambung ke server dan meminta izin mic.
+  const [connecting, setConnecting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const off = source.onMessage(dispatch)
@@ -55,14 +71,30 @@ export default function LiveScreen() {
 
   const start = () => {
     dispatch({ type: 'reset' })
+    setError(null)
     const t = performance.now()
     setStartedAt(t)
     setNow(t)
-    void source.start()
+    setConnecting(true)
+    source.start().then(
+      () => setConnecting(false),
+      (err: unknown) => {
+        setConnecting(false)
+        setStartedAt(null)
+        dispatch({ type: 'reset' })
+        setError(startError(err))
+      },
+    )
+  }
+  const switchMode = (m: Mode) => {
+    setParams(m === 'mic' ? { sumber: 'mic' } : {})
+    dispatch({ type: 'reset' })
+    setStartedAt(null)
+    setError(null)
   }
   const started = startedAt !== null
   const elapsed = started ? Math.max(0, (now - startedAt) / 1000) : 0
-  const sessionDone = state.status === 'idle' && started
+  const sessionDone = state.status === 'idle' && started && !connecting
   const statusOf = (id: string): MarkStatus => state.concepts[id] ?? 'none'
   const line = kapurSays({ state, concepts, started, elapsed, topic: BACKPROP_TOPIC })
 
@@ -96,7 +128,7 @@ export default function LiveScreen() {
 
   return (
     <div className="flex min-h-dvh flex-col md:h-dvh">
-      <TopBar state={state} concepts={concepts} elapsed={elapsed} sessionDone={sessionDone} />
+      <TopBar state={state} concepts={concepts} elapsed={elapsed} sessionDone={sessionDone} mode={mode} />
 
       <main className="mx-auto flex w-full max-w-[80rem] flex-1 flex-col gap-4 px-4 pb-4 md:min-h-0 md:flex-row md:gap-5 md:px-8 md:pb-5">
         <section
@@ -146,7 +178,16 @@ export default function LiveScreen() {
         </section>
       </main>
 
-      <Footer state={state} started={started} sessionDone={sessionDone} onStart={start} onStop={() => source.stop()} />
+      <Footer
+        state={state}
+        started={started}
+        sessionDone={sessionDone}
+        mode={mode}
+        error={error}
+        onMode={switchMode}
+        onStart={start}
+        onStop={() => source.stop()}
+      />
     </div>
   )
 }
@@ -156,11 +197,13 @@ function TopBar({
   concepts,
   elapsed,
   sessionDone,
+  mode,
 }: {
   state: LiveState
   concepts: Concept[]
   elapsed: number
   sessionDone: boolean
+  mode: Mode
 }) {
   const explained = concepts.filter((c) => state.concepts[c.id] === 'explained').length
   const mentioned = concepts.filter((c) => state.concepts[c.id] === 'mentioned').length
@@ -193,7 +236,7 @@ function TopBar({
       </Link>
       <div className="mr-auto md:mr-0">
         <h1 className="text-lg font-semibold leading-tight tracking-tight">{BACKPROP_TOPIC}</h1>
-        <p className="text-sm text-ink-3">Sesi contoh, bukan suaramu</p>
+        <p className="text-sm text-ink-3">{mode === 'mic' ? 'Pakai suaramu' : 'Sesi contoh, bukan suaramu'}</p>
       </div>
 
       {/* Bilah kemajuan bersegmen seperti Brilliant: satu bagian per konsep. Hijau penuh = dijelaskan,
@@ -402,12 +445,18 @@ function Footer({
   state,
   started,
   sessionDone,
+  mode,
+  error,
+  onMode,
   onStart,
   onStop,
 }: {
   state: LiveState
   started: boolean
   sessionDone: boolean
+  mode: Mode
+  error: string | null
+  onMode: (m: Mode) => void
   onStart: () => void
   onStop: () => void
 }) {
@@ -417,11 +466,17 @@ function Footer({
     <footer
       className={`z-30 flex flex-col gap-3 border-t border-line bg-surface px-4 py-3 sm:flex-row sm:items-center sm:gap-4 md:static md:gap-6 md:px-8 md:py-4 ${started ? 'sticky bottom-0' : 'relative'}`}
     >
-      {!started ? (
+      {error ? (
+        <p role="alert" className="mr-auto max-w-[56rem] font-medium leading-relaxed">
+          {error}
+        </p>
+      ) : !started ? (
         <p className="mr-auto max-w-[56rem] text-sm leading-relaxed text-ink-3">
           Suaramu diproses di laptop ini. Setelah selesai, transkrip, konsep, angka, dan materimu dikirim ke Gemini
-          buat bikin feedback. Gemini versi gratis bisa memakai data itu. Untuk sekarang, aplikasi memutar sesi
-          contoh sekitar 90 detik.
+          buat bikin feedback. Gemini versi gratis bisa memakai data itu.{' '}
+          {mode === 'mic'
+            ? 'Untuk sekarang, baru transkripnya yang asli. Agenda dan feedback masih contoh.'
+            : 'Untuk sekarang, aplikasi memutar sesi contoh sekitar 90 detik.'}
         </p>
       ) : (
         <dl className="mr-auto flex gap-2 md:gap-3">
@@ -432,6 +487,7 @@ function Footer({
       )}
       {/* Di layar sempit tombol melebar penuh di bawah teks atau statistik. */}
       <div className="flex shrink-0 gap-3 max-sm:*:flex-1">
+        {(!started || sessionDone) && <SourceToggle mode={mode} onChange={onMode} />}
         {!started && (
           <button className="btn btn-go px-12 text-lg" onClick={onStart}>
             Mulai
@@ -470,4 +526,31 @@ function Stat({ icon, value, label }: { icon: ReactNode; value: number; label: s
       <dd className="order-1 text-lg font-semibold tabular-nums">{value}</dd>
     </div>
   )
+}
+
+function SourceToggle({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => void }) {
+  return (
+    <div role="radiogroup" aria-label="Sumber suara" className="flex justify-center gap-0.5 rounded-full bg-card p-1">
+      {MODES.map((m) => (
+        <button
+          key={m.value}
+          type="button"
+          role="radio"
+          aria-checked={mode === m.value}
+          onClick={() => onChange(m.value)}
+          className={`${segment(mode === m.value)} justify-center px-4`}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// Pesan saat sesi mode mic gagal dimulai. DOMException datang dari mic, Error biasa dari koneksi server.
+function startError(err: unknown) {
+  if (!(err instanceof DOMException)) return 'Server ASR belum nyala. Jalankan backend dulu, terus coba lagi.'
+  if (err.name === 'NotAllowedError') return 'Izin mikrofon ditolak. Izinkan dulu di browser, terus coba lagi.'
+  if (err.name === 'NotFoundError') return 'Mikrofon nggak ketemu. Sambungkan mic dulu, terus coba lagi.'
+  return 'Mikrofon nggak bisa dipakai di browser ini. Coba pakai Chrome.'
 }
