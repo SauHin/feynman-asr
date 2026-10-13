@@ -43,11 +43,11 @@ def load_whisper() -> Transcribe:
 
 
 def to_words(raw) -> list[Word]:
-    # Whisper kadang memecah "rate-nya" jadi " rate" + "-nya". Token yang diawali tanda hubung menempel
-    # ke kata sebelumnya, supaya teksnya "rate-nya" (bukan "rate -nya") dan sama di setiap hipotesis.
+    # Whisper kadang memecah "rate-nya" jadi " rate" + "-nya", atau " rate" + " nya". Akhiran itu menempel
+    # ke kata sebelumnya, supaya teksnya "rate-nya" atau "ratenya" dan sama di setiap hipotesis.
     words: list[Word] = []
     for w in raw:
-        if words and w.word.startswith("-"):
+        if words and (w.word.startswith("-") or w.word.strip().lower() == "nya"):
             words[-1] = Word(words[-1].start, w.end, words[-1].text + w.word.strip())
         else:
             words.append(Word(w.start, w.end, w.word.strip()))

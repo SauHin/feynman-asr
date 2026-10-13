@@ -47,9 +47,10 @@ def test_words_confirm_when_two_hypotheses_agree():
 
 def test_hyphen_suffix_joins_previous_word():
     raw = [SimpleNamespace(start=s, end=e, word=t) for s, e, t in
-           [(0.0, 0.4, " learning"), (0.5, 0.8, " rate"), (0.8, 1.0, "-nya"), (1.1, 1.5, " itu")]]
+           [(0.0, 0.4, " learning"), (0.5, 0.8, " rate"), (0.8, 1.0, "-nya"), (1.1, 1.5, " itu"),
+            (1.6, 1.9, " loss"), (1.9, 2.1, " nya")]]
     words = to_words(raw)
-    assert texts(words) == ["learning", "rate-nya", "itu"]
+    assert texts(words) == ["learning", "rate-nya", "itu", "lossnya"]
     assert (words[1].start, words[1].end) == (0.5, 1.0)
 
 

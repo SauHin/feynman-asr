@@ -21,6 +21,14 @@ STREAM_TRIM_S = 15.0
 # Teks confirmed yang sudah keluar dari buffer dikirim sebagai initial_prompt (konteks antar-potongan).
 STREAM_PROMPT_CHARS = 200
 
+# Kelancaran (PLAN 7.1), dihitung dari kata confirmed.
+# Celah antarkata minimal segini dihitung jeda panjang. Nilai awal dari PLAN (1,5–2 detik), dikalibrasi dari data pilot.
+FLUENCY_PAUSE_S = 2.0
+# Pesan fluency dikirim tiap selang waktu audio ini, dan juga saat ada jeda panjang.
+FLUENCY_EVERY_S = 5.0
+# Filler leksikal yang dihitung. "jadi" tidak ikut karena lebih sering dipakai sebagai kata sambung biasa.
+FLUENCY_LEXICAL_FILLERS = ("kayak", "gitu", "anu")
+
 SAMPLE_RATE = 16_000
 
 # Fine-tuning: pemotong rekaman naskah latih (finetune/segment.py).
