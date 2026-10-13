@@ -12,7 +12,7 @@ import { buildSegments, type Segment } from '../lib/transcript-segments'
 import { BACKPROP_CONCEPTS, BACKPROP_TOPIC } from '../mocks/backprop'
 import { WebSocketTranscriptSource } from '../lib/ws-transcript-source'
 import { MockTranscriptSource } from '../mocks/mock-transcript-source'
-import type { Concept } from '../types/feedback'
+import type { Concept, SessionResult } from '../types/feedback'
 
 // Contoh: sesi rekaman yang diputar ulang. Mic: suara user ditranskrip backend lokal (?sumber=mic).
 type Mode = 'contoh' | 'mic'
@@ -97,6 +97,22 @@ export default function LiveScreen() {
   const sessionDone = state.status === 'idle' && started && !connecting
   const statusOf = (id: string): MarkStatus => state.concepts[id] ?? 'none'
   const line = kapurSays({ state, concepts, started, elapsed, topic: BACKPROP_TOPIC })
+  // Hanya sesi mode mic yang dianalisis Gemini. Mode contoh membuka feedback contoh.
+  const session: SessionResult | undefined =
+    mode === 'mic' && sessionDone
+      ? {
+          topic: BACKPROP_TOPIC,
+          concepts,
+          transcript: { text: state.confirmed, pauses: state.pauses },
+          fluency: {
+            duration: elapsed,
+            wpm: state.wpm,
+            filler_count: state.fillerCount,
+            long_pauses: state.pauses.map(({ start, duration }) => ({ start, duration })),
+          },
+          liveStatus: state.concepts,
+        }
+      : undefined
 
   // Empur pergi ke baris yang statusnya baru naik, mencentangnya, lalu kembali. Tanda ada di ujung kanan
   // baris, jadi Empur berdiri di kanannya menghadap kiri (dicerminkan) dan nama konsep tetap terlihat.
@@ -184,6 +200,7 @@ export default function LiveScreen() {
         sessionDone={sessionDone}
         mode={mode}
         error={error}
+        session={session}
         onMode={switchMode}
         onStart={start}
         onStop={() => source.stop()}
@@ -447,6 +464,7 @@ function Footer({
   sessionDone,
   mode,
   error,
+  session,
   onMode,
   onStart,
   onStop,
@@ -456,6 +474,7 @@ function Footer({
   sessionDone: boolean
   mode: Mode
   error: string | null
+  session?: SessionResult
   onMode: (m: Mode) => void
   onStart: () => void
   onStop: () => void
@@ -508,7 +527,7 @@ function Footer({
             <button className="btn btn-plain hidden sm:inline-flex" onClick={onStart}>
               Ulangi dari awal
             </button>
-            <Link className="btn btn-go" to="/feedback">
+            <Link className="btn btn-go" to="/feedback" state={session && { session }}>
               Lihat feedback
             </Link>
           </>

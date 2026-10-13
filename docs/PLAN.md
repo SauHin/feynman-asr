@@ -18,14 +18,14 @@ Prinsip desain yang mengikat semua keputusan di dokumen ini:
 
 ## 2. Status keputusan
 
-Sebagian besar arsitektur sudah final; keputusan tentang Gemini masih bergantung pada konfirmasi Pak Hidayat.
+Semua keputusan arsitektur sudah final, termasuk izin Gemini dari Pak Hidayat.
 
 | Topik | Keputusan | Status |
 | --- | --- | --- |
 | Model ASR | Whisper pretrained via faster-whisper, dijalankan lokal | Default `large-v3-turbo` dari pilot 2026-10-13 (`docs/eksperimen/2026-10-13-pilot-model.md`). Fine-tune Indonesia `cahya/faster-whisper-medium-id` lebih buruk untuk istilah Inggris. Dipastikan di E1 |
 | Fine-tuning Whisper | Wajib, walaupun datanya kecil. LoRA pada `large-v3-turbo` dengan 14 naskah latih (±22 menit) yang dibaca tiga anggota tim, lalu dibandingkan dengan hotwords di E8 (bagian 8.8) | Final (2026-10-13). Data latih sedang direkam. Panduan tim ada di `finetune/README.md` |
 | Detektor filler terlatih | Dibatalkan; filler dideteksi secara heuristik, detektor terlatih jadi future work | Final |
-| LLM analisis isi | Gemini (Flash) via Google AI Studio free tier, tanpa kartu kredit | Final, perlu dikonfirmasi boleh dipakai |
+| LLM analisis isi | Gemini (Flash) via Google AI Studio free tier, tanpa kartu kredit. Model `gemini-3.1-flash-lite`: `gemini-2.5-flash` tidak lagi tersedia untuk akun baru, dan `gemini-3.8-flash` sering gagal karena server sibuk | Final. Diizinkan Pak Hidayat (2026-10-13) |
 | Adaptasi domain | Hotwords/prompt dari materi yang di-upload, ditambah model hasil fine-tuning bila E8 menunjukkan perbaikan | Final |
 | Checklist konsep live | Dua status: disebut (fuzzy match) dan dijelaskan (embedding lokal) | Final |
 | Bahasa | Bahasa Indonesia dengan istilah CS dalam bahasa Inggris (code-switching alami) | Final |
@@ -35,7 +35,7 @@ Sebagian besar arsitektur sudah final; keputusan tentang Gemini masih bergantung
 Pesan untuk Pak Hidayat (kirim tertulis, simpan jawabannya sebagai bukti):
 
 1. Whisper yang dipakai adalah model open-source dari Hugging Face yang berjalan lokal, bukan OpenAI API. Apakah boleh dipakai sebagai pretrained model tanpa fine-tuning? *Terjawab 2026-10-13: fine-tuning wajib, walaupun datanya kecil.*
-2. Gemini API hanya dipakai untuk menganalisis teks transkrip, bukan untuk speech recognition. Apakah ini diperbolehkan?
+2. Gemini API hanya dipakai untuk menganalisis teks transkrip, bukan untuk speech recognition. Apakah ini diperbolehkan? *Terjawab 2026-10-13: boleh.*
 
 Rencana fine-tuning ada di bagian 8.8.
 

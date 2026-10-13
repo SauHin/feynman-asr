@@ -1,3 +1,5 @@
+import type { ConceptStatus } from './server-message'
+
 // Skema output Gemini, PLAN.md 7.3.
 
 // Panggilan 1: ekstraksi konsep. id ditambahkan oleh backend.
@@ -27,4 +29,14 @@ export type FluencyReport = {
   wpm: number
   filler_count: number
   long_pauses: { start: number; duration: number; next_concept_id?: string }[]
+}
+
+// Hasil satu sesi mode mic, dibawa dari layar live ke layar feedback. offset jeda adalah posisi
+// karakter di teks transkrip, sama seperti di layar live.
+export type SessionResult = {
+  topic: string
+  concepts: Concept[]
+  transcript: { text: string; pauses: { start: number; duration: number; offset: number }[] }
+  fluency: FluencyReport
+  liveStatus: Record<string, ConceptStatus>
 }

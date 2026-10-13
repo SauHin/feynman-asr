@@ -1,4 +1,5 @@
-"""Server lokal: WebSocket /ws/transcribe untuk transkripsi real-time (PLAN 5-6).
+"""Server lokal: WebSocket /ws/transcribe untuk transkripsi real-time (PLAN 5-6), dan POST /api/feedback
+untuk analisis isi dengan Gemini setelah Stop (PLAN 7.3).
 
 Klien mengirim potongan PCM int16 16 kHz mono sebagai pesan biner, lalu {"type": "stop"} saat selesai.
 Server membalas pesan JSON sesuai frontend/src/types/server-message.ts.
@@ -13,9 +14,10 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 
 import numpy as np
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, HTTPException, WebSocket
 
 import config
+from analysis import gemini
 from analysis.fluency import Fluency
 from asr.streaming import StreamingTranscriber, Word, load_whisper
 
@@ -31,6 +33,18 @@ app = FastAPI(lifespan=lifespan)
 
 def rows(words: list[Word]) -> list[list]:
     return [[round(w.start, 2), round(w.end, 2), w.text] for w in words]
+
+
+# Fungsi biasa (bukan async), jadi FastAPI menjalankannya di thread lain selama menunggu Gemini.
+@app.post("/api/feedback")
+def feedback(session: gemini.Session) -> gemini.Feedback:
+    if not session.transcript.strip():
+        raise HTTPException(422, "Transkripnya masih kosong, jadi belum ada yang bisa dianalisis.")
+    try:
+        return gemini.analyze(session)
+    except gemini.GeminiError as e:
+        print(f"Gemini gagal: {e}", flush=True)
+        raise HTTPException(502, "Analisis Gemini gagal. Feedback lokal tetap bisa dipakai.") from e
 
 
 @app.websocket("/ws/transcribe")
