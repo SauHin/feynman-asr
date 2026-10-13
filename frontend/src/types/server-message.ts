@@ -9,6 +9,10 @@ export type TranscriptMessage = {
   partial: string
   t: number
   latency_ms: number
+  // Untuk evaluasi (eval/replay.py), UI tidak memakainya: kata beserta waktu audionya [mulai, akhir, teks]
+  // dalam detik sejak sesi mulai, dan total waktu inference sesi sejauh ini.
+  words?: { confirmed: [number, number, string][]; partial: [number, number, string][] }
+  compute_s?: number
 }
 
 export type ConceptMessage = {

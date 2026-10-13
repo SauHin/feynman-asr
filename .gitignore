@@ -11,3 +11,5 @@ __pycache__/
 .pytest_cache/
 # Rekaman suara peserta tidak di-commit
 eval/data/
+# Log replay berisi transkrip ucapan peserta
+eval/runs/

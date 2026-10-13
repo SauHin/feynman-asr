@@ -22,3 +22,6 @@ def test_websocket_session_ends_with_idle(monkeypatch):
     assert messages[0] == {"type": "status", "state": "processing"}
     # VAD membuang hening, jadi tidak ada teks halusinasi.
     assert all(m.get("confirmed", "") == "" and m.get("partial", "") == "" for m in messages)
+    # Pesan terakhir selalu dikirim dan membawa data untuk evaluasi.
+    assert messages[-1]["words"] == {"confirmed": [], "partial": []}
+    assert messages[-1]["compute_s"] > 0

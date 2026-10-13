@@ -9,6 +9,7 @@ Jalankan dari root repo:
 import asyncio
 import json
 import time
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 
 import numpy as np
@@ -27,6 +28,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+def rows(words: list[Word]) -> list[list]:
+    return [[round(w.start, 2), round(w.end, 2), w.text] for w in words]
+
+
 @app.websocket("/ws/transcribe")
 async def transcribe(ws: WebSocket) -> None:
     await ws.accept()
@@ -34,6 +39,7 @@ async def transcribe(ws: WebSocket) -> None:
     chunks: list[np.ndarray] = []
     arrived = time.perf_counter()  # saat potongan audio terakhir diterima
     shown = ""
+    compute_s = 0.0  # total waktu inference sesi ini, untuk RTF di eval/replay.py
 
     # Audio diterima terus di task terpisah. Kalau inference lebih lama dari interval, inference
     # berikutnya langsung memproses semua audio yang terkumpul, jadi sistem tidak makin tertinggal.
@@ -55,10 +61,17 @@ async def transcribe(ws: WebSocket) -> None:
             chunks.clear()
         return arrived
 
-    async def send(new: list[Word], heard_at: float) -> None:
+    async def run(step: Callable[[], list[Word]]) -> list[Word]:
+        nonlocal compute_s
+        t = time.perf_counter()
+        new = await asyncio.to_thread(step)
+        compute_s += time.perf_counter() - t
+        return new
+
+    async def send(new: list[Word], heard_at: float, final: bool = False) -> None:
         nonlocal shown
         partial = " ".join(w.text for w in st.partial)
-        if not new and partial == shown:
+        if not final and not new and partial == shown:
             return
         shown = partial
         # PLAN 6: dari akhir kata terbaru diucapkan sampai teksnya terkirim. Buffer browser (~100 ms) belum ikut.
@@ -72,6 +85,9 @@ async def transcribe(ws: WebSocket) -> None:
                 "partial": partial,
                 "t": round(st.audio_end, 2),
                 "latency_ms": round(latency * 1000),
+                # Untuk eval/replay.py: waktu audio tiap kata, supaya latency per kata bisa dihitung (PLAN 6).
+                "words": {"confirmed": rows(new), "partial": rows(st.partial)},
+                "compute_s": round(compute_s, 3),
             }
         )
 
@@ -82,7 +98,7 @@ async def transcribe(ws: WebSocket) -> None:
             await asyncio.wait({receiver}, timeout=0.05)
             continue
         heard_at = take_audio()
-        new = await asyncio.to_thread(st.process)
+        new = await run(st.process)
         if not (receiver.done() and receiver.result() == "disconnect"):
             await send(new, heard_at)
     if receiver.result() == "disconnect":
@@ -90,6 +106,7 @@ async def transcribe(ws: WebSocket) -> None:
 
     await ws.send_json({"type": "status", "state": "processing"})
     heard_at = take_audio()
-    await send(await asyncio.to_thread(st.finish), heard_at)
+    # Selalu dikirim, supaya total compute_s sesi sampai ke klien walau teksnya tidak berubah.
+    await send(await run(st.finish), heard_at, final=True)
     await ws.send_json({"type": "status", "state": "idle"})
     await ws.close()

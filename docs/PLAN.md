@@ -165,9 +165,9 @@ Pipeline memenuhi definisi real-time guideline dengan memproses audio per chunk 
 
 **Definisi pengukuran latency (tulis persis di laporan):**
 
-- *Partial latency:* waktu dari akhir sebuah kata diucapkan (dari timestamp audio) sampai kata itu pertama kali tampil sebagai partial.
-- *Confirmation latency:* waktu sampai kata itu berstatus confirmed.
-- *Real-time factor (RTF):* waktu inference dibagi durasi audio yang diproses; harus jauh di bawah 1 agar sistem tidak tertinggal.
+- *Partial latency:* waktu dari akhir sebuah kata diucapkan (dari timestamp audio) sampai kata itu pertama kali tampil sebagai partial. Kata dianggap sama bila teksnya sama dan akhir katanya berselisih paling banyak 0,5 detik.
+- *Confirmation latency:* waktu sampai kata itu berstatus confirmed. Kata yang baru tampil atau confirmed setelah Stop tidak dihitung, karena latency-nya bergantung pada kapan user menekan Stop.
+- *Real-time factor (RTF):* total waktu inference selama sesi dibagi durasi rekaman. Buffer yang sama ditranskrip ulang setiap interval, jadi RTF ini menunjukkan bagian waktu yang dipakai GPU. Nilainya harus di bawah 1 agar sistem tidak tertinggal.
 - *End-of-session delay:* waktu dari Stop sampai transkrip final siap (feedback Gemini diukur terpisah).
 
 **Hal teknis yang harus diantisipasi:**
@@ -319,7 +319,7 @@ WER = \frac{S + D + I}{N}
 | --- | --- | --- | --- |
 | WER / CER | Error kata / karakter terhadap reference setelah normalisasi | Transkrip | Semua eksperimen |
 | Term recall | Persentase kemunculan istilah teknis di reference yang muncul benar di hasil | Daftar istilah | E1, E2, F |
-| WER per jenis token | WER terpisah untuk token istilah Inggris dan token bahasa Indonesia | Transkrip + daftar istilah | F, error analysis |
+| WER per jenis token | Error (substitusi dan deletion) terpisah untuk token istilah Inggris dan token lain; insertion hanya masuk WER total. Istilah dengan akhiran "-nya" tetap dihitung sebagai istilah | Transkrip + daftar istilah | F, error analysis |
 | Partial latency | Akhir kata diucapkan sampai kata itu pertama kali tampil | Tidak (dari log) | Semua run |
 | Confirmation latency | Akhir kata diucapkan sampai kata itu confirmed | Tidak | Semua run |
 | RTF | Waktu inference / durasi audio | Tidak | E1, E6 |
@@ -386,7 +386,7 @@ Eksperimen menghasilkan tiga lapis output: file mentah yang bisa diaudit, satu t
 **File (di repository `eval/`):**
 
 - `data/metadata.csv`, rekaman WAV, dan label (naskah, transkrip manual, anotasi).
-- `runs/<konfigurasi>/<file_id>.json`: log per run berisi transkrip, timestamp kata, latency per kata, dan status checklist.
+- `runs/<konfigurasi>/<file_id>.json`: log per run berisi semua pesan server beserta waktu terimanya, timestamp kata, dan clock GPU. Tidak di-commit karena berisi transkrip ucapan peserta. Dibuat oleh `eval/replay.py`; `eval/metrics.py` menghitung ulang metrik dari log tanpa memutar audio.
 - `results/results.csv`: satu baris per file × konfigurasi dengan semua metrik; sumber tunggal semua angka di laporan.
 
 **Tabel dan grafik untuk laporan (Bab 5):**
