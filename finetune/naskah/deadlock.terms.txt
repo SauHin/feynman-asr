@@ -1,0 +1,16 @@
+deadlock
+process
+thread
+memory
+share
+race condition
+variable
+counter
+critical section
+lock
+mutex
+semaphore
+mutual exclusion
+hold and wait
+no preemption
+circular wait

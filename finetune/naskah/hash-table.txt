@@ -1,0 +1,9 @@
+Oke, topik saya hash table. Hash table itu struktur data buat nyimpen pasangan key dan value, dan bisa nyari data dengan cepat banget.
+
+Di dalamnya, hash table itu sebenernya array biasa. Tiap slot di array ini sering disebut bucket. Pertanyaannya, gimana caranya kita tahu sebuah key harus disimpen di bucket yang mana?
+
+Di sini kita pakai hash function. Hash function nerima key, misalnya string nama, terus ngeluarin angka. Angka ini kita modulo sama ukuran array, dan hasilnya jadi index bucket-nya. Jadi waktu mau nyari lagi, kita tinggal hitung hash-nya, terus langsung lompat ke bucket itu. Makanya rata-rata waktu lookup-nya konstan.
+
+Masalahnya, dua key yang beda bisa dapet index yang sama. Ini namanya collision. Cara paling umum buat ngatasin collision namanya chaining, jadi tiap bucket nyimpen linked list berisi semua data yang jatuh ke situ. Cara lainnya open addressing. Kalau bucket-nya udah keisi, kita cari bucket kosong berikutnya.
+
+Makin penuh array-nya, makin sering collision. Perbandingan antara jumlah data dan jumlah bucket ini namanya load factor. Kalau load factor udah lewat batas tertentu, array-nya diperbesar, terus semua data di-rehash ke array yang baru. Kalau hash function-nya jelek, worst case-nya bisa jadi lambat banget. Ya gitu sih cara kerja hash table.

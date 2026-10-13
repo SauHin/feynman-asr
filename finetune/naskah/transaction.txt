@@ -1,0 +1,9 @@
+Oke, topik saya transaction di database. Transaction itu sekumpulan operasi yang harus dianggap sebagai satu kesatuan. Contoh klasiknya transfer uang. Saldo akun pengirim dikurangi, terus saldo akun penerima ditambah. Dua operasi ini harus berhasil dua-duanya, atau gagal dua-duanya.
+
+Transaction yang benar harus memenuhi sifat ACID. Yang pertama atomicity, artinya semua operasi dijalanin semua atau nggak sama sekali. Kalau di tengah jalan ada error, database ngelakuin rollback, jadi semua perubahan dibatalin. Kalau semuanya berhasil, baru kita commit.
+
+Yang kedua consistency, artinya habis transaction selesai, data harus tetap memenuhi semua aturan, misalnya constraint dan foreign key. Yang ketiga isolation, artinya transaction yang jalan barengan nggak boleh saling ganggu. Yang keempat durability, artinya data yang udah di-commit nggak boleh hilang, walaupun server-nya tiba-tiba mati. Biasanya ini dijamin pakai log.
+
+Masalah muncul waktu banyak transaction jalan barengan. Contohnya dirty read, yaitu transaction ngebaca data yang belum di-commit sama transaction lain. Kalau transaction lain itu akhirnya rollback, berarti data yang kita baca nggak pernah benar-benar ada.
+
+Buat ngatur ini, database punya isolation level, mulai dari read uncommitted sampai serializable. Makin tinggi level-nya, makin aman, tapi makin lambat. Ya gitu sih transaction.

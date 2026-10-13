@@ -1,0 +1,11 @@
+Oke, kali ini saya mau jelasin linear regression. Linear regression itu model paling dasar di machine learning buat prediksi nilai kontinu, misalnya prediksi harga rumah dari luas tanahnya.
+
+Idenya, kita cari garis lurus yang paling pas sama data kita. Garis ini punya dua parameter, yaitu slope sama intercept. Slope nentuin seberapa miring garisnya, sedangkan intercept itu nilai prediksi waktu input-nya nol.
+
+Input-nya biasa disebut feature, dan nilai yang mau ditebak disebut target. Kalau feature-nya lebih dari satu, namanya multiple linear regression. Tiap feature punya weight sendiri, jadi bentuknya bukan garis lagi, tapi bidang.
+
+Nah, gimana caranya tahu garis kita udah bagus atau belum? Kita hitung residual, yaitu selisih antara nilai asli sama hasil prediksi. Terus semua residual dikuadratin dan dirata-rata. Ini namanya mean squared error, dan biasanya dipakai sebagai cost function.
+
+Tujuan training-nya adalah nyari slope dan intercept yang bikin cost function sekecil mungkin. Bisa pakai rumus langsung yang namanya normal equation, atau pakai gradient descent kalau datanya besar.
+
+Terakhir, buat ngecek seberapa bagus model-nya, kita bisa pakai R squared. Makin dekat ke satu, makin banyak variasi data yang bisa dijelasin sama model. Ya gitu sih linear regression.

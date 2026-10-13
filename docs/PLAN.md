@@ -14,19 +14,19 @@ Prinsip desain yang mengikat semua keputusan di dokumen ini:
 - **Satu alur cerita.** Setiap eksperimen harus menjawab pertanyaan yang relevan untuk fitur Feynman, bukan eksperimen sampingan.
 - **Gratis dan lokal.** Tidak ada komponen berbayar. ASR tidak pernah memakai API eksternal.
 - **Reproducible.** Rekam sekali, putar ulang ke pipeline berkali-kali untuk setiap konfigurasi.
-- **Siap berubah.** Model ASR bisa diganti lewat konfigurasi, sehingga fine-tuning bisa ditambahkan belakangan tanpa mengubah aplikasi.
+- **Siap berubah.** Model ASR bisa diganti lewat konfigurasi, sehingga model hasil fine-tuning bisa dipasang tanpa mengubah aplikasi.
 
 ## 2. Status keputusan
 
-Sebagian besar arsitektur sudah final; dua keputusan masih bergantung pada konfirmasi Pak Hidayat dan harus diselesaikan sebelum coding dimulai.
+Sebagian besar arsitektur sudah final; keputusan tentang Gemini masih bergantung pada konfirmasi Pak Hidayat.
 
 | Topik | Keputusan | Status |
 | --- | --- | --- |
 | Model ASR | Whisper pretrained via faster-whisper, dijalankan lokal | Default `large-v3-turbo` dari pilot 2026-10-13 (`docs/eksperimen/2026-10-13-pilot-model.md`). Fine-tune Indonesia `cahya/faster-whisper-medium-id` lebih buruk untuk istilah Inggris. Dipastikan di E1 |
-| Fine-tuning Whisper | Tidak dilakukan dulu; ditambahkan hanya jika diwajibkan eksplisit | Menunggu konfirmasi |
+| Fine-tuning Whisper | Wajib, walaupun datanya kecil. LoRA pada `large-v3-turbo` dengan 14 naskah latih (±22 menit) yang dibaca tiga anggota tim, lalu dibandingkan dengan hotwords di E8 (bagian 8.8) | Final (2026-10-13). Data latih sedang direkam. Panduan tim ada di `finetune/README.md` |
 | Detektor filler terlatih | Dibatalkan; filler dideteksi secara heuristik, detektor terlatih jadi future work | Final |
 | LLM analisis isi | Gemini (Flash) via Google AI Studio free tier, tanpa kartu kredit | Final, perlu dikonfirmasi boleh dipakai |
-| Adaptasi domain | Hotwords/prompt dari materi yang di-upload (tanpa training) | Final |
+| Adaptasi domain | Hotwords/prompt dari materi yang di-upload, ditambah model hasil fine-tuning bila E8 menunjukkan perbaikan | Final |
 | Checklist konsep live | Dua status: disebut (fuzzy match) dan dijelaskan (embedding lokal) | Final |
 | Bahasa | Bahasa Indonesia dengan istilah CS dalam bahasa Inggris (code-switching alami) | Final |
 | Deployment | Lokal di laptop (RTX 3050 6 GB); deploy publik di luar scope | Final |
@@ -34,10 +34,10 @@ Sebagian besar arsitektur sudah final; dua keputusan masih bergantung pada konfi
 
 Pesan untuk Pak Hidayat (kirim tertulis, simpan jawabannya sebagai bukti):
 
-1. Whisper yang dipakai adalah model open-source dari Hugging Face yang berjalan lokal, bukan OpenAI API. Apakah boleh dipakai sebagai pretrained model tanpa fine-tuning?
+1. Whisper yang dipakai adalah model open-source dari Hugging Face yang berjalan lokal, bukan OpenAI API. Apakah boleh dipakai sebagai pretrained model tanpa fine-tuning? *Terjawab 2026-10-13: fine-tuning wajib, walaupun datanya kecil.*
 2. Gemini API hanya dipakai untuk menganalisis teks transkrip, bukan untuk speech recognition. Apakah ini diperbolehkan?
 
-Jika fine-tuning diwajibkan, jalur cadangannya ada di bagian 12 (Risiko).
+Rencana fine-tuning ada di bagian 8.8.
 
 ## 3. Problem, target user, dan skenario
 
@@ -236,8 +236,9 @@ Setiap eksperimen harus menjawab satu pertanyaan yang relevan untuk aplikasi; ek
 | Q4 | Apakah hotwords dari materi memperbaiki pengenalan istilah teknis dan checklist konsep? | E2, F |
 | Q5 | Seberapa besar pengaruh jenis mic dan noise terhadap akurasi? | E3, E4 |
 | Q6 | Seberapa andal checklist konsep dan metrik kelancaran dibanding penilaian manusia? | E7 |
+| Q7 | Apakah fine-tuning LoRA dengan data latih kecil memperbaiki pengenalan istilah teknis, dan apakah perbaikannya melebihi hotwords? | E8 |
 
-Jawaban Q1–Q6 inilah yang nanti digabungkan dengan hasil user testing di bab Discussion.
+Jawaban Q1–Q7 inilah yang nanti digabungkan dengan hasil user testing di bab Discussion.
 
 ### 8.2 Alur evaluasi
 
@@ -278,14 +279,16 @@ Ada tiga jenis rekaman dengan peran berbeda: Set A untuk membandingkan konfigura
 | Kapan | Sesi perpustakaan (bisa ditambah Task 1 user testing) | Task 2 user testing + rekaman pilot | Sesi perpustakaan |
 | Mic | Serentak di mic laptop dan earphone (clip-on bila ada) | Mic laptop (earphone opsional) | Serentak di semua mic yang dipakai Set A |
 | Label | Teks naskah, dikoreksi bila pembaca menyimpang | Transkrip verbatim manual + anotasi konsep, jeda, filler | Tidak perlu |
-| Dipakai di | E1–E6 | F, E2 (checklist), E7 | E4 |
+| Dipakai di | E1–E6, E8 | F, E2 (checklist), E7, E8 | E4 |
 | Target ukuran | 6–8 pembicara × 2 naskah | 5–8 rekaman | 1 rekaman per mic |
 
 **Peran A vs B.** Set A untuk **perbandingan relatif** antar konfigurasi karena kondisinya terkontrol dan labelnya gratis. Set B memberi **angka akurasi utama** di laporan dan memverifikasi bahwa urutan konfigurasi terbaik dari A tetap sama di bicara spontan. WER di A diperkirakan lebih rendah daripada B; selisihnya dilaporkan sebagai temuan.
 
+**Set T (data latih fine-tuning)** terpisah dari ketiga jenis rekaman di atas dan tidak pernah dipakai untuk evaluasi. Detailnya di bagian 8.8.
+
 **Membuat naskah Set A:**
 
-1. Rekam penjelasan spontanmu sendiri untuk 3–4 topik, lalu transkrip.
+1. Pilih topik di luar 14 topik naskah latih Set T (bagian 8.8). Rekam penjelasan spontanmu sendiri untuk 3–4 topik, lalu transkrip.
 2. Rapikan menjadi naskah 150–250 kata per topik, tetap mempertahankan gaya lisan ("jadi", "nah") dan istilah Inggris. Ini memperkecil jarak antara bacaan dan bicara spontan.
 3. Daftar istilah teknis tiap naskah dicatat terpisah; daftar ini dipakai untuk term WER dan sebagai hotwords di E2.
 
@@ -334,7 +337,7 @@ WER = \frac{S + D + I}{N}
 - Latency dilaporkan sebagai median dan persentil ke-90, bukan rata-rata, karena distribusinya miring.
 - Setiap run dilakukan sekali per konfigurasi karena replay deterministik; latency dicek ulang di satu konfigurasi untuk memastikan variasinya kecil.
 
-**Normalisasi teks** ditetapkan sebelum menghitung metrik apa pun dan dicantumkan di laporan: huruf kecil, hapus tanda baca, penulisan baku untuk kata gabungan ("nge-update" vs "ngeupdate", "dataset" vs "data set"), singkatan ("ML" vs "machine learning"), dan filler dikeluarkan dari perhitungan WER.
+**Normalisasi teks** ditetapkan sebelum menghitung metrik apa pun dan dicantumkan di laporan: huruf kecil, hapus tanda baca, penulisan baku untuk kata gabungan ("nge-update" vs "ngeupdate", "network-nya" vs "networknya", "dataset" vs "data set"), singkatan ("ML" vs "machine learning"), dan filler dikeluarkan dari perhitungan WER.
 
 ### 8.5 Rencana eksperimen
 
@@ -351,16 +354,18 @@ Setiap eksperimen mengubah tepat satu variabel dari konfigurasi baseline, lalu h
 | E5 | Q3 | A, mic laptop | Bahasa `id`, `en`, auto-detect | Konfigurasi final | WER, WER per jenis token | Tabel per setelan bahasa | Bila sempat |
 | E6 | Q2 | A, mic laptop | Interval 0,5 / 1 / 2 detik | Konfigurasi final | Latency, RTF, WER | Grafik latency vs WER | Opsional |
 | E7 | Q6 | B beranotasi | Tidak ada (validasi fitur) | Konfigurasi final | P/R checklist, detection delay, P/R jeda dan filler | Tabel validasi fitur | Wajib (checklist), bila sempat (jeda/filler) |
+| E8 | Q7 | A dan B, mic laptop | `large-v3-turbo` vs `turbo-ft`, masing-masing tanpa dan dengan hotwords (2×2) | Konfigurasi E1 lainnya | WER, term recall, WER per jenis token, latency, RTF | Tabel 2×2 + grafik WER validasi per epoch dari log training | Wajib |
 | F | Q1, Q4 | B | Baseline vs konfigurasi final | Mic laptop | WER, CER, term recall, WER per jenis token, latency | Tabel angka utama laporan | Wajib |
 
 **Urutan pengerjaan:**
 
 1. E1 untuk memilih model; pertimbangkan akurasi dan latency bersama, bukan WER saja.
-2. E2 dengan model terpilih untuk memutuskan hotwords dipakai atau tidak. Hasilnya membentuk konfigurasi final.
-3. E3 dan E4 dengan konfigurasi final untuk melihat ketahanannya terhadap kondisi input.
-4. F di Set B: angka utama yang menjawab "seberapa akurat dan responsif sistem ini untuk user nyata", sekaligus mengecek apakah perbaikan dari E2 tetap berlaku di bicara spontan.
-5. E7 di Set B untuk memvalidasi fitur yang dilihat user.
-6. E5 dan E6 bila waktu masih ada.
+2. E2 dengan model terpilih untuk memutuskan hotwords dipakai atau tidak.
+3. E8 untuk memutuskan apakah `turbo-ft` menggantikan `large-v3-turbo`. Hasil E2 dan E8 membentuk konfigurasi final.
+4. E3 dan E4 dengan konfigurasi final untuk melihat ketahanannya terhadap kondisi input.
+5. F di Set B: angka utama yang menjawab "seberapa akurat dan responsif sistem ini untuk user nyata", sekaligus mengecek apakah perbaikan dari E2 dan E8 tetap berlaku di bicara spontan.
+6. E7 di Set B untuk memvalidasi fitur yang dilihat user.
+7. E5 dan E6 bila waktu masih ada.
 
 Guideline hanya mewajibkan baseline ditambah satu kondisi. Beban kerja terbesar ada di pelabelan Set B, bukan jumlah eksperimen di Set A, karena setiap eksperimen A hanya berarti menjalankan ulang skrip replay.
 
@@ -388,6 +393,7 @@ Eksperimen menghasilkan tiga lapis output: file mentah yang bisa diaudit, satu t
 - `data/metadata.csv`, rekaman WAV, dan label (naskah, transkrip manual, anotasi).
 - `runs/<konfigurasi>/<file_id>.json`: log per run berisi semua pesan server beserta waktu terimanya, timestamp kata, dan clock GPU. Tidak di-commit karena berisi transkrip ucapan peserta. Dibuat oleh `eval/replay.py`; `eval/metrics.py` menghitung ulang metrik dari log tanpa memutar audio.
 - `results/results.csv`: satu baris per file × konfigurasi dengan semua metrik; sumber tunggal semua angka di laporan.
+- Log training fine-tuning (`turbo-ft-<waktu>.json`: parameter, data, WER validasi per epoch, versi library) disalin dari Google Drive ke `docs/eksperimen/`. Model dan rekaman Set T tetap di Drive.
 
 **Tabel dan grafik untuk laporan (Bab 5):**
 
@@ -402,9 +408,59 @@ Eksperimen menghasilkan tiga lapis output: file mentah yang bisa diaudit, satu t
 | T5 | Angka utama: baseline vs final di Set B, termasuk WER istilah Inggris vs bahasa Indonesia | F |
 | G3 | Distribusi latency konfigurasi final | F |
 | T6 | Contoh error dan kategori, plus grafik frekuensi kategori | 8.6 |
+| T7 | Fine-tuning 2×2: model × hotwords, WER, term recall, WER per jenis token, latency. Hasil pembicara Set T dipisah | E8 |
+| G4 | WER validasi per epoch selama training | E8 (log training) |
 | – | 3–5 contoh transkrip real-time berdampingan dengan reference | F |
 
-**Keterkaitan ke bab lain:** T5 dan G3 menjawab dua pertanyaan wajib guideline (seberapa akurat, seberapa responsif). T2, T4, dan T6 dipasangkan dengan skor kuesioner di Bab 6, misalnya term recall dengan penilaian "transkrip istilah teknis akurat" dan recall checklist dengan "checklist membantu", lalu dibahas bersama di Bab 7.
+**Keterkaitan ke bab lain:** T5 dan G3 menjawab dua pertanyaan wajib guideline (seberapa akurat, seberapa responsif). T2, T4, T6, dan T7 dipasangkan dengan skor kuesioner di Bab 6, misalnya term recall dengan penilaian "transkrip istilah teknis akurat" dan recall checklist dengan "checklist membantu", lalu dibahas bersama di Bab 7.
+
+### 8.8 Fine-tuning (E8)
+
+Fine-tuning ternyata wajib, walaupun datanya kecil (2026-10-13). Tujuannya membuat model lebih akurat untuk penjelasan CS santai yang bercampur istilah Inggris. Pilot sudah menunjukkan syarat datanya: `cahya/faster-whisper-medium-id`, yang di-fine-tune dengan bahasa Indonesia baku, justru lebih buruk untuk istilah Inggris (WER 20,1% vs 13,4% untuk `medium`). Jadi data latih harus berisi kalimat campur bahasa dengan istilah Inggris yang tetap utuh.
+
+Panduan kerja untuk tim (langkah, prinsip, troubleshooting, dan prompt untuk asisten AI) ada di `finetune/README.md` di branch `feat/finetune`.
+
+**Metode.** LoRA pada `openai/whisper-large-v3-turbo`: bobot asli dibekukan, dan yang dilatih hanya adapter di proyeksi query dan value attention, di encoder dan decoder. Adapter terbaik digabung ke bobot model lalu dikonversi ke CTranslate2, sehingga model baru (`turbo-ft`) dipakai cukup dengan mengganti `ASR_MODEL`. Arsitekturnya tidak berubah, jadi latency diperkirakan sama. E8 tetap mengukurnya.
+
+| Parameter | Nilai |
+| --- | --- |
+| LoRA rank, alpha, dropout | 16, 32, 0,05 |
+| Modul target | `q_proj`, `v_proj` (encoder dan decoder) |
+| Learning rate, warmup | 5e-4, 10 step |
+| Epoch | Maksimal 5, dengan early stopping bila WER validasi tidak membaik selama 2 epoch |
+| Batch | 4 × akumulasi gradien 2 (efektif 8), fp16, Colab T4 |
+| Ekspor | Merge LoRA, lalu CTranslate2 float16. `compute_type` tetap diatur di `config.py` |
+
+Notebook-nya `finetune/finetune_colab.ipynb`. Semua parameter ada di sel pertama dan ikut tersimpan di log training.
+
+**Data latih (Set T).**
+
+| Item | Isi |
+| --- | --- |
+| Naskah | 14 naskah sekitar 190 kata: Machine Learning (7), Basis Data (4), CS umum (3). Gaya lisan, padat istilah Inggris, angka ditulis dengan huruf |
+| Pembaca | Tiga anggota tim (`s01`–`s03`). Setiap naskah dibaca satu orang. Pembaca boleh mengganti kata non-istilah sesuai gaya bicaranya |
+| Ukuran | Sekitar 22 menit audio |
+| Rekaman | Mic laptop, ruang tenang, satu file per naskah |
+| Pemotongan | `finetune/segment.py` mentranskrip dengan `large-v3-turbo`, menyejajarkan kata dengan naskah, lalu memotong di batas kalimat (maksimal 20 detik) |
+| Label | Naskah hasil edit pembaca. Semua potongan didengar dan dikoreksi. Potongan yang meragukan dibuang |
+| Validasi | Topik `decision-tree` (ML) dan `sql-join` (Basis Data), tidak ikut dilatih |
+
+Setiap naskah hanya dibaca satu orang karena kalimat dan istilah yang beragam lebih berguna daripada tiga suara untuk kalimat yang sama. Whisper sudah dilatih dengan banyak suara. Yang ingin diperbaiki adalah istilah dalam konteks campur bahasa.
+
+**Aturan anti-kebocoran:**
+
+- 14 topik Set T tidak dipakai untuk naskah Set A, dan naskah evaluasi tidak pernah direkam untuk training.
+- Validasi dipisah per topik, bukan per pembicara, supaya model tidak dinilai dengan kalimat yang pernah dilatih.
+- Suara `s01`–`s03` ikut dilatih, jadi hasil Set A dan Set B mereka dilaporkan terpisah dari pembicara lain.
+
+**E8.** Desain 2×2: `large-v3-turbo` vs `turbo-ft`, masing-masing tanpa dan dengan hotwords, di Set A dan Set B dengan replay yang sama. Hotwords dan fine-tuning sama-sama adaptasi domain, jadi E8 menjawab apakah fine-tuning memberi perbaikan tambahan di atas hotwords yang jauh lebih murah. Hasil netral atau negatif tetap dilaporkan. Training tidak diulang-ulang sampai angkanya bagus, dan setiap run dicatat.
+
+**Batasan yang dicatat di laporan:**
+
+- Data latih kecil dan berupa bacaan, bukan bicara spontan.
+- Hanya ada tiga pembicara.
+- Data validasi kecil, sehingga WER validasi kasar.
+- Naskah latih disusun dengan bantuan AI, lalu dicek tim.
 
 ## 9. Rancangan user testing
 
@@ -473,7 +529,7 @@ Semua item di bawah bisa dikerjakan tanpa biaya dan sebagian besar selesai dalam
 
 **Bahan dan data**
 
-- [ ] Pilih 3–4 topik CS dari mata kuliah yang sedang diambil calon peserta, dan siapkan materinya (PDF/PPTX).
+- [ ] Pilih 3–4 topik CS dari mata kuliah yang sedang diambil calon peserta (Machine Learning dan Basis Data), di luar 14 topik naskah latih Set T, dan siapkan materinya (PDF/PPTX).
 - [ ] Tulis naskah bacaan untuk set A (sekitar 150–250 kata per topik, padat istilah teknis, gaya bicara natural).
 - [ ] Tetapkan aturan normalisasi teks untuk WER.
 - [ ] Siapkan template anotasi (reference transcript, timestamp jeda, filler, konsep yang dijelaskan).
@@ -506,9 +562,10 @@ Fase 0–4 sudah memenuhi semua syarat wajib guideline; fase 5–6 menambah nila
 | 0. Persiapan | Checklist bagian 10, konfirmasi dosen | Jawaban dosen tersimpan; faster-whisper jalan di GPU; data pilot terekam | 1 minggu |
 | 1. Streaming ASR | Capture mic, WebSocket, VAD, faster-whisper, LocalAgreement, UI transkrip | Transkrip partial dan confirmed tampil saat bicara; latency ditampilkan; stabil 5 menit tanpa crash | 1,5–2 minggu |
 | 2. Replay dan evaluasi | Skrip replay file ke pipeline, perhitungan WER/CER/term WER, log latency | Satu perintah menghasilkan tabel metrik untuk satu konfigurasi | 1 minggu |
+| 2b. Fine-tuning | Rekam Set T, potong dan cek, training di Colab, pasang model (bagian 8.8) | `turbo-ft` jalan di laptop lewat `ASR_MODEL`, dan log training tersimpan di `docs/eksperimen/` | ±1 minggu, paralel dengan fase 1–2 |
 | 3. Kelancaran + Gemini | Metrik kelancaran lokal, analisis isi (mode tanpa materi), halaman feedback | Setelah Stop, feedback JSON tervalidasi tampil; fallback lokal jalan saat API gagal | 1 minggu |
 | 4. Materi + konsep | Upload dan parsing materi, ekstraksi konsep, review user, hotwords, checklist dua status | Checklist menyala saat konsep dijelaskan; hotwords terpasang dari daftar konsep | 1,5 minggu |
-| 5. Eksperimen | Rekam set A dan B, jalankan E1–E7 dan F sesuai prioritas, error analysis | Semua tabel dan grafik eksperimen jadi; threshold terkalibrasi | 1,5 minggu |
+| 5. Eksperimen | Rekam set A dan B, jalankan E1–E8 dan F sesuai prioritas, error analysis | Semua tabel dan grafik eksperimen jadi; threshold terkalibrasi | 1,5 minggu |
 | 6. User testing | Sesi dengan 5+ peserta, iterasi kecil bila ada bug kritis | Data kuesioner, observasi, dan wawancara lengkap | 1–1,5 minggu |
 | 7. Laporan | Tulis bab 1–8, AI Usage Log, deklarasi, screenshot, persiapan demo | Laporan lengkap sesuai struktur guideline | 2 minggu |
 
@@ -520,7 +577,9 @@ Risiko terbesar adalah perubahan scope dari dosen dan kualitas pengenalan istila
 
 | Risiko | Dampak | Mitigasi |
 | --- | --- | --- |
-| Fine-tuning ternyata diwajibkan | Butuh data, training, eksperimen ulang | Konfirmasi di fase 0. Data naskah set A dari user testing sudah menjadi awal data training. Rencana cadangan: LoRA Whisper small di laptop atau medium/turbo di Colab T4, split train/test per pembicara, merge LoRA lalu konversi ke CTranslate2, ganti path model di konfigurasi, jalankan ulang eksperimen. |
+| Fine-tuning tidak memperbaiki akurasi | Model akhir tetap `large-v3-turbo` | Hasil netral atau negatif tetap dilaporkan di E8 beserta dugaan penyebabnya. Hotwords tetap menjadi adaptasi domain utama. Training tidak diulang sampai angkanya bagus. |
+| Data latih bocor ke evaluasi | WER `turbo-ft` terlihat terlalu bagus | Topik Set T dikecualikan dari Set A, validasi dipisah per topik, hasil pembicara `s01`–`s03` dilaporkan terpisah (bagian 8.8). |
+| Label data latih salah | Model belajar kesalahan | Semua potongan didengar dan dikoreksi. `segment.py --check` wajib lolos, dan notebook berhenti bila masih ada potongan berstatus `cek`. |
 | Gemini tidak diizinkan | Analisis isi hilang | Checklist konsep dan metrik kelancaran tetap berjalan lokal; daftar konsep diisi manual oleh user. |
 | Rate limit atau perubahan kebijakan free tier | Feedback gagal saat demo/testing | Retry dengan backoff, fallback feedback lokal, cek limit sebelum user testing, siapkan rekaman demo cadangan. |
 | Latency terlalu tinggi di RTX 3050 | Syarat real-time terancam | Turunkan ukuran model, pakai int8, atur interval inference; trade-off didokumentasikan sebagai hasil eksperimen. |
@@ -537,8 +596,8 @@ Setiap komponen rubrik punya bukti konkret dari rencana ini.
 
 | Komponen rubrik | Bobot | Bukti utama | Bab laporan |
 | --- | --- | --- | --- |
-| Speech Recognition Fundamentals | 15% | Penjelasan arsitektur Whisper (encoder-decoder, log-Mel spectrogram), VAD, alasan streaming policy, keterbatasan model untuk code-switching | 2 |
-| Experimental Workflow & Technical Evaluation | 20% | Data set A/B, skrip replay reproducible, sumbu sistem dan input, WER/CER/term WER, latency, error analysis | 5 |
+| Speech Recognition Fundamentals | 15% | Penjelasan arsitektur Whisper (encoder-decoder, log-Mel spectrogram), VAD, alasan streaming policy, keterbatasan model untuk code-switching, fine-tuning LoRA | 2 |
+| Experimental Workflow & Technical Evaluation | 20% | Data set A/B/T, skrip replay reproducible, sumbu sistem dan input, WER/CER/term WER, latency, fine-tuning (E8), error analysis | 5 |
 | System Analysis & User Evaluation | 20% | Tautan temuan user dengan metrik teknis, error propagation ASR ke checklist dan feedback | 6, 7 |
 | Real-Time Application | 30% | Pipeline streaming, partial/confirmed, latency live, checklist konsep | 3, 4 |
 | Real-World Problem & Target User | 5% | Validasi awal ke calon user, peserta dari mahasiswa CS BINUS | 1, 6 |
@@ -550,6 +609,7 @@ Setiap komponen rubrik punya bukti konkret dari rencana ini.
 
 - Perencanaan dengan Claude: analisis ide, arsitektur, rancangan eksperimen, dan dokumen ini. Verifikasi: dicek terhadap guideline dan dikonfirmasi ke dosen.
 - Implementasi dengan Claude Code: tiap modul. Verifikasi: tes fungsional, pengukuran latency, dan WER.
+- Naskah latih, pemotong, dan notebook fine-tuning dengan Claude Code. Verifikasi: tes pemotong, uji pemotong di rekaman pilot, uji notebook dengan model kecil, dan pengecekan isi naskah oleh tim.
 - Keputusan yang diambil berbeda dari saran AI, misalnya membatalkan detektor filler terlatih karena menggeser fokus project. Contoh seperti ini menunjukkan evaluasi kritis dan menaikkan nilai.
 
 Gemini sebagai komponen aplikasi juga dijelaskan di bab System Design, terpisah dari log bantuan pengembangan.
@@ -576,6 +636,13 @@ feynman-speech-coach/
 │   ├── metrics.py          # WER, CER, term WER, latency
 │   ├── normalize.py        # aturan normalisasi teks
 │   └── data/               # WAV + reference + metadata (tidak di-commit bila berisi suara peserta)
+├── finetune/               # Set T dan fine-tuning (bagian 8.8)
+│   ├── README.md           # panduan tim
+│   ├── naskah/             # 14 naskah latih + daftar istilah
+│   ├── segment.py          # potong rekaman jadi potongan berlabel
+│   ├── finetune_colab.ipynb  # training LoRA, merge, konversi CTranslate2
+│   ├── data/               # rekaman dan potongan (tidak di-commit)
+│   └── models/             # model hasil training (tidak di-commit)
 ├── docs/                   # PLAN.md, catatan eksperimen
 ├── AI_LOG.md
 ├── .env.example

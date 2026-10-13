@@ -1,0 +1,15 @@
+join
+sql
+database
+table
+foreign key
+primary key
+on
+inner join
+row
+left join
+null
+right join
+full outer join
+cross join
+index

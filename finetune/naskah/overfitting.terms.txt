@@ -1,0 +1,22 @@
+overfitting
+training data
+noise
+training set
+generalize
+underfitting
+error
+test set
+validation set
+training
+training loss
+validation loss
+overfit
+regularization
+weight
+dropout
+neuron
+random
+early stopping
+data augmentation
+flip
+rotate

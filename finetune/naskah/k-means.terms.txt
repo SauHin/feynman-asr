@@ -1,0 +1,14 @@
+k-means
+clustering
+supervised learning
+unsupervised learning
+label
+cluster
+random
+centroid
+assignment
+euclidean distance
+update
+converge
+elbow method
+inertia

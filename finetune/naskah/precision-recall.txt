@@ -1,0 +1,11 @@
+Oke, saya mau jelasin precision dan recall. Dua metric ini dipakai buat ngukur performa model classification, terutama kalau datanya imbalanced.
+
+Kita mulai dari confusion matrix. Misalnya ada model yang deteksi email spam. Kalau email spam ditebak spam, itu true positive. Kalau email biasa ditebak spam, itu false positive. Kalau email spam lolos dan ditebak bukan spam, itu false negative. Terus email biasa yang ditebak bukan spam namanya true negative.
+
+Accuracy itu jumlah tebakan yang benar dibagi semua data. Masalahnya, kalau cuma sedikit email yang spam, model yang selalu bilang bukan spam aja udah dapet accuracy tinggi. Makanya kita butuh precision sama recall.
+
+Precision itu dari semua yang ditebak positive, berapa yang beneran positive. Recall itu dari semua yang aslinya positive, berapa yang berhasil ketangkep. Jadi precision tinggi artinya jarang salah tuduh, sedangkan recall tinggi artinya jarang ada yang kelewat.
+
+Dua-duanya biasanya tarik-tarikan. Kalau threshold-nya kita naikin, precision biasanya naik tapi recall turun, begitu juga sebaliknya. Buat ngegabungin keduanya, kita pakai F1 score, yaitu harmonic mean dari precision dan recall.
+
+Jadi metric yang dipilih tergantung kasusnya. Buat deteksi penyakit misalnya, recall biasanya lebih penting. Kurang lebih gitu.

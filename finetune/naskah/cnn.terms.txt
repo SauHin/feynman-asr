@@ -1,0 +1,21 @@
+convolutional neural network
+cnn
+image classification
+network
+pixel
+neuron
+convolution
+filter
+kernel
+feature map
+layer
+stride
+output
+padding
+activation function
+relu
+pooling
+max pooling
+flatten
+fully connected layer
+parameter
