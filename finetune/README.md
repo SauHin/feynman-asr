@@ -316,7 +316,7 @@ Hasilnya ada di `feynman-finetune/models/` di Drive:
 | --- | --- |
 | `turbo-ft-<waktu>.zip` | Model untuk faster-whisper |
 | `turbo-ft-<waktu>-adapter/` | Adapter LoRA saja |
-| `turbo-ft-<waktu>.json` | Parameter, data, WER per epoch, dan versi library. Dipakai untuk laporan |
+| `turbo-ft-<waktu>.json` | Parameter, data, label setiap potongan, WER per epoch, dan versi library. Dipakai untuk laporan |
 
 Jangan mengulang training sambil mengubah parameter sampai angkanya bagus. Data validasinya kecil, jadi angka bagus bisa hanya kebetulan. Catat setiap run yang dijalankan.
 
@@ -326,7 +326,9 @@ Selesai kalau: tiga file hasil ada di Drive, dan WER validasi di epoch 0 dan di 
 
 Tujuan: memastikan model hasil training berjalan di laptop dengan backend yang sama dengan aplikasi.
 
-1. Unduh `turbo-ft-<waktu>.zip` dari Drive.
+1. Unduh `turbo-ft-<waktu>.zip` dan `turbo-ft-<waktu>.json` dari Drive. Simpan file JSON di `docs/eksperimen/`, lalu commit.
+   File ini mencatat label yang dipakai training. Audio dan `segments.csv` tetap di Drive, karena audio berisi suara
+   tim dan repo ini publik.
 2. Ekstrak isinya ke `finetune/models/turbo-ft/`. Di folder itu harus ada `model.bin`, `tokenizer.json`, dan `preprocessor_config.json`.
 3. Uji model dengan rekaman pilot, lalu bandingkan dengan `large-v3-turbo`.
 
