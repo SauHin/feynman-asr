@@ -21,6 +21,28 @@ STREAM_TRIM_S = 15.0
 # Teks confirmed yang sudah keluar dari buffer dikirim sebagai initial_prompt (konteks antar-potongan).
 STREAM_PROMPT_CHARS = 200
 
+# Kelancaran (PLAN 7.1), dihitung dari kata confirmed.
+# Celah antarkata minimal segini dihitung jeda panjang. Nilai awal dari PLAN (1,5–2 detik), dikalibrasi dari data pilot.
+FLUENCY_PAUSE_S = 2.0
+# Pesan fluency dikirim tiap selang waktu audio ini, dan juga saat ada jeda panjang.
+FLUENCY_EVERY_S = 5.0
+# Filler leksikal yang dihitung. "jadi" tidak ikut karena lebih sering dipakai sebagai kata sambung biasa.
+FLUENCY_LEXICAL_FILLERS = ("kayak", "gitu", "anu")
+
+# Analisis isi dengan Gemini setelah Stop (PLAN 7.3). API key hanya dibaca dari GEMINI_API_KEY di .env.
+# Model stabil supaya hasil bisa diulang; alias seperti "gemini-flash-latest" bisa berganti model diam-diam.
+# Uji 2026-10-14 dengan key proyek dan transkrip pilot: gemini-2.5-flash tidak lagi tersedia untuk akun baru (404).
+# gemini-3.8-flash lebih teliti, tapi sekali butuh 52 detik dan sekali gagal 504 tiga kali karena server sibuk.
+# gemini-3.1-flash-lite berhasil 4 dari 4 kali dalam 10–15 detik, jadi dipakai sebagai model utama.
+GEMINI_MODEL = "gemini-3.1-flash-lite"
+GEMINI_TEMPERATURE = 0.2
+# Batas waktu satu panggilan. Model yang sedang kelebihan beban kadang tidak menjawab sama sekali.
+GEMINI_TIMEOUT_S = 60.0
+# Percobaan ulang saat kena rate limit (HTTP 429), server Gemini error, atau JSON tidak valid.
+# Jeda sebelum percobaan berikutnya naik dua kali lipat: 2 detik, lalu 4 detik.
+GEMINI_ATTEMPTS = 3
+GEMINI_BACKOFF_S = 2.0
+
 SAMPLE_RATE = 16_000
 
 # Fine-tuning: pemotong rekaman naskah latih (finetune/segment.py).

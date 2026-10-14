@@ -1,9 +1,10 @@
 import { useMemo, type ReactNode } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useLocation, useSearchParams } from 'react-router'
 import { AppBar, MockStateSwitch } from '../components/app-bar'
 import { ChevronIcon, ClockIcon, FillerIcon, PauseIcon, RetryIcon, SpeedIcon } from '../components/chalk'
 import { Kapur } from '../components/kapur'
 import { PauseChip, StatusIcon, type Mark } from '../components/marks'
+import { useFeedback } from '../lib/feedback-request'
 import { clock, decimal } from '../lib/format'
 import { useMockState } from '../lib/mock-state'
 import { buildSegments } from '../lib/transcript-segments'
@@ -16,9 +17,11 @@ import {
   BACKPROP_TRANSCRIPT,
 } from '../mocks/backprop-feedback'
 import { FILLERS } from '../mocks/mock-transcript-source'
-import type { Concept, CoverageStatus, Feedback, FluencyReport } from '../types/feedback'
+import type { Concept, CoverageStatus, Feedback, FluencyReport, SessionResult } from '../types/feedback'
 
 const STATES = ['lengkap', 'memuat', 'gagal', 'ulang'] as const
+const MOCK_FILLERS = [...FILLERS]
+const NO_FILLERS: string[] = []
 type View = (typeof STATES)[number]
 
 const COVERAGE_MARK: Record<CoverageStatus, Mark> = {
@@ -42,17 +45,22 @@ const SUMMARY = 'cursor-pointer list-none [&::-webkit-details-marker]:hidden'
 // tengah, ringkasan sebagai kartu angka, isi dalam kartu putih, dan tombol lanjut di bilah bawah.
 // Urutannya: ringkasan, yang perlu diperbaiki, yang sudah bagus, lalu rincian.
 export default function FeedbackScreen() {
-  const view = useMockState(STATES)
+  // Sesi asli dari layar live (mode mic). Tanpa itu, layar ini menampilkan feedback contoh.
+  const session = (useLocation().state as { session?: SessionResult } | null)?.session
+  const mockView = useMockState(STATES)
+  const real = useFeedback(session)
+  const view: View = session ? real.view : mockView
   const [, setParams] = useSearchParams()
-  const concepts = BACKPROP_CONCEPTS
-  const fluency = BACKPROP_FLUENCY
-  const feedback = view === 'memuat' || view === 'gagal' ? null : BACKPROP_FEEDBACK
-  const previous = view === 'ulang' ? BACKPROP_PREVIOUS : null
+  const concepts = session?.concepts ?? BACKPROP_CONCEPTS
+  const fluency = session?.fluency ?? BACKPROP_FLUENCY
+  const feedback = session ? real.feedback : view === 'memuat' || view === 'gagal' ? null : BACKPROP_FEEDBACK
+  const previous = !session && view === 'ulang' ? BACKPROP_PREVIOUS : null
+  const liveStatus = session?.liveStatus ?? BACKPROP_LIVE_STATUS
   const coverage = feedback?.concept_coverage
   const markOf = (id: string): Mark => {
     const c = coverage?.find((x) => x.concept_id === id)
     if (c) return COVERAGE_MARK[c.status]
-    return BACKPROP_LIVE_STATUS[id] ?? 'none'
+    return liveStatus[id] ?? 'none'
   }
   const mood = view === 'gagal' ? 'confused' : view === 'memuat' ? 'think' : 'happy'
 
@@ -60,21 +68,23 @@ export default function FeedbackScreen() {
     <div className="flex min-h-dvh flex-col">
       <AppBar
         back={{ to: '/', label: 'Kembali ke beranda' }}
-        title={`Feedback: ${BACKPROP_TOPIC}`}
-        subtitle={`Contoh, bukan hasil nyata · sesi ke-${previous ? 2 : 1}`}
+        title={`Feedback: ${session?.topic ?? BACKPROP_TOPIC}`}
+        subtitle={session ? 'Sesimu barusan' : `Contoh, bukan hasil nyata · sesi ke-${previous ? 2 : 1}`}
       >
-        <MockStateSwitch
-          options={[
-            { value: 'lengkap', label: 'Lengkap' },
-            { value: 'memuat', label: 'Memuat' },
-            { value: 'gagal', label: 'Gemini gagal' },
-            { value: 'ulang', label: 'Sesi ke-2' },
-          ]}
-        />
+        {!session && (
+          <MockStateSwitch
+            options={[
+              { value: 'lengkap', label: 'Lengkap' },
+              { value: 'memuat', label: 'Memuat' },
+              { value: 'gagal', label: 'Gemini gagal' },
+              { value: 'ulang', label: 'Sesi ke-2' },
+            ]}
+          />
+        )}
       </AppBar>
 
       <main className="mx-auto flex w-full max-w-[54rem] flex-1 flex-col gap-5 px-4 pb-12 pt-2 md:px-8">
-        <Hero view={view} mood={mood} onRetry={() => setParams({ keadaan: 'memuat' })} />
+        <Hero view={view} mood={mood} onRetry={session ? real.retry : () => setParams({ keadaan: 'memuat' })} />
 
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
           <ScoreCard marks={concepts.map((c) => markOf(c.id))} feedback={feedback} previous={previous} />
@@ -244,7 +254,13 @@ export default function FeedbackScreen() {
           </div>
         </div>
 
-        <TranscriptAppendix concepts={concepts} />
+        {/* shortcut: sesi asli tidak menandai filler di teks. Filler leksikal ambigu dan Whisper jarang menulis
+            filler vokal (PLAN 7.1). Tandai setelah deteksi filler vokal divalidasi di E7. */}
+        <TranscriptAppendix
+          concepts={concepts}
+          transcript={session?.transcript ?? BACKPROP_TRANSCRIPT}
+          fillers={session ? NO_FILLERS : MOCK_FILLERS}
+        />
       </main>
 
       {/* Tombol lanjut selalu terjangkau, seperti tombol Continue di Brilliant. */}
@@ -254,7 +270,7 @@ export default function FeedbackScreen() {
           <Link to="/setup" className="btn btn-plain">
             Ganti topik
           </Link>
-          <Link to="/live" className="btn btn-go px-8">
+          <Link to={session ? '/live?sumber=mic' : '/live'} className="btn btn-go px-8">
             Jelasin lagi
           </Link>
         </div>
@@ -279,7 +295,7 @@ function Hero({ view, mood, onRetry }: { view: View; mood: 'happy' | 'think' | '
       ) : view === 'gagal' ? (
         <div role="alert" className="mt-4 flex flex-col items-center">
           <h2 className="text-[1.9rem] font-bold leading-tight tracking-tight">Yah, feedback isinya belum bisa aku tulis.</h2>
-          <p className="mt-2 text-ink-2">Kuota gratis Gemini lagi habis. Tenang, checklist, kelancaran, dan transkripmu tetap ada.</p>
+          <p className="mt-2 text-ink-2">Gemini lagi nggak bisa dipakai. Tenang, checklist, kelancaran, dan transkripmu tetap ada.</p>
           <button className="btn btn-plain mt-5" onClick={onRetry}>
             <RetryIcon className="size-5" />
             Coba lagi
@@ -367,7 +383,7 @@ function FluencyTiles({ fluency, previous, concepts }: { fluency: FluencyReport;
       <p className="px-1 text-xs leading-relaxed text-ink-3">
         Dihitung di laptopmu.
         {longest && ` Jeda terlama ${decimal(longest.duration)} dtk${beforeConcept ? `, sebelum ${beforeConcept}` : ''}.`} Filler
-        cuma perkiraan, soalnya “jadi” juga bisa kata biasa.
+        cuma perkiraan, soalnya “gitu” juga bisa kata biasa.
       </p>
     </section>
   )
@@ -465,16 +481,24 @@ function ComparisonCard({
 
 // Lampiran: transkrip lengkap dengan istilah konsep, filler, dan jeda panjang ditandai.
 // Dilipat secara bawaan supaya halaman feedback tidak terlalu panjang.
-function TranscriptAppendix({ concepts }: { concepts: Concept[] }) {
+function TranscriptAppendix({
+  concepts,
+  transcript,
+  fillers,
+}: {
+  concepts: Concept[]
+  transcript: SessionResult['transcript']
+  fillers: string[]
+}) {
   const segments = useMemo(
     () =>
       buildSegments(
-        BACKPROP_TRANSCRIPT.text,
-        BACKPROP_TRANSCRIPT.pauses,
+        transcript.text,
+        transcript.pauses,
         concepts.map((c) => ({ id: c.id, terms: [c.name, ...c.aliases] })),
-        [...FILLERS],
+        fillers,
       ),
-    [concepts],
+    [concepts, transcript, fillers],
   )
   return (
     <details className="group mt-2 rounded-[28px] bg-card">
@@ -484,7 +508,9 @@ function TranscriptAppendix({ concepts }: { concepts: Concept[] }) {
             <span className="group-open:hidden">Lihat transkrip lengkap</span>
             <span className="hidden group-open:inline">Tutup transkrip</span>
           </span>
-          <span className="block text-sm text-ink-3">Semua yang kamu ucapkan, plus tanda jeda dan filler.</span>
+          <span className="block text-sm text-ink-3">
+            {fillers.length ? 'Semua yang kamu ucapkan, plus tanda jeda dan filler.' : 'Semua yang kamu ucapkan, plus tanda jeda.'}
+          </span>
         </span>
         <ChevronIcon className="ml-auto size-5 shrink-0 text-ink-3 transition-transform group-open:rotate-90" />
       </summary>

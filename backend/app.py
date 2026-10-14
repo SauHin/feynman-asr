@@ -1,4 +1,5 @@
-"""Server lokal: WebSocket /ws/transcribe untuk transkripsi real-time (PLAN 5-6).
+"""Server lokal: WebSocket /ws/transcribe untuk transkripsi real-time (PLAN 5-6), dan POST /api/feedback
+untuk analisis isi dengan Gemini setelah Stop (PLAN 7.3).
 
 Klien mengirim potongan PCM int16 16 kHz mono sebagai pesan biner, lalu {"type": "stop"} saat selesai.
 Server membalas pesan JSON sesuai frontend/src/types/server-message.ts.
@@ -13,9 +14,11 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 
 import numpy as np
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, HTTPException, WebSocket
 
 import config
+from analysis import gemini
+from analysis.fluency import Fluency
 from asr.streaming import StreamingTranscriber, Word, load_whisper
 
 
@@ -32,34 +35,61 @@ def rows(words: list[Word]) -> list[list]:
     return [[round(w.start, 2), round(w.end, 2), w.text] for w in words]
 
 
+# Fungsi biasa (bukan async), jadi FastAPI menjalankannya di thread lain selama menunggu Gemini.
+@app.post("/api/feedback")
+def feedback(session: gemini.Session) -> gemini.Feedback:
+    if not session.transcript.strip():
+        raise HTTPException(422, "Transkripnya masih kosong, jadi belum ada yang bisa dianalisis.")
+    try:
+        return gemini.analyze(session)
+    except gemini.GeminiError as e:
+        print(f"Gemini gagal: {e}", flush=True)
+        raise HTTPException(502, "Analisis Gemini gagal. Feedback lokal tetap bisa dipakai.") from e
+
+
 @app.websocket("/ws/transcribe")
 async def transcribe(ws: WebSocket) -> None:
     await ws.accept()
     st = StreamingTranscriber(ws.app.state.transcribe)
-    chunks: list[np.ndarray] = []
-    arrived = time.perf_counter()  # saat potongan audio terakhir diterima
+    chunks: list[tuple[np.ndarray, float]] = []  # (audio, waktu diterima)
     shown = ""
     compute_s = 0.0  # total waktu inference sesi ini, untuk RTF di eval/replay.py
+    fluency = Fluency()
+    next_fluency = config.FLUENCY_EVERY_S  # waktu audio untuk pesan fluency berkala berikutnya
 
     # Audio diterima terus di task terpisah. Kalau inference lebih lama dari interval, inference
     # berikutnya langsung memproses semua audio yang terkumpul, jadi sistem tidak makin tertinggal.
     async def receive() -> str:
-        nonlocal arrived
         while True:
             msg = await ws.receive()
             if msg["type"] == "websocket.disconnect":
                 return "disconnect"
             if msg.get("bytes"):
-                chunks.append(np.frombuffer(msg["bytes"], dtype=np.int16).astype(np.float32) / 32768)
-                arrived = time.perf_counter()
+                audio = np.frombuffer(msg["bytes"], dtype=np.int16).astype(np.float32) / 32768
+                chunks.append((audio, time.perf_counter()))
             elif json.loads(msg.get("text") or "{}").get("type") == "stop":
                 return "stop"
 
-    def take_audio() -> float:
-        if chunks:
-            st.insert(np.concatenate(chunks))
-            chunks.clear()
-        return arrived
+    def take_audio(whole: bool = True) -> float:
+        """Pindahkan audio ke transcriber. Mengembalikan waktu diterimanya potongan terakhir yang dipindah.
+
+        whole: hanya kelipatan utuh interval. Selama GPU tidak tertinggal, isi buffer tiap inference jadi
+        sama di setiap replay, sehingga hasil eval/replay.py bisa diulang (PLAN 8.4).
+        """
+        step = int(config.STREAM_INTERVAL_S * config.SAMPLE_RATE)
+        total = sum(len(c) for c, _ in chunks)
+        n = total // step * step if whole else total
+        taken, heard_at = [], time.perf_counter()
+        while n > 0:
+            c, heard_at = chunks.pop(0)
+            if len(c) > n:
+                chunks.insert(0, (c[n:], heard_at))
+                c = c[:n]
+            taken.append(c)
+            n -= len(c)
+        if taken:
+            st.insert(np.concatenate(taken))
+        return heard_at
 
     async def run(step: Callable[[], list[Word]]) -> list[Word]:
         nonlocal compute_s
@@ -91,22 +121,37 @@ async def transcribe(ws: WebSocket) -> None:
             }
         )
 
+    async def publish(new: list[Word], heard_at: float, final: bool = False) -> None:
+        # Jeda panjang dilaporkan tepat sebelum kata sesudah jeda. UI menaruh tanda jeda di akhir teks
+        # confirmed saat pesan fluency tiba, jadi urutan ini menentukan posisinya di transkrip.
+        nonlocal next_fluency
+        start = 0
+        for i, pause in fluency.add(new):
+            if i > start:
+                await send(new[start:i], heard_at)
+            await ws.send_json(fluency.message(st.audio_end, pause))
+            start = i
+        await send(new[start:], heard_at, final)
+        if final or st.audio_end >= next_fluency:
+            await ws.send_json(fluency.message(st.audio_end))
+            next_fluency = st.audio_end + config.FLUENCY_EVERY_S
+
     await ws.send_json({"type": "status", "state": "listening"})
     receiver = asyncio.create_task(receive())
     while not receiver.done():
-        if sum(len(c) for c in chunks) < config.STREAM_INTERVAL_S * config.SAMPLE_RATE:
+        if sum(len(c) for c, _ in chunks) < config.STREAM_INTERVAL_S * config.SAMPLE_RATE:
             await asyncio.wait({receiver}, timeout=0.05)
             continue
         heard_at = take_audio()
         new = await run(st.process)
         if not (receiver.done() and receiver.result() == "disconnect"):
-            await send(new, heard_at)
+            await publish(new, heard_at)
     if receiver.result() == "disconnect":
         return
 
     await ws.send_json({"type": "status", "state": "processing"})
-    heard_at = take_audio()
+    heard_at = take_audio(whole=False)
     # Selalu dikirim, supaya total compute_s sesi sampai ke klien walau teksnya tidak berubah.
-    await send(await run(st.finish), heard_at, final=True)
+    await publish(await run(st.finish), heard_at, final=True)
     await ws.send_json({"type": "status", "state": "idle"})
     await ws.close()

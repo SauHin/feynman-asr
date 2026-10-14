@@ -8,5 +8,7 @@ uvicorn[standard]==0.54.0
 pytest==9.1.1
 # WER dan CER untuk eval/metrics.py
 jiwer==4.0.0
+# Analisis isi dengan Gemini (analysis/gemini.py). Versi ini membatasi websockets di bawah 17.
+google-genai==2.30.1
 # TestClient FastAPI
 httpx==0.28.1
