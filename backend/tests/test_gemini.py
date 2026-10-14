@@ -15,8 +15,17 @@ REPLY = json.dumps({
         {"concept_id": "chain-rule", "status": "explained_correct", "evidence": ["chain rule itu turunan"]},
         {"concept_id": "konsep-asing", "status": "mentioned", "evidence": []},
     ],
-    "factual_errors": [], "unexplained_jargon": [],
-    "strengths": ["a"], "improvements": ["b"], "simplicity_note": "c",
+    "factual_errors": [
+        {"statement": "kalau lossnya benar, modelnya masih salah", "correction": "-", "could_be_asr_mishearing": True},
+        {"statement": "weight digeser searah gradient", "correction": "berlawanan arah", "could_be_asr_mishearing": False},
+    ],
+    "unexplained_jargon": [],
+    "strengths": ["a"],
+    "improvements": [
+        {"text": "jelaskan epoch", "about_speech_or_transcript": False},
+        {"text": "perjelas bahwa width maksudnya weight", "about_speech_or_transcript": True},
+    ],
+    "simplicity_note": "c",
 })
 
 
@@ -48,6 +57,13 @@ def test_every_concept_gets_exactly_one_status(monkeypatch):
     fake_gemini(monkeypatch, REPLY)
     coverage = gemini.analyze(session()).concept_coverage
     assert [(c.concept_id, c.status) for c in coverage] == [("chain-rule", "explained_correct"), ("loss", "not_covered")]
+
+
+def test_findings_flagged_as_asr_mishearing_are_dropped(monkeypatch):
+    fake_gemini(monkeypatch, REPLY)
+    fb = gemini.analyze(session())
+    assert [e.statement for e in fb.factual_errors] == ["weight digeser searah gradient"]
+    assert fb.improvements == ["jelaskan epoch"]
 
 
 def test_rate_limit_and_invalid_json_are_retried(monkeypatch):

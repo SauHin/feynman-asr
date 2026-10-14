@@ -254,8 +254,8 @@ export default function FeedbackScreen() {
           </div>
         </div>
 
-        {/* shortcut: sesi asli belum menandai filler di teks, karena daftar filler hanya ada di backend
-            (config.FLUENCY_LEXICAL_FILLERS). Kirim posisi filler dari backend bila penandaan ini dibutuhkan. */}
+        {/* shortcut: sesi asli tidak menandai filler di teks. Filler leksikal ambigu dan Whisper jarang menulis
+            filler vokal (PLAN 7.1). Tandai setelah deteksi filler vokal divalidasi di E7. */}
         <TranscriptAppendix
           concepts={concepts}
           transcript={session?.transcript ?? BACKPROP_TRANSCRIPT}
@@ -508,7 +508,9 @@ function TranscriptAppendix({
             <span className="group-open:hidden">Lihat transkrip lengkap</span>
             <span className="hidden group-open:inline">Tutup transkrip</span>
           </span>
-          <span className="block text-sm text-ink-3">Semua yang kamu ucapkan, plus tanda jeda dan filler.</span>
+          <span className="block text-sm text-ink-3">
+            {fillers.length ? 'Semua yang kamu ucapkan, plus tanda jeda dan filler.' : 'Semua yang kamu ucapkan, plus tanda jeda.'}
+          </span>
         </span>
         <ChevronIcon className="ml-auto size-5 shrink-0 text-ink-3 transition-transform group-open:rotate-90" />
       </summary>

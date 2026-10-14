@@ -89,7 +89,7 @@ User tidak perlu penjelasan panjang dari orang lain. Aplikasi sendiri memberi pa
 - Cakupan konsep: status akhir tiap konsep, diverifikasi ulang oleh Gemini.
 - Analisis isi: bagian yang benar, kesalahan faktual, gap, dan istilah teknis yang dipakai tanpa dijelaskan.
 - Ringkasan: 2–3 hal yang sudah bagus dan 2–3 hal prioritas untuk diperbaiki.
-- Transkrip lengkap dengan jeda dan filler ditandai.
+- Transkrip lengkap dengan jeda ditandai. Filler baru ditandai setelah deteksi filler vokal divalidasi di E7, karena filler leksikal ambigu dan Whisper jarang menulis filler vokal (7.1).
 
 **Tahap 4 — Iterasi**
 
@@ -216,6 +216,7 @@ Feedback kelancaran ditampilkan sebagai lokasi ("tersendat 3 kali saat menjelask
 
 - Beri tahu Gemini bahwa transkrip berasal dari ASR dan bisa mengandung salah eja istilah teknis; kesalahan transkripsi jangan dianggap kesalahan pemahaman.
 - Minta bukti berupa kutipan transkrip untuk setiap penilaian, supaya feedback bisa diverifikasi.
+- Setiap kesalahan faktual dan saran perbaikan diberi tanda oleh Gemini sendiri apakah mungkin akibat salah dengar ASR, dan yang bertanda dibuang backend sebelum ditampilkan. Pada transkrip pilot (4 run), salah tuduh turun dari 3/4 ke 0/4, dan kesalahan konsep yang sengaja disisipkan tetap tertangkap 4/4.
 - Validasi JSON output; bila gagal parse atau kena rate limit (HTTP 429), retry dengan backoff. Bila tetap gagal, tampilkan feedback lokal saja.
 
 **Batasan yang dicatat di laporan:** slide hanya ringkasan sehingga bukan kunci jawaban lengkap; mode tanpa materi berisiko halusinasi; input di free tier dapat dipakai Google untuk meningkatkan produknya, sehingga peserta user testing harus diberi tahu.

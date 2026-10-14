@@ -67,6 +67,38 @@ class Feedback(BaseModel):
     simplicity_note: str
 
 
+# Balasan mentah Gemini. Setiap kesalahan dan saran membawa penilaian model sendiri apakah itu soal salah dengar ASR,
+# dan yang ditandai dibuang sebelum sampai ke user. Uji 2026-10-14 (transkrip pilot, 4 run): salah tuduh turun dari
+# 3/4 ke 0/4, saran soal ucapan dari 1/4 ke 0/4, dan kesalahan konsep yang disisipkan tetap tertangkap 4/4.
+class CheckedError(FactualError):
+    could_be_asr_mishearing: bool
+
+
+class CheckedImprovement(BaseModel):
+    text: str
+    about_speech_or_transcript: bool
+
+
+class Reply(BaseModel):
+    concept_coverage: list[Coverage]
+    factual_errors: list[CheckedError]
+    unexplained_jargon: list[Jargon]
+    strengths: list[str]
+    improvements: list[CheckedImprovement]
+    simplicity_note: str
+
+    def feedback(self) -> Feedback:
+        return Feedback(
+            concept_coverage=self.concept_coverage,
+            factual_errors=[FactualError(statement=e.statement, correction=e.correction)
+                            for e in self.factual_errors if not e.could_be_asr_mishearing],
+            unexplained_jargon=self.unexplained_jargon,
+            strengths=self.strengths,
+            improvements=[i.text for i in self.improvements if not i.about_speech_or_transcript],
+            simplicity_note=self.simplicity_note,
+        )
+
+
 class GeminiError(Exception):
     """Gemini gagal setelah semua percobaan. Pesannya ditampilkan apa adanya di log server."""
 
@@ -104,6 +136,11 @@ Aturan:
 6. simplicity_note: satu atau dua kalimat tentang seberapa mudah penjelasan ini dipahami orang awam.
 7. Tulis dalam bahasa Indonesia yang santai dan singkat, sapa penjelasnya dengan "kamu". Istilah teknis tetap
    dalam bahasa Inggris.
+8. Untuk setiap factual_errors, isi could_be_asr_mishearing = true kalau kalimat itu menjadi benar bila satu atau dua
+   kata diganti kata yang bunyinya mirip (contoh: "benar" dan "besar", "width" dan "weight"). Kesalahan yang hanya
+   bisa dijelaskan sebagai salah konsep diisi false.
+9. Untuk setiap improvements, isi about_speech_or_transcript = true kalau sarannya tentang pengucapan, artikulasi,
+   atau kata yang tertulis salah di transkrip. Saran tentang isi dan cara menjelaskan diisi false.
 """
 
 
@@ -135,12 +172,12 @@ def analyze(s: Session) -> Feedback:
         ),
     )
     settings = types.GenerateContentConfig(
-        response_mime_type="application/json", response_schema=Feedback, temperature=config.GEMINI_TEMPERATURE
+        response_mime_type="application/json", response_schema=Reply, temperature=config.GEMINI_TEMPERATURE
     )
     for attempt in range(config.GEMINI_ATTEMPTS):
         try:
             r = client.models.generate_content(model=config.GEMINI_MODEL, contents=prompt(s), config=settings)
-            return complete(Feedback.model_validate_json(r.text or ""), s.concepts)
+            return complete(Reply.model_validate_json(r.text or "").feedback(), s.concepts)
         except (errors.APIError, ValidationError, httpx.TransportError) as e:
             # Kunci API salah atau permintaan ditolak (4xx selain 429) tidak membaik dengan dicoba ulang.
             retry = not isinstance(e, errors.APIError) or e.code == 429 or e.code >= 500
