@@ -10,6 +10,9 @@ ASR_DEVICE = "cuda"
 ASR_COMPUTE_TYPE = "int8_float16"
 ASR_LANGUAGE = "id"
 ASR_BEAM_SIZE = 5
+# Hotwords (PLAN 8.5 E2): nama dan alias dari daftar konsep sesi ini dikirim ke Whisper. E2 mematikannya dengan
+# --set ASR_HOTWORDS=False di eval/replay.py, supaya daftar konsep tetap sama dan hanya hotwords yang berubah.
+ASR_HOTWORDS = True
 # Silero VAD bawaan faster-whisper: bagian hening dibuang sebelum decoding, supaya Whisper tidak
 # berhalusinasi ("Terima kasih.") saat user diam.
 ASR_VAD_FILTER = True

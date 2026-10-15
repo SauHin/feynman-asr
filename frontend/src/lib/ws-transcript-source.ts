@@ -1,3 +1,5 @@
+import type { ClientMessage } from '../types/client-message'
+import type { Concept } from '../types/feedback'
 import type { ServerMessage } from '../types/server-message'
 import type { TranscriptSource } from './transcript-source'
 
@@ -27,10 +29,11 @@ export class WebSocketTranscriptSource implements TranscriptSource {
   private ctx: AudioContext | null = null
 
   // Gagal dengan DOMException NotAllowedError/NotFoundError dari mic, atau Error biasa bila server mati.
-  async start() {
+  async start(concepts: Concept[]) {
     this.close()
     try {
       const ws = await this.connect()
+      this.send(ws, { type: 'start', concepts })
       // PLAN 8.3: pemrosesan suara browser dimatikan, supaya audionya sama dengan rekaman eksperimen.
       this.mic = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false },
@@ -57,7 +60,7 @@ export class WebSocketTranscriptSource implements TranscriptSource {
   // Server membalas "processing", transkrip akhir, lalu "idle", kemudian menutup koneksi.
   stop() {
     this.releaseAudio()
-    if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify({ type: 'stop' }))
+    if (this.ws?.readyState === WebSocket.OPEN) this.send(this.ws, { type: 'stop' })
   }
 
   onMessage(handler: (msg: ServerMessage) => void) {
@@ -98,6 +101,10 @@ export class WebSocketTranscriptSource implements TranscriptSource {
     this.mic = null
     void this.ctx?.close()
     this.ctx = null
+  }
+
+  private send(ws: WebSocket, msg: ClientMessage) {
+    ws.send(JSON.stringify(msg))
   }
 
   private emit(msg: ServerMessage) {

@@ -1,8 +1,9 @@
 """Server lokal: WebSocket /ws/transcribe untuk transkripsi real-time (PLAN 5-6), POST /api/concepts untuk
 ekstraksi konsep saat setup, dan POST /api/feedback untuk analisis isi setelah Stop (keduanya Gemini, PLAN 7.3).
 
-Klien mengirim potongan PCM int16 16 kHz mono sebagai pesan biner, lalu {"type": "stop"} saat selesai.
-Server membalas pesan JSON sesuai frontend/src/types/server-message.ts.
+Klien boleh membuka sesi dengan {"type": "start", "concepts": [...]}, lalu mengirim potongan PCM int16 16 kHz
+mono sebagai pesan biner, dan {"type": "stop"} saat selesai (frontend/src/types/client-message.ts). Server membalas
+pesan JSON sesuai frontend/src/types/server-message.ts.
 
 Jalankan dari root repo:
     backend/.venv/Scripts/python.exe -m uvicorn app:app --app-dir backend --port 8000
@@ -21,7 +22,7 @@ import config
 import materials
 from analysis import gemini
 from analysis.fluency import Fluency
-from asr.streaming import StreamingTranscriber, Word, load_whisper
+from asr.streaming import StreamingTranscriber, Word, hotwords, load_whisper
 
 
 @asynccontextmanager
@@ -101,8 +102,14 @@ async def transcribe(ws: WebSocket) -> None:
             if msg.get("bytes"):
                 audio = np.frombuffer(msg["bytes"], dtype=np.int16).astype(np.float32) / 32768
                 chunks.append((audio, time.perf_counter()))
-            elif json.loads(msg.get("text") or "{}").get("type") == "stop":
-                return "stop"
+            elif msg.get("text"):
+                data = json.loads(msg["text"])
+                if data.get("type") == "stop":
+                    return "stop"
+                # Pesan start datang sebelum audio, jadi hotwords sudah terpasang sejak inference pertama.
+                if data.get("type") == "start" and config.ASR_HOTWORDS:
+                    concepts = [gemini.Concept.model_validate(c) for c in data.get("concepts", [])]
+                    st.hotwords = hotwords(t for c in concepts for t in [c.name, *c.aliases])
 
     def take_audio(whole: bool = True) -> float:
         """Pindahkan audio ke transcriber. Mengembalikan waktu diterimanya potongan terakhir yang dipindah.
