@@ -10,6 +10,9 @@ export type Concept = {
   description: string
 }
 
+// Topik dan daftar konsep final dari layar setup, dibawa ke layar live lewat state router.
+export type SessionSetup = { topic: string; concepts: Concept[] }
+
 // Panggilan 2: analisis penjelasan.
 export type CoverageStatus = 'not_covered' | 'mentioned' | 'explained_correct' | 'explained_incorrect'
 
