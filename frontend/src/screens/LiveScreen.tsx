@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useLocation, useSearchParams } from 'react-router'
 import { EmpurMenu, segment, ThemeToggle } from '../components/app-bar'
 import { CloseIcon, FillerIcon, PauseIcon, SpeedIcon, type MarkStatus } from '../components/chalk'
 import { Kapur } from '../components/kapur'
@@ -12,7 +12,7 @@ import { buildSegments, type Segment } from '../lib/transcript-segments'
 import { BACKPROP_CONCEPTS, BACKPROP_TOPIC } from '../mocks/backprop'
 import { WebSocketTranscriptSource } from '../lib/ws-transcript-source'
 import { MockTranscriptSource } from '../mocks/mock-transcript-source'
-import type { Concept, SessionResult } from '../types/feedback'
+import type { Concept, SessionResult, SessionSetup } from '../types/feedback'
 
 // Contoh: sesi rekaman yang diputar ulang. Mic: suara user ditranskrip backend lokal (?sumber=mic).
 type Mode = 'contoh' | 'mic'
@@ -40,13 +40,16 @@ const origin = (p: { x: number; y: number }) => `${(p.x / 120) * 100}% ${(p.y / 
 // kartu putih besar, Empur di pojok kiri bawah kartu penjelasan dengan balon di sampingnya.
 export default function LiveScreen() {
   const [params, setParams] = useSearchParams()
+  const location = useLocation()
+  const setup = (location.state as { setup?: SessionSetup } | null)?.setup
   const mode: Mode = params.get('sumber') === 'mic' ? 'mic' : 'contoh'
   const source = useMemo<TranscriptSource>(
     () => (mode === 'mic' ? new WebSocketTranscriptSource() : new MockTranscriptSource()),
     [mode],
   )
-  // ponytail: konsep masih mock; Fase 4 ganti ke daftar konsep dari setup.
-  const concepts = BACKPROP_CONCEPTS
+  // Mode contoh selalu memutar sesi backprop. Mode mic memakai topik dan konsep dari setup, atau konsep contoh
+  // kalau layar ini dibuka langsung tanpa setup.
+  const { topic, concepts } = mode === 'mic' && setup ? setup : { topic: BACKPROP_TOPIC, concepts: BACKPROP_CONCEPTS }
   const [state, dispatch] = useReducer(liveReducer, initialLiveState)
   const [startedAt, setStartedAt] = useState<number | null>(null)
   const [now, setNow] = useState(0)
@@ -87,7 +90,7 @@ export default function LiveScreen() {
     )
   }
   const switchMode = (m: Mode) => {
-    setParams(m === 'mic' ? { sumber: 'mic' } : {})
+    setParams(m === 'mic' ? { sumber: 'mic' } : {}, { state: location.state })
     dispatch({ type: 'reset' })
     setStartedAt(null)
     setError(null)
@@ -96,12 +99,12 @@ export default function LiveScreen() {
   const elapsed = started ? Math.max(0, (now - startedAt) / 1000) : 0
   const sessionDone = state.status === 'idle' && started && !connecting
   const statusOf = (id: string): MarkStatus => state.concepts[id] ?? 'none'
-  const line = kapurSays({ state, concepts, started, elapsed, topic: BACKPROP_TOPIC })
+  const line = kapurSays({ state, concepts, started, elapsed, topic })
   // Hanya sesi mode mic yang dianalisis Gemini. Mode contoh membuka feedback contoh.
   const session: SessionResult | undefined =
     mode === 'mic' && sessionDone
       ? {
-          topic: BACKPROP_TOPIC,
+          topic,
           concepts,
           transcript: { text: state.confirmed, pauses: state.pauses },
           fluency: {
@@ -144,7 +147,7 @@ export default function LiveScreen() {
 
   return (
     <div className="flex min-h-dvh flex-col md:h-dvh">
-      <TopBar state={state} concepts={concepts} elapsed={elapsed} sessionDone={sessionDone} mode={mode} />
+      <TopBar state={state} topic={topic} concepts={concepts} elapsed={elapsed} sessionDone={sessionDone} mode={mode} />
 
       <main className="mx-auto flex w-full max-w-[80rem] flex-1 flex-col gap-4 px-4 pb-4 md:min-h-0 md:flex-row md:gap-5 md:px-8 md:pb-5">
         <section
@@ -164,7 +167,11 @@ export default function LiveScreen() {
         </section>
 
         <section className="relative flex min-h-[45vh] flex-1 flex-col rounded-[28px] border border-line bg-surface p-5 md:min-h-0 md:p-7">
-          {started ? <Transcript state={state} concepts={concepts.filter((c) => statusOf(c.id) !== 'none')} /> : <Guidance />}
+          {started ? (
+            <Transcript state={state} concepts={concepts.filter((c) => statusOf(c.id) !== 'none')} />
+          ) : (
+            <Guidance topic={topic} />
+          )}
 
           {/* Empur di pojok kiri bawah kartu, dengan balon di sampingnya. */}
           <div className="relative z-20 mt-4 flex shrink-0 items-end gap-2">
@@ -199,6 +206,7 @@ export default function LiveScreen() {
         started={started}
         sessionDone={sessionDone}
         mode={mode}
+        sample={!setup}
         error={error}
         session={session}
         onMode={switchMode}
@@ -211,12 +219,14 @@ export default function LiveScreen() {
 
 function TopBar({
   state,
+  topic,
   concepts,
   elapsed,
   sessionDone,
   mode,
 }: {
   state: LiveState
+  topic: string
   concepts: Concept[]
   elapsed: number
   sessionDone: boolean
@@ -252,7 +262,7 @@ function TopBar({
         <CloseIcon className="size-5" />
       </Link>
       <div className="mr-auto md:mr-0">
-        <h1 className="text-lg font-semibold leading-tight tracking-tight">{BACKPROP_TOPIC}</h1>
+        <h1 className="text-lg font-semibold leading-tight tracking-tight">{topic}</h1>
         <p className="text-sm text-ink-3">{mode === 'mic' ? 'Pakai suaramu' : 'Sesi contoh, bukan suaramu'}</p>
       </div>
 
@@ -377,7 +387,7 @@ function Legend({ className = '' }: { className?: string }) {
   )
 }
 
-function Guidance() {
+function Guidance({ topic }: { topic: string }) {
   const steps = [
     'Klik Mulai, terus izinkan mikrofon kalau diminta.',
     'Ngomong santai aja, nggak usah terus lihat layar.',
@@ -388,7 +398,7 @@ function Guidance() {
       <div>
         <h2 className="text-lg font-semibold">Sebelum mulai</h2>
         <p className="mt-2 text-[1.2rem] leading-relaxed text-ink-2">
-          Jelasin {BACKPROP_TOPIC} kayak lagi ngajarin teman yang belum paham.
+          Jelasin {topic} kayak lagi ngajarin teman yang belum paham.
         </p>
       </div>
       {/* Mengisi lebar kartu: bertumpuk di layar sempit, tiga kolom dari 1024px. */}
@@ -463,6 +473,7 @@ function Footer({
   started,
   sessionDone,
   mode,
+  sample,
   error,
   session,
   onMode,
@@ -473,6 +484,7 @@ function Footer({
   started: boolean
   sessionDone: boolean
   mode: Mode
+  sample: boolean
   error: string | null
   session?: SessionResult
   onMode: (m: Mode) => void
@@ -493,9 +505,11 @@ function Footer({
         <p className="mr-auto max-w-[56rem] text-sm leading-relaxed text-ink-3">
           Suaramu diproses di laptop ini. Setelah selesai, transkrip, konsep, angka, dan materimu dikirim ke Gemini
           buat bikin feedback. Gemini versi gratis bisa memakai data itu.{' '}
-          {mode === 'mic'
-            ? 'Untuk sekarang, baru transkripnya yang asli. Agenda dan feedback masih contoh.'
-            : 'Untuk sekarang, aplikasi memutar sesi contoh sekitar 90 detik.'}
+          {mode === 'contoh'
+            ? 'Untuk sekarang, aplikasi memutar sesi contoh sekitar 90 detik.'
+            : sample
+              ? 'Agendanya masih contoh. Pilih topik dulu biar agendanya punyamu.'
+              : 'Untuk sekarang, agendanya belum dicentang otomatis.'}
         </p>
       ) : (
         <dl className="mr-auto flex gap-2 md:gap-3">

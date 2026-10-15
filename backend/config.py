@@ -43,6 +43,14 @@ GEMINI_TIMEOUT_S = 60.0
 GEMINI_ATTEMPTS = 3
 GEMINI_BACKOFF_S = 2.0
 
+# Ekstraksi konsep saat setup (PLAN 4 Tahap 1, PLAN 7.3 panggilan 1).
+# Sama dengan batas daftar konsep di layar setup.
+CONCEPTS_MAX = 8
+MATERIAL_MAX_MB = 20
+# Teks materi yang lebih panjang ditolak, dan user diminta memilih halaman yang relevan. 100 ribu karakter
+# kira-kira 25 ribu token (sekitar 4 karakter per token), cukup untuk satu bab slide kuliah.
+MATERIAL_MAX_CHARS = 100_000
+
 SAMPLE_RATE = 16_000
 
 # Fine-tuning: pemotong rekaman naskah latih (finetune/segment.py).

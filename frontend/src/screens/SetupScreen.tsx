@@ -1,23 +1,21 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { AppBar, MockStateSwitch } from '../components/app-bar'
+import { AppBar } from '../components/app-bar'
 import { CloudIcon, PencilIcon, PlusIcon, RetryIcon, TrashIcon } from '../components/chalk'
 import { Kapur } from '../components/kapur'
+import { ConceptError, requestConcepts, type ConceptRequest } from '../lib/concepts-request'
 import type { KapurMood } from '../lib/kapur'
-import { useMockState } from '../lib/mock-state'
 import { formatPages, parsePages } from '../lib/pages'
-import { BACKPROP_CONCEPTS } from '../mocks/backprop'
-import type { Concept } from '../types/feedback'
+import type { Concept, SessionSetup } from '../types/feedback'
 
 type Step = 'topic' | 'material' | 'extracting' | 'failed' | 'review'
 type Material =
-  | { kind: 'file'; name: string; size: number; unit?: 'Halaman' | 'Slide'; pages: string }
+  | { kind: 'file'; file: File; unit?: 'Halaman' | 'Slide'; pages: string }
   | { kind: 'text'; text: string }
   | { kind: 'none' }
 
+// Sama dengan CONCEPTS_MAX di backend/config.py.
 const MAX_CONCEPTS = 8
-// ponytail: ekstraksi masih mock (selalu konsep Backpropagation); ganti ke panggilan Gemini 1 di Fase 4.
-const EXTRACT_MS = 2400
 const FORMATS = ['pdf', 'pptx', 'txt', 'md']
 
 const MOOD: Record<Step, KapurMood> = {
@@ -48,13 +46,26 @@ function describe(m: Material) {
     : 'pages' in picked && picked.pages.length
       ? ` · ${m.unit.toLowerCase()} ${formatPages(picked.pages)}`
       : ` · semua ${m.unit.toLowerCase()}`
-  return `${m.name}${range}`
+  return `${m.file.name}${range}`
+}
+
+function toRequest(topic: string, m: Material): ConceptRequest {
+  if (m.kind === 'text') return { topic, text: m.text }
+  if (m.kind === 'none') return { topic }
+  const picked = parsePages(m.pages)
+  return { topic, file: m.file, pages: 'pages' in picked ? picked.pages : [] }
+}
+
+// Pertanyaan dan penjelasan Empur saat ekstraksi gagal, per penyebab.
+const FAILURE: Record<ConceptError['kind'], [string, string]> = {
+  material: ['Hmm, materinya nggak bisa aku pakai.', 'Coba file lain, atau tempel teksnya aja.'],
+  gemini: ['Yah, Gemini lagi nggak bisa dipakai.', 'Tunggu sebentar terus coba lagi, atau tulis konsepnya sendiri.'],
+  server: ['Server lokalnya belum nyala.', 'Jalankan backend dulu terus coba lagi, atau tulis konsepnya sendiri.'],
 }
 
 // Setup sebagai alur satu pertanyaan per langkah, seperti onboarding Brilliant: bilah kemajuan di atas,
 // Empur di samping pertanyaan, dan jawaban sebelumnya sebagai chip yang bisa diubah.
 export default function SetupScreen() {
-  const failMock = useMockState(['normal', 'gagal'] as const) === 'gagal'
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>('topic')
   const [topic, setTopic] = useState('')
@@ -62,19 +73,30 @@ export default function SetupScreen() {
   const [concepts, setConcepts] = useState<Concept[]>([])
   const [found, setFound] = useState(0)
   const [editing, setEditing] = useState<string | null>(null)
-  const retried = useRef(false)
+  const [request, setRequest] = useState<{ req: ConceptRequest; attempt: number } | null>(null)
+  const [failure, setFailure] = useState<ConceptError | null>(null)
 
-  // Ekstraksi mock: gagal sekali kalau ?keadaan=gagal, lalu berhasil saat dicoba lagi.
   useEffect(() => {
-    if (step !== 'extracting') return
-    const id = setTimeout(() => {
-      if (failMock && !retried.current) return setStep('failed')
-      setConcepts(BACKPROP_CONCEPTS)
-      setFound(BACKPROP_CONCEPTS.length)
-      setStep('review')
-    }, EXTRACT_MS)
-    return () => clearTimeout(id)
-  }, [step, failMock])
+    if (step !== 'extracting' || !request) return
+    let active = true
+    requestConcepts(request.req, request.attempt).then(
+      (found) => {
+        if (!active) return
+        setConcepts(found)
+        setFound(found.length)
+        if (!found.length) setEditing('new')
+        setStep('review')
+      },
+      (err: unknown) => {
+        if (!active) return
+        setFailure(err instanceof ConceptError ? err : new ConceptError('server'))
+        setStep('failed')
+      },
+    )
+    return () => {
+      active = false
+    }
+  }, [step, request])
 
   // Setiap langkah baru dimulai dari atas.
   useEffect(() => {
@@ -103,7 +125,7 @@ export default function SetupScreen() {
         </span>
       </>
     ),
-    failed: 'Yah, kuota gratis Gemini lagi habis.',
+    failed: FAILURE[failure?.kind ?? 'server'][0],
     review: found
       ? `Ketemu ${found} konsep! Cek dulu, ya.`
       : 'Tulis konsep yang mau kamu bahas. Nanti aku centang satu-satu.',
@@ -111,14 +133,7 @@ export default function SetupScreen() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <AppBar back={{ to: '/', label: 'Kembali ke beranda' }} title="Pilih topik" subtitle="Mockup: konsep contoh, belum dari Gemini">
-        <MockStateSwitch
-          options={[
-            { value: 'normal', label: 'Normal' },
-            { value: 'gagal', label: 'Ekstraksi gagal' },
-          ]}
-        />
-      </AppBar>
+      <AppBar back={{ to: '/', label: 'Kembali ke beranda' }} title="Pilih topik" />
 
       <main className="mx-auto flex w-full max-w-[44rem] flex-1 flex-col px-5 pb-12 pt-4">
         <Progress value={PROGRESS[step]} />
@@ -160,7 +175,7 @@ export default function SetupScreen() {
               initial={material}
               onSubmit={(m) => {
                 setMaterial(m)
-                retried.current = false
+                setRequest({ req: toRequest(topic, m), attempt: 0 })
                 setStep('extracting')
               }}
             />
@@ -180,18 +195,24 @@ export default function SetupScreen() {
 
           {step === 'failed' && (
             <div role="alert" className="flex flex-col gap-4">
-              <p className="text-lg text-ink-2">Tunggu sebentar terus coba lagi, atau tulis konsepnya sendiri.</p>
+              <p className="text-lg text-ink-2">{failure?.message || FAILURE[failure?.kind ?? 'server'][1]}</p>
               <div className="flex flex-wrap gap-3">
-                <button
-                  className="btn btn-go"
-                  onClick={() => {
-                    retried.current = true
-                    setStep('extracting')
-                  }}
-                >
-                  <RetryIcon className="size-5" />
-                  Coba lagi
-                </button>
+                {failure?.kind === 'material' ? (
+                  <button className="btn btn-go" onClick={() => rewind('material')}>
+                    Ganti materi
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-go"
+                    onClick={() => {
+                      setRequest((r) => r && { ...r, attempt: r.attempt + 1 })
+                      setStep('extracting')
+                    }}
+                  >
+                    <RetryIcon className="size-5" />
+                    Coba lagi
+                  </button>
+                )}
                 <button
                   className="btn btn-plain"
                   onClick={() => {
@@ -222,7 +243,7 @@ export default function SetupScreen() {
                   className="btn btn-go w-full max-w-80 text-lg"
                   disabled={!ready}
                   aria-describedby={ready ? undefined : 'syarat-mulai'}
-                  onClick={() => navigate('/live')}
+                  onClick={() => navigate('/live?sumber=mic', { state: { setup: { topic, concepts } satisfies SessionSetup } })}
                 >
                   Mulai jelasin
                 </button>
@@ -357,7 +378,7 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
   const submit = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     submit.current?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior() })
-  }, [mode, file?.name])
+  }, [mode, file?.file])
 
   const pick = (f: File | undefined) => {
     if (!f) return
@@ -368,8 +389,7 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
     setMode('file')
     setFile({
       kind: 'file',
-      name: f.name,
-      size: f.size,
+      file: f,
       unit: ext === 'pdf' ? 'Halaman' : ext === 'pptx' ? 'Slide' : undefined,
       pages: '',
     })
@@ -431,8 +451,8 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
           <div className="flex items-center gap-3">
             <OptionIcon kind="file" className="size-10 shrink-0" />
             <p className="min-w-0 flex-1">
-              <span className="block truncate text-lg font-medium">{file.name}</span>
-              <span className="text-sm tabular-nums text-ink-3">{size(file.size)}</span>
+              <span className="block truncate text-lg font-medium">{file.file.name}</span>
+              <span className="text-sm tabular-nums text-ink-3">{size(file.file.size)}</span>
             </p>
             <button
               className="rounded-full px-3 py-1.5 text-sm font-medium text-ink-2 transition-colors duration-150 hover:bg-card-2 hover:text-ink"
@@ -440,7 +460,7 @@ function MaterialForm({ initial, onSubmit }: { initial: Material | null; onSubmi
             >
               Ganti
             </button>
-            <IconButton label={`Hapus ${file.name}`} onClick={() => setFile(null)}>
+            <IconButton label={`Hapus ${file.file.name}`} onClick={() => setFile(null)}>
               <TrashIcon className="size-[1.1rem]" />
             </IconButton>
           </div>

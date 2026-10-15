@@ -1,5 +1,5 @@
-"""Server lokal: WebSocket /ws/transcribe untuk transkripsi real-time (PLAN 5-6), dan POST /api/feedback
-untuk analisis isi dengan Gemini setelah Stop (PLAN 7.3).
+"""Server lokal: WebSocket /ws/transcribe untuk transkripsi real-time (PLAN 5-6), POST /api/concepts untuk
+ekstraksi konsep saat setup, dan POST /api/feedback untuk analisis isi setelah Stop (keduanya Gemini, PLAN 7.3).
 
 Klien mengirim potongan PCM int16 16 kHz mono sebagai pesan biner, lalu {"type": "stop"} saat selesai.
 Server membalas pesan JSON sesuai frontend/src/types/server-message.ts.
@@ -12,11 +12,13 @@ import json
 import time
 from collections.abc import Callable
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 import numpy as np
-from fastapi import FastAPI, HTTPException, WebSocket
+from fastapi import FastAPI, Form, HTTPException, UploadFile, WebSocket
 
 import config
+import materials
 from analysis import gemini
 from analysis.fluency import Fluency
 from asr.streaming import StreamingTranscriber, Word, load_whisper
@@ -36,6 +38,38 @@ def rows(words: list[Word]) -> list[list]:
 
 
 # Fungsi biasa (bukan async), jadi FastAPI menjalankannya di thread lain selama menunggu Gemini.
+@app.post("/api/concepts")
+def concepts(
+    topic: Annotated[str, Form(min_length=1, max_length=200)],
+    text: Annotated[str, Form()] = "",
+    pages: Annotated[str, Form()] = "",  # nomor halaman atau slide dipisah koma, kosong berarti semua
+    file: UploadFile | None = None,
+) -> list[gemini.Concept]:
+    """Ekstraksi konsep saat setup. Materi opsional: file, atau teks yang ditempel. 422 berarti materinya bermasalah,
+    dan pesannya ditampilkan ke user."""
+    try:
+        picked = [int(p) for p in pages.split(",") if p.strip()]
+    except ValueError:
+        raise HTTPException(422, "Nomor halamannya nggak kebaca. Contohnya 1-5, 8.") from None
+    if any(p < 1 for p in picked):
+        raise HTTPException(422, "Nomor halaman mulai dari 1, ya.")
+    material = text.strip()
+    if file is not None:
+        if (file.size or 0) > config.MATERIAL_MAX_MB * 1024 * 1024:
+            raise HTTPException(422, f"File-nya kebesaran. Maksimal {config.MATERIAL_MAX_MB} MB.")
+        try:
+            material = materials.extract_text(file.filename or "", file.file.read(), picked)
+        except materials.MaterialError as e:
+            raise HTTPException(422, str(e)) from e
+    if len(material) > config.MATERIAL_MAX_CHARS:
+        raise HTTPException(422, "Materinya kepanjangan. Pilih halaman yang paling relevan aja, ya.")
+    try:
+        return gemini.extract_concepts(topic.strip(), material)
+    except gemini.GeminiError as e:
+        print(f"Gemini gagal: {e}", flush=True)
+        raise HTTPException(502, "Ekstraksi konsep gagal. Konsepnya bisa ditulis sendiri.") from e
+
+
 @app.post("/api/feedback")
 def feedback(session: gemini.Session) -> gemini.Feedback:
     if not session.transcript.strip():

@@ -17,7 +17,7 @@ import {
   BACKPROP_TRANSCRIPT,
 } from '../mocks/backprop-feedback'
 import { FILLERS } from '../mocks/mock-transcript-source'
-import type { Concept, CoverageStatus, Feedback, FluencyReport, SessionResult } from '../types/feedback'
+import type { Concept, CoverageStatus, Feedback, FluencyReport, SessionResult, SessionSetup } from '../types/feedback'
 
 const STATES = ['lengkap', 'memuat', 'gagal', 'ulang'] as const
 const MOCK_FILLERS = [...FILLERS]
@@ -270,7 +270,11 @@ export default function FeedbackScreen() {
           <Link to="/setup" className="btn btn-plain">
             Ganti topik
           </Link>
-          <Link to={session ? '/live?sumber=mic' : '/live'} className="btn btn-go px-8">
+          <Link
+            to={session ? '/live?sumber=mic' : '/live'}
+            state={session && { setup: { topic: session.topic, concepts: session.concepts } satisfies SessionSetup }}
+            className="btn btn-go px-8"
+          >
             Jelasin lagi
           </Link>
         </div>
