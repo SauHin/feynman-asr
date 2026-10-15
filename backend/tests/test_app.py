@@ -93,3 +93,24 @@ def test_start_message_sets_hotwords_before_the_first_inference(monkeypatch, ena
     monkeypatch.setattr(config, "ASR_HOTWORDS", enabled)
     session(2.5, START)
     assert seen and all(h == expected for h in seen)
+
+
+def test_concept_messages_follow_the_transcript_that_triggers_them(monkeypatch):
+    script = [(0.5, 0.9, "jadi"), (1.0, 1.3, "chain"), (1.4, 1.8, "rule"), (2.0, 2.3, "itu"),
+              (4.5, 4.9, "turunan"), (5.0, 5.4, "fungsi")]
+
+    def transcribe(audio, prompt, hotwords):
+        end = len(audio) / config.SAMPLE_RATE
+        return [Word(s, e, t) for s, e, t in script if e <= end]
+
+    monkeypatch.setattr(app_module, "load_whisper", lambda: transcribe)
+    chain = {"id": "chain-rule", "name": "Chain rule", "aliases": [], "description": "Turunan fungsi komposisi."}
+    messages = session(8, {"type": "start", "concepts": [chain]})
+
+    # Klien tes mengirim semua audio lalu langsung stop, jadi jumlah batch tidak tetap. Urutan disebut lalu
+    # dijelaskan dites di test_concepts.py. Di sini: status akhirnya dijelaskan, dan kata yang mencentang konsep
+    # sudah terkirim sebagai transkrip sebelum pesan concept-nya.
+    concepts = [i for i, m in enumerate(messages) if m["type"] == "concept"]
+    assert messages[concepts[-1]] == {"type": "concept", "concept_id": "chain-rule", "status": "explained", "t": 5.4}
+    said = next(i for i, m in enumerate(messages) if m["type"] == "transcript" and "turunan" in m["confirmed"])
+    assert said < concepts[-1]
