@@ -145,7 +145,7 @@ Aliran data kunci: audio tidak pernah keluar dari laptop. Gemini hanya menerima 
 | VAD | Silero VAD | Segmentasi ucapan, deteksi jeda, mencegah halusinasi saat hening |
 | Embedding konsep | sentence-transformers multilingual kecil (keluarga MiniLM atau e5-small), jalan di CPU | Deteksi "dijelaskan" tanpa berebut VRAM |
 | Fuzzy match | rapidfuzz | Deteksi "disebut" yang tahan salah eja ASR |
-| Parsing materi | PyMuPDF (PDF), python-pptx (PPTX), LibreOffice headless (PPTX ke PDF bila perlu) | Gemini juga bisa menerima PDF langsung |
+| Parsing materi | PyMuPDF (PDF), XML di dalam file PPTX dibaca langsung dengan `zipfile` | Hanya teks yang dikirim ke Gemini. python-pptx tidak dipakai karena ikut membawa lxml, Pillow, dan XlsxWriter hanya untuk membaca teks |
 | LLM | Gemini Flash via SDK `google-genai`, output JSON terstruktur | Free tier, tanpa kartu kredit |
 | Penyimpanan | File JSON/SQLite lokal per sesi | Cukup untuk riwayat sesi dan data eksperimen |
 | Evaluasi | jiwer (WER/CER), skrip replay audio, pandas, matplotlib | Metrik standar dan reproducible |
