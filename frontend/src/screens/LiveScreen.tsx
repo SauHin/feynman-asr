@@ -79,7 +79,7 @@ export default function LiveScreen() {
     setStartedAt(t)
     setNow(t)
     setConnecting(true)
-    source.start().then(
+    source.start(concepts).then(
       () => setConnecting(false),
       (err: unknown) => {
         setConnecting(false)

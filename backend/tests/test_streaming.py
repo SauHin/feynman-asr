@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 import config
-from asr.streaming import StreamingTranscriber, Word, to_words
+from asr.streaming import StreamingTranscriber, Word, hotwords, to_words
 
 SECOND = np.zeros(config.SAMPLE_RATE, dtype=np.float32)
 
@@ -14,7 +14,7 @@ def scripted(*hyps):
     calls = iter(hyps)
     prompts = []
 
-    def transcribe(audio, prompt):
+    def transcribe(audio, prompt, hotwords):
         prompts.append(prompt)
         return [Word(s, e, t) for s, e, t in next(calls)]
 
@@ -69,3 +69,14 @@ def test_buffer_trims_at_last_confirmed_word(monkeypatch):
     assert st.audio_end == pytest.approx(2.0)
     assert texts(st.process()) == ["tiga"]
     assert prompts[-1] == "satu dua"  # teks yang sudah keluar dari buffer menjadi konteks
+
+
+def test_hotwords_are_unique_and_reach_every_inference():
+    assert hotwords(["Chain rule", " chain RULE ", "", "aturan rantai"]) == "Chain rule, aturan rantai"
+    seen = []
+    st = StreamingTranscriber(lambda audio, prompt, hw: seen.append(hw) or [])
+    st.hotwords = "Chain rule"
+    st.insert(SECOND)
+    st.process()
+    st.finish()
+    assert seen == ["Chain rule", "Chain rule"]

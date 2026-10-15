@@ -4,7 +4,7 @@ Whisper bukan model streaming. Tiap interval, seluruh buffer audio ditranskrip u
 di dua hipotesis berturut-turut menjadi confirmed, sisanya partial yang masih bisa berubah.
 """
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
 import numpy as np
@@ -20,19 +20,21 @@ class Word:
     text: str
 
 
-# (audio 16 kHz, prompt) -> kata dengan timestamp relatif terhadap awal audio.
-Transcribe = Callable[[np.ndarray, str], list[Word]]
+# (audio 16 kHz, prompt, hotwords) -> kata dengan timestamp relatif terhadap awal audio.
+Transcribe = Callable[[np.ndarray, str, str], list[Word]]
 
 
 def load_whisper() -> Transcribe:
     model = WhisperModel(config.ASR_MODEL, device=config.ASR_DEVICE, compute_type=config.ASR_COMPUTE_TYPE)
 
-    def transcribe(audio: np.ndarray, prompt: str) -> list[Word]:
+    def transcribe(audio: np.ndarray, prompt: str, hotwords: str) -> list[Word]:
         segments, _ = model.transcribe(
             audio,
             language=config.ASR_LANGUAGE,
             beam_size=config.ASR_BEAM_SIZE,
             initial_prompt=prompt or None,
+            # faster-whisper menaruh hotwords sebelum initial_prompt, masing-masing paling banyak 223 token.
+            hotwords=hotwords or None,
             condition_on_previous_text=False,
             word_timestamps=True,
             vad_filter=config.ASR_VAD_FILTER,
@@ -40,6 +42,15 @@ def load_whisper() -> Transcribe:
         return to_words(w for s in segments for w in s.words)
 
     return transcribe
+
+
+def hotwords(terms: Iterable[str]) -> str:
+    """Istilah untuk parameter hotwords Whisper: tanpa duplikat (huruf besar diabaikan), dipisah koma."""
+    unique: dict[str, str] = {}
+    for t in (t.strip() for t in terms):
+        if t:
+            unique.setdefault(t.lower(), t)
+    return ", ".join(unique.values())
 
 
 def to_words(raw) -> list[Word]:
@@ -66,6 +77,7 @@ class StreamingTranscriber:
         self.offset = 0.0  # waktu sesi di awal buffer
         self.confirmed: list[Word] = []
         self.partial: list[Word] = []
+        self.hotwords = ""  # nama dan alias konsep sesi ini (PLAN 8.5 E2), diisi dari pesan start klien
 
     @property
     def audio_end(self) -> float:
@@ -77,7 +89,8 @@ class StreamingTranscriber:
     def process(self) -> list[Word]:
         """Transkrip ulang buffer. Mengembalikan kata yang baru confirmed; sisanya ada di self.partial."""
         prompt = " ".join(w.text for w in self.confirmed if w.end <= self.offset)[-config.STREAM_PROMPT_CHARS :]
-        hyp = [Word(w.start + self.offset, w.end + self.offset, w.text) for w in self.transcribe(self.buffer, prompt)]
+        raw = self.transcribe(self.buffer, prompt, self.hotwords)
+        hyp = [Word(w.start + self.offset, w.end + self.offset, w.text) for w in raw]
 
         # Buang kata yang sudah confirmed. Timestamp bisa bergeser sedikit antar-inference, jadi awal
         # hipotesis yang mengulang ekor teks confirmed (sampai 5 kata) juga dibuang.
