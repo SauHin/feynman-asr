@@ -32,6 +32,25 @@ FLUENCY_EVERY_S = 5.0
 # Filler leksikal yang dihitung. "jadi" tidak ikut karena lebih sering dipakai sebagai kata sambung biasa.
 FLUENCY_LEXICAL_FILLERS = ("kayak", "gitu", "anu")
 
+# Checklist konsep live (PLAN 7.2), dihitung dari kata confirmed (analysis/concepts.py).
+# Disebut: skor rapidfuzz 0–100 antara nama atau alias konsep dan potongan transkrip sepanjang istilah itu.
+# Nilai awal dari PLAN.
+CONCEPT_MENTION_SCORE = 85
+# Dijelaskan: cosine similarity antara embedding kata-kata sesudah konsep disebut dan embedding "nama: deskripsi"
+# konsep minimal segini. Kalibrasi 2026-10-15 di rekaman pilot s01 (docs/eksperimen/2026-10-15-kalibrasi-checklist.md):
+# ambang 0,525–0,550 sama-sama memberi 8 dari 12 tepat, 0 terlalu awal, 1 telat, dan 0 centang salah, dan 0,54 ada
+# di tengahnya. Rentangnya sempit, jadi cek ulang dengan rekaman spontan sebelum user testing.
+CONCEPT_EXPLAIN_SIM = 0.54
+# Jendela paling banyak sekian kata terakhir sesudah penyebutan pertama, kira-kira 1–2 kalimat lisan. Di kalibrasi,
+# 30 kata tidak lebih baik dari 20, dan jendela yang lebih panjang menunda centang.
+CONCEPT_WINDOW_WORDS = 20
+# Model embedding multilingual kecil dalam format ONNX, jalan di CPU supaya tidak berebut VRAM dengan Whisper.
+# Versi kuantisasi int8 untuk CPU AVX2 berukuran 118 MB (versi fp32 470 MB).
+CONCEPT_EMBED_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+CONCEPT_EMBED_FILE = "onnx/model_quint8_avx2.onnx"
+# Panjang input maksimal model ini (max_seq_length di sentence-transformers). Jendela 20 kata muat di dalamnya.
+CONCEPT_EMBED_MAX_TOKENS = 128
+
 # Analisis isi dengan Gemini setelah Stop (PLAN 7.3). API key hanya dibaca dari GEMINI_API_KEY di .env.
 # Model stabil supaya hasil bisa diulang; alias seperti "gemini-flash-latest" bisa berganti model diam-diam.
 # Uji 2026-10-14 dengan key proyek dan transkrip pilot: gemini-2.5-flash tidak lagi tersedia untuk akun baru (404).

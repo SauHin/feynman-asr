@@ -15,3 +15,9 @@ httpx==0.28.1
 # Materi kuliah saat setup: teks PDF (materials.py), dan upload file lewat form di FastAPI
 pymupdf==1.28.2
 python-multipart==0.0.32
+# Checklist konsep (analysis/concepts.py). Sudah terpasang lewat faster-whisper dan jiwer, dicantumkan karena dipakai
+# langsung. huggingface-hub harus tetap 2.x seperti yang dipasang faster-whisper.
+rapidfuzz==3.14.6
+onnxruntime==1.31.0
+tokenizers==0.23.3
+huggingface-hub==2.2.0

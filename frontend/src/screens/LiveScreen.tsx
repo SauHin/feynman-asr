@@ -507,9 +507,7 @@ function Footer({
           buat bikin feedback. Gemini versi gratis bisa memakai data itu.{' '}
           {mode === 'contoh'
             ? 'Untuk sekarang, aplikasi memutar sesi contoh sekitar 90 detik.'
-            : sample
-              ? 'Agendanya masih contoh. Pilih topik dulu biar agendanya punyamu.'
-              : 'Untuk sekarang, agendanya belum dicentang otomatis.'}
+            : sample && 'Agendanya masih contoh. Pilih topik dulu biar agendanya punyamu.'}
         </p>
       ) : (
         <dl className="mr-auto flex gap-2 md:gap-3">

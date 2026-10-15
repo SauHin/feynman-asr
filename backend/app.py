@@ -21,13 +21,16 @@ from fastapi import FastAPI, Form, HTTPException, UploadFile, WebSocket
 import config
 import materials
 from analysis import gemini
+from analysis.concepts import ConceptTracker, load_embedder
 from analysis.fluency import Fluency
 from asr.streaming import StreamingTranscriber, Word, hotwords, load_whisper
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.transcribe = load_whisper()  # dimuat sekali, dipakai semua sesi
+    # Dimuat sekali, dipakai semua sesi: Whisper di GPU, model embedding checklist di CPU.
+    app.state.transcribe = load_whisper()
+    app.state.embed = load_embedder()
     yield
 
 
@@ -91,10 +94,12 @@ async def transcribe(ws: WebSocket) -> None:
     compute_s = 0.0  # total waktu inference sesi ini, untuk RTF di eval/replay.py
     fluency = Fluency()
     next_fluency = config.FLUENCY_EVERY_S  # waktu audio untuk pesan fluency berkala berikutnya
+    tracker: ConceptTracker | None = None  # checklist konsep, ada setelah pesan start
 
     # Audio diterima terus di task terpisah. Kalau inference lebih lama dari interval, inference
     # berikutnya langsung memproses semua audio yang terkumpul, jadi sistem tidak makin tertinggal.
     async def receive() -> str:
+        nonlocal tracker
         while True:
             msg = await ws.receive()
             if msg["type"] == "websocket.disconnect":
@@ -106,10 +111,12 @@ async def transcribe(ws: WebSocket) -> None:
                 data = json.loads(msg["text"])
                 if data.get("type") == "stop":
                     return "stop"
-                # Pesan start datang sebelum audio, jadi hotwords sudah terpasang sejak inference pertama.
-                if data.get("type") == "start" and config.ASR_HOTWORDS:
+                # Pesan start datang sebelum audio, jadi hotwords dan checklist sudah siap sejak inference pertama.
+                if data.get("type") == "start":
                     concepts = [gemini.Concept.model_validate(c) for c in data.get("concepts", [])]
-                    st.hotwords = hotwords(t for c in concepts for t in [c.name, *c.aliases])
+                    if config.ASR_HOTWORDS:
+                        st.hotwords = hotwords(t for c in concepts for t in [c.name, *c.aliases])
+                    tracker = await asyncio.to_thread(ConceptTracker, concepts, ws.app.state.embed)
 
     def take_audio(whole: bool = True) -> float:
         """Pindahkan audio ke transcriber. Mengembalikan waktu diterimanya potongan terakhir yang dipindah.
@@ -173,6 +180,10 @@ async def transcribe(ws: WebSocket) -> None:
             await ws.send_json(fluency.message(st.audio_end, pause))
             start = i
         await send(new[start:], heard_at, final)
+        # Checklist sesudah transkrip, supaya kata yang mencentang konsep sudah tampil di UI.
+        if tracker:
+            for cid, status, t in await asyncio.to_thread(tracker.add, new):
+                await ws.send_json({"type": "concept", "concept_id": cid, "status": status, "t": round(t, 2)})
         if final or st.audio_end >= next_fluency:
             await ws.send_json(fluency.message(st.audio_end))
             next_fluency = st.audio_end + config.FLUENCY_EVERY_S

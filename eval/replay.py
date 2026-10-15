@@ -8,12 +8,14 @@ Setiap rekaman harus terdaftar di eval/data/metadata.csv (minimal kolom file_id,
 topik, mic). Ukur hanya saat laptop di mode Performance, karena GPU yang ditahan membuat latency salah.
 
 Dengan --terms, daftar istilah eval/naskah/<topik>.terms.txt dikirim sebagai daftar konsep saat sesi mulai,
-seperti layar setup, jadi backend memakainya sebagai hotwords (PLAN 8.5 E2).
+seperti layar setup, jadi backend memakainya sebagai hotwords (PLAN 8.5 E2). Dengan --concepts, daftar konsep
+lengkap dari file JSON yang dikirim, jadi checklist ikut jalan dan pesan concept tercatat di log (E7).
 
 Pakai dari root repo dengan Python dari backend/.venv:
     python eval/replay.py --run turbo-base eval/data/A_*.m4a
     python eval/replay.py --run interval-2s --set STREAM_INTERVAL_S=2.0 eval/data/A_*.m4a
     python eval/replay.py --run turbo-terms --terms eval/data/A_*.m4a
+    python eval/replay.py --run checklist --concepts eval/naskah/backpropagation.concepts.json eval/data/A_s01_*.m4a
 """
 import argparse
 import ast
@@ -86,7 +88,7 @@ def sample_gpu_clock(stop: threading.Event, out: list[int]) -> None:
             return
 
 
-def replay(path: Path, port: int, terms: list[str]) -> dict:
+def replay(path: Path, port: int, concepts: list[dict]) -> dict:
     sr = config.SAMPLE_RATE
     audio = decode_audio(str(path), sampling_rate=sr)
     pcm = (np.clip(audio, -1, 1) * 32767).astype(np.int16)
@@ -95,8 +97,7 @@ def replay(path: Path, port: int, terms: list[str]) -> dict:
     threading.Thread(target=sample_gpu_clock, args=(stop, clocks), daemon=True).start()
 
     with connect(f"ws://127.0.0.1:{port}/ws/transcribe", max_size=None) as ws:
-        if terms:
-            concepts = [{"id": t, "name": t, "aliases": [], "description": ""} for t in terms]
+        if concepts:
             ws.send(json.dumps({"type": "start", "concepts": concepts}))
         t0 = time.perf_counter()
 
@@ -115,7 +116,7 @@ def replay(path: Path, port: int, terms: list[str]) -> dict:
         receiver.join(timeout=120)
     stop.set()
     return {"file": path.name, "audio_s": len(audio) / sr, "stop_at": round(stop_at, 3),
-            "terms": terms, "messages": messages, "gpu_mhz": clocks}
+            "concepts": concepts, "messages": messages, "gpu_mhz": clocks}
 
 
 def main() -> None:
@@ -123,22 +124,30 @@ def main() -> None:
     parser.add_argument("files", nargs="+", type=Path)
     parser.add_argument("--run", required=True, help="nama run, dipakai untuk folder log dan kolom run di results.csv")
     parser.add_argument("--set", action="append", default=[], metavar="PARAM=NILAI", help="timpa parameter config.py")
-    parser.add_argument("--terms", action="store_true",
-                        help="kirim eval/naskah/<topik>.terms.txt sebagai daftar konsep, jadi hotwords (E2)")
+    sent = parser.add_mutually_exclusive_group()
+    sent.add_argument("--terms", action="store_true",
+                      help="kirim eval/naskah/<topik>.terms.txt sebagai daftar konsep, jadi hotwords (E2)")
+    sent.add_argument("--concepts", type=Path, metavar="FILE",
+                      help="kirim daftar konsep dari file JSON ini, jadi hotwords dan checklist (E7)")
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
 
     overrides = parse_overrides(args.set)
     meta = metrics.load_metadata()
-    terms = {}
+    concepts = {}
     for f in args.files:  # cek semua rekaman dulu, supaya run tidak gagal di tengah
         if not f.is_file():
             raise SystemExit(f"file tidak ada: {f}")
         if f.stem not in meta:
             raise SystemExit(f"{f.stem} belum terdaftar di eval/data/metadata.csv")
-        terms[f.stem] = metrics.reference(f.stem, meta[f.stem])[1] if args.terms else []
-        if args.terms and not terms[f.stem]:
+        terms = metrics.reference(f.stem, meta[f.stem])[1]
+        if args.terms and not terms:
             raise SystemExit(f"daftar istilah kosong: eval/naskah/{meta[f.stem]['topik']}.terms.txt")
+        concepts[f.stem] = []
+        if args.terms:
+            concepts[f.stem] = [{"id": t, "name": t, "aliases": [], "description": ""} for t in terms]
+        if args.concepts:
+            concepts[f.stem] = json.loads(args.concepts.read_text(encoding="utf-8"))
 
     run_dir = metrics.RUNS / args.run
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -146,7 +155,7 @@ def main() -> None:
     try:
         for f in args.files:
             print(f"memutar {f.name}", flush=True)
-            log = replay(f, args.port, terms[f.stem]) | {"overrides": overrides}
+            log = replay(f, args.port, concepts[f.stem]) | {"overrides": overrides}
             (run_dir / f"{f.stem}.json").write_text(json.dumps(log, ensure_ascii=False), encoding="utf-8")
     finally:
         server.terminate()
