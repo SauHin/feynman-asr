@@ -143,7 +143,7 @@ Aliran data kunci: audio tidak pernah keluar dari laptop. Gemini hanya menerima 
 | ASR | faster-whisper (CTranslate2), model small/medium/large-v3-turbo | Lebih cepat dan hemat VRAM dari Whisper asli; mendukung `hotwords`, `initial_prompt`, word timestamps |
 | Streaming policy | Pola LocalAgreement (referensi repo `whisper_streaming`) | Whisper bukan model streaming; perlu kebijakan konfirmasi partial |
 | VAD | Silero VAD | Segmentasi ucapan, deteksi jeda, mencegah halusinasi saat hening |
-| Embedding konsep | sentence-transformers multilingual kecil (keluarga MiniLM atau e5-small), jalan di CPU | Deteksi "dijelaskan" tanpa berebut VRAM |
+| Embedding konsep | `paraphrase-multilingual-MiniLM-L12-v2` versi ONNX int8 lewat onnxruntime dan tokenizers, jalan di CPU | Deteksi "dijelaskan" tanpa berebut VRAM. Tidak memakai sentence-transformers karena paket itu menarik torch dan bentrok versi dengan faster-whisper (`docs/eksperimen/2026-10-15-kalibrasi-checklist.md`) |
 | Fuzzy match | rapidfuzz | Deteksi "disebut" yang tahan salah eja ASR |
 | Parsing materi | PyMuPDF (PDF), XML di dalam file PPTX dibaca langsung dengan `zipfile` | Hanya teks yang dikirim ke Gemini. python-pptx tidak dipakai karena ikut membawa lxml, Pillow, dan XlsxWriter hanya untuk membaca teks |
 | LLM | Gemini Flash via SDK `google-genai`, output JSON terstruktur | Free tier, tanpa kartu kredit |
@@ -196,7 +196,7 @@ Feedback kelancaran ditampilkan sebagai lokasi ("tersendat 3 kali saat menjelask
 ### 7.2 Checklist konsep live (lokal)
 
 - **Disebut:** nama atau alias konsep muncul di teks confirmed. Pakai rapidfuzz dengan ambang similarity (nilai awal sekitar 85) agar tahan salah eja ASR.
-- **Dijelaskan:** embedding dari jendela 2–3 kalimat terakhir dibandingkan dengan embedding deskripsi konsep; di atas threshold berarti dijelaskan. Threshold dikalibrasi dari data pilot.
+- **Dijelaskan:** setelah konsep disebut, embedding kata-kata sesudah penyebutan pertamanya (paling banyak 20 kata terakhir) dibandingkan dengan embedding nama dan deskripsi konsep. Di atas threshold berarti dijelaskan. Jendela dimulai sesudah penyebutan supaya menyebut nama lalu pindah topik tidak dianggap menjelaskan. Threshold 0,54 dikalibrasi dari rekaman pilot s01 (`docs/eksperimen/2026-10-15-kalibrasi-checklist.md`).
 - Hanya dijalankan pada teks confirmed supaya checklist tidak berkedip.
 - Status akhir diverifikasi ulang oleh Gemini setelah sesi. Checklist live bersifat indikasi.
 

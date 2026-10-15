@@ -1,0 +1,8 @@
+[
+  {"id": "forward-pass", "name": "Forward pass", "aliases": ["Forward propagation"], "description": "Proses di mana data input dimasukkan ke dalam jaringan saraf untuk menghasilkan prediksi atau output awal."},
+  {"id": "loss-function", "name": "Loss function", "aliases": ["Cost function", "Fungsi kerugian"], "description": "Cara untuk mengukur seberapa jauh perbedaan antara hasil prediksi model dengan nilai target yang sebenarnya."},
+  {"id": "chain-rule", "name": "Chain rule", "aliases": ["Aturan rantai"], "description": "Teknik kalkulus yang digunakan untuk menghitung turunan dari fungsi komposisi, yang menjadi dasar untuk melacak kontribusi setiap bobot terhadap error."},
+  {"id": "gradient", "name": "Gradient", "aliases": ["Gradien"], "description": "Nilai yang menunjukkan arah dan seberapa besar perubahan bobot harus dilakukan agar error model berkurang."},
+  {"id": "weight-update", "name": "Weight update", "aliases": ["Pembaruan bobot"], "description": "Langkah akhir di mana bobot dalam jaringan diubah sedikit demi sedikit berdasarkan gradien yang sudah dihitung agar prediksi menjadi lebih akurat."},
+  {"id": "learning-rate", "name": "Learning rate", "aliases": ["Laju pembelajaran"], "description": "Parameter yang menentukan seberapa besar langkah perubahan bobot yang diambil saat proses perbaikan model."}
+]
