@@ -35,6 +35,7 @@ def load_whisper() -> Transcribe:
             initial_prompt=prompt or None,
             # faster-whisper menaruh hotwords sebelum initial_prompt, masing-masing paling banyak 223 token.
             hotwords=hotwords or None,
+            temperature=config.ASR_TEMPERATURE,
             condition_on_previous_text=False,
             word_timestamps=True,
             vad_filter=config.ASR_VAD_FILTER,

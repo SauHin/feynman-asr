@@ -13,6 +13,12 @@ ASR_BEAM_SIZE = 5
 # Hotwords (PLAN 8.5 E2): nama dan alias dari daftar konsep sesi ini dikirim ke Whisper. E2 mematikannya dengan
 # --set ASR_HOTWORDS=False di eval/replay.py, supaya daftar konsep tetap sama dan hanya hotwords yang berubah.
 ASR_HOTWORDS = True
+# Temperature decoding. Kalau hasil gagal ambang kompresi atau log-probability, faster-whisper mendecode ulang di
+# temperature berikutnya dengan sampling acak. Hotwords memicu ulangan ini lebih sering. Uji 2026-10-17 di 5 rekaman s01
+# (docs/eksperimen/2026-10-17-uji-temperature.md): bawaan faster-whisper (0,0 sampai 1,0) membuat latency confirmed p90
+# 5,1 detik, temperature 0 saja 2,8 detik tapi halusinasi seperti "thank you" lolos, dan satu ulangan (0,0 lalu 0,2)
+# 3,2 detik dengan term recall sama (90,1%). Nilai ini sementara sampai E2 di Set A.
+ASR_TEMPERATURE = (0.0, 0.2)
 # Silero VAD bawaan faster-whisper: bagian hening dibuang sebelum decoding, supaya Whisper tidak
 # berhalusinasi ("Terima kasih.") saat user diam.
 ASR_VAD_FILTER = True
