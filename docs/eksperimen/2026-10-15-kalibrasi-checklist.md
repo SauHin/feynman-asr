@@ -2,6 +2,8 @@
 
 15 Oktober 2026 · kalibrasi opsi a: satu rekaman pilot s01, dua run replay. Set B tidak dipakai (PLAN 8.3). Uji tambahan 17 Oktober dengan naskah precision-recall ada di bagian [Uji tambahan](#uji-tambahan-naskah-precision-recall).
 
+**Status 17 Oktober 2026:** berdasarkan hasil di catatan ini, status "dijelaskan" dihapus dari aplikasi. Checklist live sekarang hanya punya dua status, belum dan dibahas, dan kualitas penjelasan dinilai Gemini setelah sesi. Skrip `eval/calibrate_concepts.py`, label di `eval/kalibrasi/`, dan daftar konsep pengecoh ikut dihapus. Versi terakhirnya ada di riwayat git (commit 047a947).
+
 ## Pertanyaan
 
 Aturan dan ambang apa yang membuat status "dijelaskan" menyala saat konsep dijelaskan, tapi tidak menyala untuk konsep yang hanya disebut atau tidak dibahas?

@@ -85,10 +85,10 @@ Pilot ini hanya memakai satu rekaman dan satu pembicara. *Latency streaming* bel
 
 - [x] Transkripsi *streaming* dari mic ke server Whisper lokal
 - [x] Replay rekaman ke pipeline *streaming* untuk menghitung WER, CER, *term recall*, dan *latency*
-- [x] UI empat layar. Ekstraksi konsep di layar Pilih topik masih memakai *mock data*.
+- [x] UI empat layar, termasuk ekstraksi konsep dari topik dan materi (PDF, PPTX, TXT, MD) dengan Gemini.
 - [x] Pipeline *fine-tuning* LoRA untuk Whisper. Data rekamannya masih dikumpulkan.
 - [x] Metrik kelancaran live dan analisis isi dengan Gemini. Kalau Gemini gagal, aplikasi memakai *feedback* lokal.
-- [ ] Deteksi konsep dari ucapan untuk *checklist* live
+- [x] *Checklist* konsep live dengan dua status, belum dan dibahas, serta *hotwords* dari daftar konsep
 - [ ] Eksperimen resmi dan user testing dengan minimal 5 user
 
 ## Setup

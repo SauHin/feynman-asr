@@ -32,7 +32,8 @@
 
 /* Warna tema: hijau papan tulis untuk tombol utama, bilah kemajuan setup, zona unggah, kartu pilihan
    aktif, tautan, dan kursor teks. go-ink untuk teks dan garis hijau: di Malam lebih terang supaya terbaca.
-   done: hijau yang sama untuk status "dijelaskan". Di Malam sedikit lebih terang supaya lingkaran centang
+   done: hijau yang sama untuk centang (dibahas di agenda live, dijelaskan di feedback). Di Malam sedikit lebih
+   terang supaya lingkaran centang
    tetap terlihat di kartu gelap, tapi teks putih di atasnya masih lolos 4,5:1. */
 :root {
   --go: #22775b;
@@ -316,7 +317,7 @@
 [data-theme='dark'] .term-mark {
   background-image: linear-gradient(transparent 58%, rgb(255 216 77 / 0.32) 58%, rgb(255 216 77 / 0.32) 92%, transparent 92%);
 }
-/* Kepulan debu kapur saat konsep dijelaskan. */
+/* Kepulan debu kapur saat konsep dibahas. */
 @keyframes dust {
   0% {
     opacity: 0.95;

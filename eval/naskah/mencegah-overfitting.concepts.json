@@ -1,8 +1,0 @@
-[
-  {"id": "overfitting", "name": "Overfitting", "aliases": ["model terlalu hafal data", "high variance"], "description": "Kondisi di mana model bekerja sangat baik pada data latihan tetapi gagal memberikan prediksi yang akurat pada data baru atau data pengujian."},
-  {"id": "validation-set", "name": "Validation set", "aliases": ["data validasi", "dev set"], "description": "Bagian dari data yang disisihkan untuk mengevaluasi performa model selama proses pelatihan agar kita tahu apakah model mulai mengalami overfitting."},
-  {"id": "regularization", "name": "Regularization", "aliases": ["L1", "L2", "weight decay"], "description": "Teknik untuk membatasi kompleksitas model dengan memberikan penalti pada bobot yang terlalu besar agar model tidak terlalu bergantung pada fitur tertentu."},
-  {"id": "dropout", "name": "Dropout", "aliases": ["randomly dropping neurons"], "description": "Metode mematikan beberapa neuron secara acak selama proses pelatihan agar jaringan tidak terlalu bergantung pada koneksi tertentu dan menjadi lebih tangguh."},
-  {"id": "early-stopping", "name": "Early stopping", "aliases": ["berhenti lebih awal"], "description": "Strategi menghentikan proses pelatihan secara otomatis saat performa pada data validasi mulai menurun meskipun performa pada data latihan masih meningkat."},
-  {"id": "data-augmentation", "name": "Data augmentation", "aliases": ["augmentasi data"], "description": "Cara menambah jumlah data latihan dengan memodifikasi data yang ada, seperti memutar atau memotong gambar, agar model melihat variasi yang lebih banyak."}
-]

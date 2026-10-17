@@ -211,13 +211,13 @@ Putih atau hampir hitam sebagai latar, abu muda untuk kartu, dan hijau papan tul
 ### Aksi
 - **Hijau papan tulis** (`go`, tepi `go-edge`): tombol utama (Mulai sesi, Lanjut, Ambil konsep, Mulai, Jelaskan ulang), bilah kemajuan setup, latar logo, dan latar hijau muda (`go` 10%) untuk kartu pilihan aktif dan zona unggah saat file di atasnya. Teks putih di atasnya 5,44:1.
 - **Teks dan garis hijau** (`go-ink`, Malam `go-ink-malam`): tautan "Ubah", garis bawah tautan, garis kartu pilihan aktif, hover "Tambah konsep", dan kursor teks. Di Malam warnanya lebih terang supaya terbaca (6,07:1 di atas `card-malam`).
-- **Hijau dijelaskan** (`done`, Malam `done-malam`): centang dijelaskan, bagian bilah konsep live yang sudah dijelaskan, pil "+n dari sesi pertama", dan gradasi kartu skor. Di Siang warnanya sama dengan hijau papan tulis. Di Malam sedikit lebih terang (#27825F) supaya lingkaran centang terlihat di kartu gelap (3,67:1), dan teks putih di atasnya tetap 4,72:1. Hijau terang #22C55E tidak dipakai lagi, karena centang putih di atasnya hanya 2,28:1 dan terangnya hampir sama dengan kuning "disebut" (1,25:1).
+- **Hijau centang** (`done`, Malam `done-malam`): centang "dibahas" di agenda live dan "jelas" di feedback, bagian bilah konsep live yang sudah dibahas, pil "+n dari sesi pertama", dan gradasi kartu skor. Di Siang warnanya sama dengan hijau papan tulis. Di Malam sedikit lebih terang (#27825F) supaya lingkaran centang terlihat di kartu gelap (3,67:1), dan teks putih di atasnya tetap 4,72:1. Hijau terang #22C55E tidak dipakai lagi, karena centang putih di atasnya hanya 2,28:1 dan terangnya hampir sama dengan kuning "disebut" (1,25:1).
 - **Merah** (`stop`, tepi `stop-edge`): tombol Berhenti, titik rekam yang berdenyut, pesan kesalahan, dan silang dijelaskan keliru.
 - **Biru fokus** (`focus`): cincin fokus dan garis isian yang sedang aktif.
 
 ### Penanda
-- **Kuning disebut** (`status-mentioned`): setengah lingkaran untuk konsep yang baru disebut, di agenda dan di bilah kemajuan live.
-- **Stabilo** (`marker`): sorotan istilah konsep di transkrip, 60% di Siang dan 32% di Malam. Juga titik debu saat konsep dijelaskan dan warna seleksi teks.
+- **Kuning disebut** (`status-mentioned`): setengah lingkaran untuk konsep yang menurut penilaian Gemini hanya disebut, di layar feedback.
+- **Stabilo** (`marker`): sorotan istilah konsep di transkrip, 60% di Siang dan 32% di Malam. Juga titik debu saat konsep dibahas dan warna seleksi teks.
 - **Filler** (`filler`): garis bawah bergelombang di bawah filler pada lampiran transkrip.
 - **Jeda** (`pause-bg`, `pause-ink`): chip jeda panjang di transkrip.
 
@@ -231,7 +231,7 @@ Putih atau hampir hitam sebagai latar, abu muda untuk kartu, dan hijau papan tul
 ### Named Rules
 **The Tanpa Garis Tebal Rule.** Tidak ada garis luar tebal pada kontrol, kartu, atau ilustrasi. Batas benda datang dari perbedaan warna kartu dan latar, atau dari garis `line` 1px. Garis luar tebal adalah salah satu dari dua hal yang membuat gaya lama terasa murahan.
 
-**The Empat Tanda Rule.** Status konsep selalu memakai bentuk dan warna sekaligus, plus label teks. Belum: cincin kosong `ink-3`. Disebut: setengah lingkaran kuning. Dijelaskan: lingkaran hijau dengan centang putih. Dijelaskan keliru (hanya di feedback): lingkaran merah dengan silang putih. Labelnya selalu belum, disebut, dijelaskan, dan dijelaskan keliru. Warna saja tidak pernah cukup.
+**The Empat Tanda Rule.** Status konsep selalu memakai bentuk dan warna sekaligus, plus label teks. Agenda live memakai dua tanda: belum (cincin kosong `ink-3`) dan dibahas (lingkaran hijau dengan centang putih). Layar feedback memakai empat tanda untuk penilaian Gemini: belum, disebut (setengah lingkaran kuning), jelas (lingkaran hijau dengan centang putih), dan masih keliru (lingkaran merah dengan silang putih). Warna saja tidak pernah cukup.
 
 ## Typography
 
@@ -329,9 +329,9 @@ Pil yang terasa bisa ditekan, seperti tombol Continue di Brilliant.
 - **Daftar konsep:** baris `card` berisi nomor dalam lingkaran, nama tebal, alias dan deskripsi, lalu tombol ubah dan hapus. Baris muncul satu per satu dari kiri saat daftar pertama kali tampil. Hapus bisa dibatalkan.
 
 ### Live
-- **Bilah kemajuan konsep:** satu bagian per konsep, setinggi 10px. Hijau penuh berarti dijelaskan dan kuning setengah berarti disebut. Bagian menghitung jumlah, bukan baris agenda. Di bawahnya ada teks "x dari n konsep dijelaskan · y baru disebut". Bilah memantul sekali saat satu konsep lagi dijelaskan.
+- **Bilah kemajuan konsep:** satu bagian per konsep, setinggi 10px, terisi hijau saat konsep dibahas. Bagian menghitung jumlah, bukan baris agenda. Di bawahnya ada teks "x dari n konsep dibahas". Bilah memantul sekali saat satu konsep lagi dibahas.
 - **Pil status:** satu pil `card` berisi titik rekam, status (lebarnya tetap untuk semua status), timer, dan latensi.
-- **Agenda:** baris `surface` berisi nama konsep, label status, dan tanda status di ujung kanan. Konsep yang belum dibahas paling tegas, dan yang sudah dijelaskan meredup ke `ink-3`. Legenda ada di bawah kartu.
+- **Agenda:** baris `surface` berisi nama konsep, label status, dan tanda status di ujung kanan. Konsep yang belum dibahas paling tegas, dan yang sudah dibahas meredup ke `ink-3`. Legenda ada di bawah kartu.
 - **Transkrip:** teks yang sudah pasti dalam `ink` dan teks parsial dalam `ink-3`. Istilah konsep diberi sorotan stabilo di separuh bawah huruf. Jeda panjang tampil sebagai chip jeda ("jeda 4,0 dtk").
 - **Statistik:** pil `card` untuk kata/menit, filler, dan jeda panjang.
 

@@ -30,7 +30,7 @@ const COVERAGE_MARK: Record<CoverageStatus, Mark> = {
   explained_correct: 'explained',
   explained_incorrect: 'wrong',
 }
-// Kata yang sama dengan agenda live, ditambah tanda keempat yang hanya ada di feedback.
+// Empat status dari penilaian Gemini. Agenda live hanya punya belum dan dibahas (lib/format.ts).
 const MARK_TEXT: Record<Mark, string> = {
   none: 'belum',
   mentioned: 'disebut',

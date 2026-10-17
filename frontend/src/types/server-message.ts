@@ -1,4 +1,5 @@
-export type ConceptStatus = 'mentioned' | 'explained'
+// Checklist live hanya punya satu status selain belum: konsep sudah dibahas (nama atau aliasnya disebut).
+export type ConceptStatus = 'mentioned'
 
 // confirmed: kata yang baru confirmed di pesan ini, ditambahkan ke teks sebelumnya.
 // partial: seluruh kata yang belum confirmed, menggantikan partial sebelumnya.

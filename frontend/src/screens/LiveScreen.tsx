@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router'
 import { EmpurMenu, segment, ThemeToggle } from '../components/app-bar'
-import { CloseIcon, FillerIcon, PauseIcon, SpeedIcon, type MarkStatus } from '../components/chalk'
+import { CloseIcon, FillerIcon, PauseIcon, SpeedIcon } from '../components/chalk'
 import { Kapur } from '../components/kapur'
 import { PauseChip, StatusIcon } from '../components/marks'
-import { clock, decimal, MARK_LABEL } from '../lib/format'
+import { clock, decimal, LIVE_MARK, MARK_LABEL, type LiveStatus } from '../lib/format'
 import { KAPUR_HAND, KAPUR_TIP, kapurSays, useKapurPrefs } from '../lib/kapur'
 import { initialLiveState, liveReducer, type LiveState } from '../lib/live-state'
 import type { TranscriptSource } from '../lib/transcript-source'
@@ -98,7 +98,7 @@ export default function LiveScreen() {
   const started = startedAt !== null
   const elapsed = started ? Math.max(0, (now - startedAt) / 1000) : 0
   const sessionDone = state.status === 'idle' && started && !connecting
-  const statusOf = (id: string): MarkStatus => state.concepts[id] ?? 'none'
+  const statusOf = (id: string): LiveStatus => state.concepts[id] ?? 'none'
   const line = kapurSays({ state, concepts, started, elapsed, topic })
   // Hanya sesi mode mic yang dianalisis Gemini. Mode contoh membuka feedback contoh.
   const session: SessionResult | undefined =
@@ -232,25 +232,24 @@ function TopBar({
   sessionDone: boolean
   mode: Mode
 }) {
-  const explained = concepts.filter((c) => state.concepts[c.id] === 'explained').length
-  const mentioned = concepts.filter((c) => state.concepts[c.id] === 'mentioned').length
+  const covered = concepts.filter((c) => state.concepts[c.id]).length
 
-  // Bar memantul saat satu konsep lagi dijelaskan. Tanpa remount, jadi isi bar tetap bergeser halus.
+  // Bar memantul saat satu konsep lagi dibahas. Tanpa remount, jadi isi bar tetap bergeser halus.
   const barRef = useRef<HTMLDivElement>(null)
-  const shown = useRef(explained)
+  const shown = useRef(covered)
   useEffect(() => {
-    const grew = explained > shown.current
-    shown.current = explained
+    const grew = covered > shown.current
+    shown.current = covered
     if (!grew || matchMedia('(prefers-reduced-motion: reduce)').matches) return
     barRef.current?.animate(
       [{ transform: 'scale(1)' }, { transform: 'scale(1.01, 1.4)', offset: 0.4 }, { transform: 'scale(1)' }],
       { duration: 420, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
     )
-  }, [explained])
+  }, [covered])
   const recording = state.status === 'listening'
   const label = recording ? 'Merekam' : state.status === 'processing' ? 'Menyusun' : sessionDone ? 'Selesai' : 'Siap'
   const latency = state.latencyMs === null ? '–' : `${decimal(state.latencyMs / 1000)} dtk`
-  const summary = `${explained} dari ${concepts.length} konsep jelas`
+  const summary = `${covered} dari ${concepts.length} konsep dibahas`
 
   return (
     <header className="flex flex-wrap items-center gap-x-3 gap-y-3 px-4 py-3 md:gap-x-5 md:px-8 md:py-4">
@@ -266,32 +265,29 @@ function TopBar({
         <p className="text-sm text-ink-3">{mode === 'mic' ? 'Pakai suaramu' : 'Sesi contoh, bukan suaramu'}</p>
       </div>
 
-      {/* Bilah kemajuan bersegmen seperti Brilliant: satu bagian per konsep. Hijau penuh = dijelaskan,
-          kuning setengah = baru disebut. Bagian menghitung jumlah, bukan baris agenda. */}
+      {/* Bilah kemajuan bersegmen seperti Brilliant: satu bagian per konsep, terisi hijau saat konsep dibahas.
+          Bagian menghitung jumlah, bukan baris agenda. */}
       <div className="order-last w-full min-w-0 xl:order-none xl:mx-4 xl:w-auto xl:flex-1 xl:basis-0">
         <div
           ref={barRef}
           role="progressbar"
-          aria-label="Konsep yang sudah dijelaskan"
+          aria-label="Konsep yang sudah dibahas"
           aria-valuemin={0}
           aria-valuemax={concepts.length}
-          aria-valuenow={explained}
+          aria-valuenow={covered}
           aria-valuetext={summary}
           className="flex gap-1.5"
         >
           {concepts.map((c, i) => (
             <span key={c.id} className="h-2.5 flex-1 overflow-hidden rounded-full bg-card-2">
               <span
-                className={`block h-full rounded-full transition-[width,background-color] duration-500 ease-out ${i < explained ? 'bg-done' : 'bg-[#FFB020]'}`}
-                style={{ width: i < explained ? '100%' : i < explained + mentioned ? '50%' : '0%' }}
+                className="block h-full rounded-full bg-done transition-[width] duration-500 ease-out"
+                style={{ width: i < covered ? '100%' : '0%' }}
               />
             </span>
           ))}
         </div>
-        <p className="mt-1.5 text-sm text-ink-3">
-          {summary}
-          {mentioned > 0 && ` · ${mentioned} baru disebut`}
-        </p>
+        <p className="mt-1.5 text-sm text-ink-3">{summary}</p>
       </div>
 
       {/* Status rekaman, waktu, dan latensi dalam satu pil. */}
@@ -338,7 +334,7 @@ function Agenda({
   rowRef,
 }: {
   concepts: Concept[]
-  statusOf: (id: string) => MarkStatus
+  statusOf: (id: string) => LiveStatus
   rowRef: (id: string, el: HTMLLIElement | null) => void
 }) {
   return (
@@ -353,13 +349,13 @@ function Agenda({
           const s = statusOf(c.id)
           return (
             <li key={c.id} ref={(el) => rowRef(c.id, el)} className="relative flex items-center gap-3 rounded-2xl bg-surface py-3 pl-4 pr-3">
-              {/* Yang belum dibahas paling tegas; yang sudah dijelaskan meredup. */}
-              <span className={`min-w-0 flex-1 text-[1.1rem] leading-snug ${s === 'explained' ? 'font-medium text-ink-3' : 'font-semibold'}`}>
+              {/* Yang belum dibahas paling tegas; yang sudah dibahas meredup. */}
+              <span className={`min-w-0 flex-1 text-[1.1rem] leading-snug ${s === 'mentioned' ? 'font-medium text-ink-3' : 'font-semibold'}`}>
                 {c.name}
               </span>
               <span className="shrink-0 text-sm text-ink-3">{MARK_LABEL[s]}</span>
-              <StatusIcon key={s} status={s} draw={s === 'explained'} />
-              {s === 'explained' && (
+              <StatusIcon key={s} status={LIVE_MARK[s]} draw={s === 'mentioned'} />
+              {s === 'mentioned' && (
                 <span aria-hidden="true" className="dust absolute right-6 top-1/2">
                   {DUST.map(([dx, dy], i) => (
                     <i key={i} style={{ '--dx': `${dx}px`, '--dy': `${dy}px` } as CSSProperties} />
@@ -377,9 +373,9 @@ function Agenda({
 function Legend({ className = '' }: { className?: string }) {
   return (
     <ul aria-label="Arti tanda" className={`flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-2 ${className}`}>
-      {(['none', 'mentioned', 'explained'] as const).map((s) => (
+      {(['none', 'mentioned'] as const).map((s) => (
         <li key={s} className="flex items-center gap-2">
-          <StatusIcon status={s} className="size-5" />
+          <StatusIcon status={LIVE_MARK[s]} className="size-5" />
           {MARK_LABEL[s]}
         </li>
       ))}

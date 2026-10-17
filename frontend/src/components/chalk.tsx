@@ -1,7 +1,3 @@
-import type { ConceptStatus } from '../types/server-message'
-
-export type MarkStatus = ConceptStatus | 'none'
-
 // Ikon garis untuk kontrol UI (tombol, label statistik), mengikuti warna teks.
 const stroke = {
   fill: 'none',

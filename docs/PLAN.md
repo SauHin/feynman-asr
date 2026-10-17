@@ -4,7 +4,7 @@ Sep 26, 2026 · @Joda
 
 ## 1. Ringkasan project
 
-Feynman Speech Coach adalah web app lokal tempat mahasiswa CS berlatih menjelaskan satu konsep secara lisan dengan metode Feynman. Whisper lokal mentranskrip secara real-time, checklist konsep menyala saat konsep disebut dan dijelaskan, lalu di akhir sesi user menerima feedback tentang kelancaran, cakupan konsep, kebenaran isi, dan kesederhanaan penjelasan.
+Feynman Speech Coach adalah web app lokal tempat mahasiswa CS berlatih menjelaskan satu konsep secara lisan dengan metode Feynman. Whisper lokal mentranskrip secara real-time, checklist konsep menyala saat konsep dibahas, lalu di akhir sesi user menerima feedback tentang kelancaran, cakupan konsep, kebenaran isi, dan kesederhanaan penjelasan.
 
 Deliverables sesuai guideline: (1) aplikasi real-time yang berjalan lokal, dan (2) technical report dengan evaluasi teknis, user testing minimal 5 user, dan AI Usage Log.
 
@@ -27,7 +27,7 @@ Semua keputusan arsitektur sudah final, termasuk izin Gemini dari Pak Hidayat.
 | Detektor filler terlatih | Dibatalkan; filler dideteksi secara heuristik, detektor terlatih jadi future work | Final |
 | LLM analisis isi | Gemini (Flash) via Google AI Studio free tier, tanpa kartu kredit. Model `gemini-3.1-flash-lite`: `gemini-2.5-flash` tidak lagi tersedia untuk akun baru, dan `gemini-3.8-flash` sering gagal karena server sibuk | Final. Diizinkan Pak Hidayat (2026-10-13) |
 | Adaptasi domain | Hotwords/prompt dari materi yang di-upload, ditambah model hasil fine-tuning bila E8 menunjukkan perbaikan | Final |
-| Checklist konsep live | Dua status: disebut (fuzzy match) dan dijelaskan (embedding lokal) | Final |
+| Checklist konsep live | Dua status: belum dan dibahas (nama atau alias disebut, fuzzy match). Kualitas penjelasan dinilai Gemini setelah sesi | Final, diubah 17 Oktober 2026 |
 | Bahasa | Bahasa Indonesia dengan istilah CS dalam bahasa Inggris (code-switching alami) | Final |
 | Deployment | Lokal di laptop (RTX 3050 6 GB); deploy publik di luar scope | Final |
 | Frontend | React + Vite + TypeScript + Tailwind; target kualitas produk, bukan sekadar berjalan | Final |
@@ -79,7 +79,7 @@ User tidak perlu penjelasan panjang dari orang lain. Aplikasi sendiri memberi pa
 **Tahap 2 — Menjelaskan (real-time)**
 
 - Transkrip partial muncul saat user bicara; teks yang sudah dikonfirmasi dibedakan dari teks yang masih bisa berubah.
-- Checklist konsep: abu-abu (belum), kuning (disebut), hijau (dijelaskan).
+- Checklist konsep: belum (cincin kosong) dan dibahas (centang hijau).
 - Indikator live: speech rate, penghitung filler, peringatan jeda panjang, status (listening/processing), dan latency.
 - Tombol Start/Stop.
 
@@ -143,7 +143,6 @@ Aliran data kunci: audio tidak pernah keluar dari laptop. Gemini hanya menerima 
 | ASR | faster-whisper (CTranslate2), model small/medium/large-v3-turbo | Lebih cepat dan hemat VRAM dari Whisper asli; mendukung `hotwords`, `initial_prompt`, word timestamps |
 | Streaming policy | Pola LocalAgreement (referensi repo `whisper_streaming`) | Whisper bukan model streaming; perlu kebijakan konfirmasi partial |
 | VAD | Silero VAD | Segmentasi ucapan, deteksi jeda, mencegah halusinasi saat hening |
-| Embedding konsep | `paraphrase-multilingual-MiniLM-L12-v2` versi ONNX int8 lewat onnxruntime dan tokenizers, jalan di CPU | Deteksi "dijelaskan" tanpa berebut VRAM. Tidak memakai sentence-transformers karena paket itu menarik torch dan bentrok versi dengan faster-whisper (`docs/eksperimen/2026-10-15-kalibrasi-checklist.md`) |
 | Fuzzy match | rapidfuzz | Deteksi "disebut" yang tahan salah eja ASR |
 | Parsing materi | PyMuPDF (PDF), XML di dalam file PPTX dibaca langsung dengan `zipfile` | Hanya teks yang dikirim ke Gemini. python-pptx tidak dipakai karena ikut membawa lxml, Pillow, dan XlsxWriter hanya untuk membaca teks |
 | LLM | Gemini Flash via SDK `google-genai`, output JSON terstruktur | Free tier, tanpa kartu kredit |
@@ -195,10 +194,10 @@ Feedback kelancaran ditampilkan sebagai lokasi ("tersendat 3 kali saat menjelask
 
 ### 7.2 Checklist konsep live (lokal)
 
-- **Disebut:** nama atau alias konsep muncul di teks confirmed. Pakai rapidfuzz dengan ambang similarity (nilai awal sekitar 85) agar tahan salah eja ASR.
-- **Dijelaskan:** setelah konsep disebut, embedding kata-kata sesudah penyebutan pertamanya (paling banyak 20 kata terakhir) dibandingkan dengan embedding nama dan deskripsi konsep. Di atas threshold berarti dijelaskan. Jendela dimulai sesudah penyebutan supaya menyebut nama lalu pindah topik tidak dianggap menjelaskan. Threshold 0,54 dikalibrasi dari rekaman pilot s01 (`docs/eksperimen/2026-10-15-kalibrasi-checklist.md`).
+- **Dibahas:** nama atau alias konsep muncul di teks confirmed. Pakai rapidfuzz dengan ambang similarity 85 agar tahan salah eja ASR.
+- Status "dijelaskan" sempat dibuat dengan embedding lokal, lalu dihapus pada 17 Oktober 2026. Centangnya sering menyala di waktu yang salah saat penjelasan datang sebelum nama konsep, dan saat konsepnya mirip (true positive dan false positive). Datanya ada di `docs/eksperimen/2026-10-15-kalibrasi-checklist.md`.
 - Hanya dijalankan pada teks confirmed supaya checklist tidak berkedip.
-- Status akhir diverifikasi ulang oleh Gemini setelah sesi. Checklist live bersifat indikasi.
+- Apakah konsep dijelaskan dengan benar dinilai Gemini setelah sesi (7.3). Checklist live hanya menunjukkan konsep mana yang sudah dan belum dibahas.
 
 ### 7.3 Analisis isi (Gemini, pasca-sesi)
 
@@ -297,7 +296,7 @@ Ada tiga jenis rekaman dengan peran berbeda: Set A untuk membandingkan konfigura
 
 1. Buat draf transkrip dengan Whisper large, lalu koreksi manual kata per kata sambil mendengarkan. Catat penggunaan draf ini di AI Usage Log, dan waspadai bias ikut menerima kesalahan draf.
 2. Tandai filler vokal (misalnya `<eee>`) dan jeda di atas 1,5 detik dengan timestamp (label track Audacity cukup).
-3. Untuk setiap konsep di daftar konsep, catat detik saat konsep pertama kali disebut dan saat mulai dijelaskan. Ini kunci jawaban untuk checklist.
+3. Untuk setiap konsep di daftar konsep, catat detik saat konsep pertama kali disebut. Ini kunci jawaban untuk checklist. Catat juga apakah konsep itu dijelaskan, untuk mengecek cakupan versi Gemini.
 
 **Sesi rekaman di perpustakaan kampus:**
 
@@ -307,7 +306,7 @@ Ada tiga jenis rekaman dengan peran berbeda: Set A untuk membandingkan konfigura
 
 **Aturan rekaman untuk semua set:** WAV mono (rekam 48 kHz lalu turunkan ke 16 kHz, atau langsung 16 kHz); noise suppression, echo cancellation, dan auto gain OS/browser dimatikan; posisi mic dicatat.
 
-**Pemisahan kalibrasi dan evaluasi.** Threshold checklist dan ambang jeda dikalibrasi hanya dengan rekaman pilot suaramu sendiri. Set B dari peserta hanya dipakai untuk evaluasi, supaya hasilnya tidak bias oleh data yang dipakai untuk menyetel sistem.
+**Pemisahan kalibrasi dan evaluasi.** Ambang pencocokan checklist dan ambang jeda dikalibrasi hanya dengan rekaman pilot suaramu sendiri. Set B dari peserta hanya dipakai untuk evaluasi, supaya hasilnya tidak bias oleh data yang dipakai untuk menyetel sistem.
 
 **Metadata** disimpan di `eval/data/metadata.csv` dengan kolom: file\_id, set, speaker\_id, topik, mic, lokasi, kondisi noise/SNR, durasi, status consent.
 
@@ -328,8 +327,8 @@ WER = \frac{S + D + I}{N}
 | Confirmation latency | Akhir kata diucapkan sampai kata itu confirmed | Tidak | Semua run |
 | RTF | Waktu inference / durasi audio | Tidak | E1, E6 |
 | VRAM puncak | Memori GPU maksimum selama run | Tidak | E1 |
-| Precision/recall checklist | Status "disebut" dan "dijelaskan" dibanding anotasi manual | Anotasi konsep | E2, E7 |
-| Detection delay | Saat konsep mulai dijelaskan sampai checklist hijau | Anotasi konsep | E7 |
+| Precision/recall checklist | Status "dibahas" dibanding anotasi manual | Anotasi konsep | E2, E7 |
+| Detection delay | Saat konsep pertama kali disebut sampai checklist menyala | Anotasi konsep | E7 |
 | Precision/recall jeda dan filler | Deteksi heuristik dibanding anotasi manual | Anotasi jeda/filler | E7 |
 
 **Aturan agregasi:**
@@ -488,7 +487,7 @@ Peneliti hanya menyampaikan tugas, misalnya "jelaskan satu topik dari mata kulia
 | Ease of use | Panduan di aplikasi cukup untuk membuat saya paham apa aplikasi ini dan cara memakainya. |
 | Responsiveness | Transkrip muncul cukup cepat saat saya bicara. |
 | Transcription quality | Transkrip, termasuk istilah teknis, cukup akurat. |
-| Checklist usefulness | Checklist konsep membantu saya tahu apa yang belum dijelaskan. |
+| Checklist usefulness | Checklist konsep membantu saya tahu apa yang belum dibahas. |
 | Distraction | Tampilan live tidak mengganggu konsentrasi saat menjelaskan. |
 | Feedback usefulness | Feedback membantu saya menemukan bagian yang belum saya pahami. |
 | Feedback accuracy | Feedback sesuai dengan apa yang sebenarnya saya jelaskan. |
@@ -533,7 +532,7 @@ Semua item di bawah bisa dikerjakan tanpa biaya dan sebagian besar selesai dalam
 - [ ] Pilih 3–4 topik CS dari mata kuliah yang sedang diambil calon peserta (Machine Learning dan Basis Data), di luar 14 topik naskah latih Set T, dan siapkan materinya (PDF/PPTX).
 - [ ] Tulis naskah bacaan untuk set A (sekitar 150–250 kata per topik, padat istilah teknis, gaya bicara natural).
 - [ ] Tetapkan aturan normalisasi teks untuk WER.
-- [ ] Siapkan template anotasi (reference transcript, timestamp jeda, filler, konsep yang dijelaskan).
+- [ ] Siapkan template anotasi (reference transcript, timestamp jeda, filler, waktu konsep pertama disebut, konsep yang dijelaskan).
 - [ ] Rekam data pilot suaramu sendiri (baseline, beberapa topik) untuk kalibrasi threshold.
 
 **Perangkat rekaman**
@@ -565,7 +564,7 @@ Fase 0–4 sudah memenuhi semua syarat wajib guideline; fase 5–6 menambah nila
 | 2. Replay dan evaluasi | Skrip replay file ke pipeline, perhitungan WER/CER/term WER, log latency | Satu perintah menghasilkan tabel metrik untuk satu konfigurasi | 1 minggu |
 | 2b. Fine-tuning | Rekam Set T, potong dan cek, training di Colab, pasang model (bagian 8.8) | `turbo-ft` jalan di laptop lewat `ASR_MODEL`, dan log training tersimpan di `docs/eksperimen/` | ±1 minggu, paralel dengan fase 1–2 |
 | 3. Kelancaran + Gemini | Metrik kelancaran lokal, analisis isi (mode tanpa materi), halaman feedback | Setelah Stop, feedback JSON tervalidasi tampil; fallback lokal jalan saat API gagal | 1 minggu |
-| 4. Materi + konsep | Upload dan parsing materi, ekstraksi konsep, review user, hotwords, checklist dua status | Checklist menyala saat konsep dijelaskan; hotwords terpasang dari daftar konsep | 1,5 minggu |
+| 4. Materi + konsep | Upload dan parsing materi, ekstraksi konsep, review user, hotwords, checklist konsep (belum dan dibahas) | Checklist menyala saat konsep dibahas; hotwords terpasang dari daftar konsep | 1,5 minggu |
 | 5. Eksperimen | Rekam set A dan B, jalankan E1–E8 dan F sesuai prioritas, error analysis | Semua tabel dan grafik eksperimen jadi; threshold terkalibrasi | 1,5 minggu |
 | 6. User testing | Sesi dengan 5+ peserta, iterasi kecil bila ada bug kritis | Data kuesioner, observasi, dan wawancara lengkap | 1–1,5 minggu |
 | 7. Laporan | Tulis bab 1–8, AI Usage Log, deklarasi, screenshot, persiapan demo | Laporan lengkap sesuai struktur guideline | 2 minggu |
@@ -586,7 +585,7 @@ Risiko terbesar adalah perubahan scope dari dosen dan kualitas pengenalan istila
 | Latency terlalu tinggi di RTX 3050 | Syarat real-time terancam | Turunkan ukuran model, pakai int8, atur interval inference; trade-off didokumentasikan sebagai hasil eksperimen. |
 | Istilah teknis sering salah transkrip | Checklist tidak menyala, feedback tidak adil | Hotwords dari materi, fuzzy matching, instruksi toleransi di prompt Gemini; diukur dengan term WER. |
 | Halusinasi Whisper saat hening | Teks palsu masuk transkrip | VAD, filter segmen dengan probabilitas no-speech tinggi, catat kasus di error analysis. |
-| Threshold checklist salah kalibrasi | Checklist menyala terlalu cepat atau tidak pernah | Kalibrasi dari data pilot, evaluasi precision/recall, laporkan kurva threshold. |
+| Pencocokan nama konsep meleset | Checklist tidak menyala walau konsep dibahas, atau menyala untuk kata lain | Fuzzy match dengan alias yang bisa diedit user di layar review, evaluasi precision/recall di E7. |
 | Rekrutmen peserta sulit | Kurang dari 5 user | Rekrut 6–8 dari jaringan mentoring, jadwalkan lebih awal, sesi maksimal 40 menit. |
 | Transkripsi manual memakan waktu | Eksperimen tertunda | Utamakan set A (label otomatis); set B cukup untuk subset yang dianalisis mendalam. |
 | Scope creep | Laporan tidak selesai | Patuhi tabel prioritas di bagian 4; tidak ada fitur baru setelah user testing dimulai. |

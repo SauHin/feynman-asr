@@ -1,8 +1,0 @@
-concept_id,start,end,kalimat
-true-positive,21.5,25.3,"Kalau email spam ditebak spam, itu true positive."
-false-positive,26.5,30.8,"Kalau email biasa ditebak spam, itu false positive."
-false-negative,32.0,37.5,"Kalau email spam lolos dan ditebak bukan spam, itu false negative."
-true-negative,38.8,43.4,"Terus email biasa yang ditebak bukan spam namanya true negative."
-precision,66.3,83.2,"Precision itu dari semua yang ditebak positive, berapa yang beneran positive ... Jadi precision tinggi artinya jarang salah tuduh."
-recall,72.8,87.5,"Recall itu dari semua yang aslinya positive, berapa yang berhasil ketangkep ... recall tinggi artinya jarang ada yang kelewat."
-trade-off,89.0,99.4,"Dua-duanya biasanya tarik-tarikan. Kalau threshold-nya kita naikin, precision biasanya naik tapi recall turun, begitu juga sebaliknya."
