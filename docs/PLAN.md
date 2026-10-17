@@ -510,28 +510,28 @@ Semua item di bawah bisa dikerjakan tanpa biaya dan sebagian besar selesai dalam
 
 **Konfirmasi dan administrasi**
 
-- [ ] Kirim pesan tertulis ke Pak Hidayat (dua pertanyaan di bagian 2) dan simpan jawabannya.
-- [ ] Tentukan judul project.
+- [x] Kirim pesan tertulis ke Pak Hidayat (dua pertanyaan di bagian 2) dan simpan jawabannya.
+- [x] Tentukan judul project.
 - [ ] Validasi masalah ke 5–10 calon user (bagian 3) dan catat jawabannya.
 
 **Akun dan kredensial**
 
 - [ ] Buat API key di Google AI Studio; cek limit RPM/RPD aktif di halaman project AI Studio dan catat nilainya.
-- [ ] Simpan API key di file `.env` yang masuk `.gitignore`; jangan pernah commit.
-- [ ] Buat repository GitHub (private dulu).
+- [x] Simpan API key di file `.env` yang masuk `.gitignore`; jangan pernah commit.
+- [x] Buat repository GitHub (private dulu).
 
 **Environment laptop**
 
-- [ ] Pastikan driver NVIDIA, CUDA, dan cuDNN kompatibel dengan versi CTranslate2 yang dipakai faster-whisper.
-- [ ] Python 3.11 dengan virtual environment; Node.js untuk React + Vite.
-- [ ] Uji cepat: faster-whisper small mentranskrip satu file WAV di GPU; catat VRAM dan waktu proses.
-- [ ] Install LibreOffice bila ingin konversi PPTX ke PDF.
+- [x] Pastikan driver NVIDIA, CUDA, dan cuDNN kompatibel dengan versi CTranslate2 yang dipakai faster-whisper.
+- [x] Python 3.12 dengan virtual environment (`backend/.venv`); Node.js untuk React + Vite.
+- [x] Uji cepat: faster-whisper small mentranskrip satu file WAV di GPU; catat VRAM dan waktu proses.
+- [x] LibreOffice tidak diperlukan: teks PPTX dibaca langsung dari XML di dalam file (`backend/materials.py`).
 
 **Bahan dan data**
 
 - [ ] Pilih 3–4 topik CS dari mata kuliah yang sedang diambil calon peserta (Machine Learning dan Basis Data), di luar 14 topik naskah latih Set T, dan siapkan materinya (PDF/PPTX).
 - [ ] Tulis naskah bacaan untuk set A (sekitar 150–250 kata per topik, padat istilah teknis, gaya bicara natural).
-- [ ] Tetapkan aturan normalisasi teks untuk WER.
+- [x] Tetapkan aturan normalisasi teks untuk WER.
 - [ ] Siapkan template anotasi (reference transcript, timestamp jeda, filler, waktu konsep pertama disebut, konsep yang dijelaskan).
 - [ ] Rekam data pilot suaramu sendiri (baseline, beberapa topik) untuk kalibrasi threshold.
 
@@ -551,7 +551,7 @@ Semua item di bawah bisa dikerjakan tanpa biaya dan sebagian besar selesai dalam
 **Dokumentasi**
 
 - [ ] `AI_LOG.md` sudah siap dan diisi sejak entri pertama (termasuk percakapan perencanaan ini).
-- [ ] Folder screenshot dan catatan eksperimen (tanggal, konfigurasi, hasil).
+- [x] Folder screenshot dan catatan eksperimen (tanggal, konfigurasi, hasil).
 
 ## 11. Fase implementasi
 
