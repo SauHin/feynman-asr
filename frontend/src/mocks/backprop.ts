@@ -45,7 +45,7 @@ export const BACKPROP_CONCEPTS: Concept[] = [
   },
 ]
 
-// Satu-satunya jeda >= 2 detik ada di 37–41. learning-rate sengaja hanya disebut.
+// Satu-satunya jeda >= 2 detik ada di 37–41.
 export const BACKPROP_SCRIPT: Utterance[] = [
   { start: 1, end: 7, text: 'Oke, jadi eee backpropagation itu algoritma buat melatih neural network.' },
   {
@@ -54,7 +54,6 @@ export const BACKPROP_SCRIPT: Utterance[] = [
   },
   {
     start: 11.5, end: 19, text: 'input masuk ke network, dihitung layer demi layer sampai keluar prediksi.',
-    concepts: [{ id: 'forward-pass', status: 'explained' }],
   },
   {
     start: 20, end: 25, text: 'Terus prediksinya dibandingin sama label pakai loss function, gitu.',
@@ -62,7 +61,6 @@ export const BACKPROP_SCRIPT: Utterance[] = [
   },
   {
     start: 26, end: 33, text: 'Loss itu angka yang ngukur seberapa jauh prediksi dari jawaban yang benar.',
-    concepts: [{ id: 'loss-function', status: 'explained' }],
   },
   { start: 34, end: 37, text: 'Nah, eee, habis itu...' },
   {
@@ -75,13 +73,11 @@ export const BACKPROP_SCRIPT: Utterance[] = [
   {
     start: 46.5, end: 56,
     text: 'Chain rule itu turunan fungsi gabungan sama dengan hasil kali turunan tiap bagiannya, jadi error dirambatkan mundur dari output ke layer sebelumnya.',
-    concepts: [{ id: 'chain-rule', status: 'explained' }],
   },
   { start: 57, end: 64, text: 'Jadi tiap weight dapet gradient-nya sendiri, eee, gitu.' },
   {
     start: 64.5, end: 78,
     text: 'Gradient itu nunjukin arah loss naik, jadi weight digeser ke arah sebaliknya supaya loss turun. Itu namanya gradient descent.',
-    concepts: [{ id: 'gradient-descent', status: 'explained' }],
   },
   {
     start: 79, end: 86, text: 'Besarnya langkah diatur pakai learning rate.',

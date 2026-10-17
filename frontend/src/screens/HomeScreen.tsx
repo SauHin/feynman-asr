@@ -3,7 +3,7 @@ import { AppBar } from '../components/app-bar'
 import { LaptopIcon } from '../components/chalk'
 import { Kapur } from '../components/kapur'
 import { StatusIcon } from '../components/marks'
-import { MARK_LABEL } from '../lib/format'
+import { LIVE_MARK, MARK_LABEL } from '../lib/format'
 
 const STEPS = ['Pilih topik', 'Jelasin 2–5 menit', 'Cek feedback', 'Jelasin lagi'] as const
 const STEP_COLORS: [string, string][] = [
@@ -60,7 +60,7 @@ export default function HomeScreen() {
 // Contoh agenda, supaya user pertama langsung melihat apa yang dilakukan Empur saat sesi.
 // Status dibedakan lewat ikon dan label, bukan warna saja.
 const SAMPLE = [
-  { name: 'Forward pass', status: 'explained' },
+  { name: 'Forward pass', status: 'mentioned' },
   { name: 'Loss function', status: 'mentioned' },
   { name: 'Chain rule', status: 'none' },
 ] as const
@@ -82,7 +82,7 @@ function AgendaPreview() {
         <ul className="mt-3 flex flex-col gap-2.5">
           {SAMPLE.map((c) => (
             <li key={c.name} className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5">
-              <StatusIcon status={c.status} />
+              <StatusIcon status={LIVE_MARK[c.status]} />
               <span className="text-lg font-semibold">{c.name}</span>
               <span className="ml-auto text-sm text-ink-3">{MARK_LABEL[c.status]}</span>
             </li>

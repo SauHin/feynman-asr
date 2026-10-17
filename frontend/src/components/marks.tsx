@@ -1,9 +1,9 @@
 import { decimal } from '../lib/format'
-import type { MarkStatus } from './chalk'
 
 // Tanda status konsep dalam gaya datar yang sama dengan Empur. Setiap status punya bentuk sendiri,
-// jadi tidak dibedakan lewat warna saja: cincin kosong, setengah terisi, centang, dan silang.
-export type Mark = MarkStatus | 'wrong'
+// jadi tidak dibedakan lewat warna saja: cincin kosong, setengah terisi, centang, dan silang. Keempatnya dipakai
+// layar feedback untuk penilaian Gemini. Agenda live hanya memakai cincin dan centang (lib/format.ts).
+export type Mark = 'none' | 'mentioned' | 'explained' | 'wrong'
 
 // `draw`: centang menggambar dirinya sendiri (kelas chalk-draw, jeda lewat --draw-delay).
 export function StatusIcon({ status, draw = false, className = 'size-7' }: { status: Mark; draw?: boolean; className?: string }) {

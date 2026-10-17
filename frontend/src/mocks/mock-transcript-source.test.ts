@@ -45,17 +45,10 @@ test('stop di tengah sesi mengubah sisa partial jadi confirmed', async () => {
   ])
 })
 
-test('status akhir: 4 konsep dijelaskan, learning-rate hanya disebut', async () => {
+test('kelima konsep dibahas, masing-masing satu pesan', async () => {
   const msgs = await runFullSession()
-  const final: Record<string, string> = {}
-  for (const m of msgs) if (m.type === 'concept') final[m.concept_id] = m.status
-  expect(final).toEqual({
-    'forward-pass': 'explained',
-    'loss-function': 'explained',
-    'chain-rule': 'explained',
-    'gradient-descent': 'explained',
-    'learning-rate': 'mentioned',
-  })
+  const concepts = msgs.flatMap((m) => (m.type === 'concept' ? [m.concept_id] : []))
+  expect(concepts).toEqual(['forward-pass', 'loss-function', 'chain-rule', 'gradient-descent', 'learning-rate'])
 })
 
 test('satu jeda panjang, filler terhitung, sesi diakhiri idle', async () => {

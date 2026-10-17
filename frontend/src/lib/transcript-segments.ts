@@ -9,7 +9,7 @@ export type ConceptTerms = { id: string; terms: string[] }
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 // Pecah teks confirmed menjadi potongan teks, penanda jeda, dan istilah konsep.
-// Istilah hanya ditandai untuk konsep yang dikirim lewat `concepts` (yang sudah disebut).
+// Istilah hanya ditandai untuk konsep yang dikirim lewat `concepts` (yang sudah dibahas).
 // `fillers` (opsional, untuk transkrip di feedback) ditandai sebagai potongan filler.
 export function buildSegments(
   confirmed: string,

@@ -21,16 +21,14 @@ from fastapi import FastAPI, Form, HTTPException, UploadFile, WebSocket
 import config
 import materials
 from analysis import gemini
-from analysis.concepts import ConceptTracker, load_embedder
+from analysis.concepts import ConceptTracker
 from analysis.fluency import Fluency
 from asr.streaming import StreamingTranscriber, Word, hotwords, load_whisper
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Dimuat sekali, dipakai semua sesi: Whisper di GPU, model embedding checklist di CPU.
-    app.state.transcribe = load_whisper()
-    app.state.embed = load_embedder()
+    app.state.transcribe = load_whisper()  # dimuat sekali, dipakai semua sesi
     yield
 
 
@@ -116,7 +114,7 @@ async def transcribe(ws: WebSocket) -> None:
                     concepts = [gemini.Concept.model_validate(c) for c in data.get("concepts", [])]
                     if config.ASR_HOTWORDS:
                         st.hotwords = hotwords(t for c in concepts for t in [c.name, *c.aliases])
-                    tracker = await asyncio.to_thread(ConceptTracker, concepts, ws.app.state.embed)
+                    tracker = ConceptTracker(concepts)
 
     def take_audio(whole: bool = True) -> float:
         """Pindahkan audio ke transcriber. Mengembalikan waktu diterimanya potongan terakhir yang dipindah.
@@ -182,8 +180,8 @@ async def transcribe(ws: WebSocket) -> None:
         await send(new[start:], heard_at, final)
         # Checklist sesudah transkrip, supaya kata yang mencentang konsep sudah tampil di UI.
         if tracker:
-            for cid, status, t in await asyncio.to_thread(tracker.add, new):
-                await ws.send_json({"type": "concept", "concept_id": cid, "status": status, "t": round(t, 2)})
+            for cid, t in tracker.add(new):
+                await ws.send_json({"type": "concept", "concept_id": cid, "status": "mentioned", "t": round(t, 2)})
         if final or st.audio_end >= next_fluency:
             await ws.send_json(fluency.message(st.audio_end))
             next_fluency = st.audio_end + config.FLUENCY_EVERY_S

@@ -9,7 +9,7 @@ export type LiveState = {
   partial: string
   latencyMs: number | null
   concepts: Record<string, ConceptStatus>
-  conceptEvents: { id: string; status: ConceptStatus; t: number }[]
+  conceptEvents: { id: string; t: number }[]
   wpm: number
   fillerCount: number
   // Satu entri per filler baru, pada waktu pesan fluency yang melaporkannya.
@@ -45,16 +45,14 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
         partial: action.partial,
         latencyMs: action.latency_ms,
       }
-    case 'concept': {
-      const current = state.concepts[action.concept_id]
-      // Status hanya naik: konsep yang sudah dijelaskan tidak turun lagi jadi disebut.
-      if (current === 'explained' || current === action.status) return state
+    case 'concept':
+      // Satu event per konsep: pesan berikutnya untuk konsep yang sudah dibahas diabaikan.
+      if (state.concepts[action.concept_id]) return state
       return {
         ...state,
         concepts: { ...state.concepts, [action.concept_id]: action.status },
-        conceptEvents: [...state.conceptEvents, { id: action.concept_id, status: action.status, t: action.t }],
+        conceptEvents: [...state.conceptEvents, { id: action.concept_id, t: action.t }],
       }
-    }
     case 'fluency': {
       const added = Math.max(0, action.filler_count - state.fillerCount)
       return {

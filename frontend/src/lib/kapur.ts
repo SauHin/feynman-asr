@@ -85,22 +85,20 @@ export function kapurSays(input: {
 }): KapurLine {
   const { state, concepts, started, elapsed } = input
   const name = (id: string) => concepts.find((c) => c.id === id)?.name ?? id
-  const explained = concepts.filter((c) => state.concepts[c.id] === 'explained').length
-  const allExplained = concepts.length > 0 && explained === concepts.length
+  const covered = concepts.filter((c) => state.concepts[c.id]).length
+  const allCovered = concepts.length > 0 && covered === concepts.length
 
-  if (!started)
-    return { mood: 'wave', text: 'Hai! Tiap konsep yang udah kamu jelasin, aku centang, ya.' }
+  if (!started) return { mood: 'wave', text: 'Hai! Tiap konsep yang udah kamu bahas, aku centang, ya.' }
   if (state.status === 'processing') return { mood: 'think', text: 'Bentar, feedback-nya lagi aku tulis.' }
   if (state.status === 'idle') {
-    if (allExplained) return { mood: 'cheer', text: 'Mantap, semua konsep beres!' }
-    const open = concepts.find((c) => state.concepts[c.id] !== 'explained')!
-    const gap = state.concepts[open.id] === 'mentioned' ? 'baru kamu sebut, belum dijelasin' : 'masih ketinggalan'
+    if (allCovered) return { mood: 'cheer', text: 'Mantap, semua konsep beres!' }
+    const open = concepts.find((c) => !state.concepts[c.id])!
     return {
       mood: 'happy',
-      text: `Selesai! ${explained} dari ${concepts.length} konsep udah jelas. ${open.name} ${gap}.`,
+      text: `Selesai! ${covered} dari ${concepts.length} konsep udah dibahas. ${open.name} masih ketinggalan.`,
     }
   }
-  if (allExplained) return { mood: 'cheer', text: 'Mantap, semua konsep beres!' }
+  if (allCovered) return { mood: 'cheer', text: 'Mantap, semua konsep beres!' }
 
   const lastEvent = state.conceptEvents.at(-1)
   const lastPause = state.pauses.at(-1)
@@ -112,17 +110,11 @@ export function kapurSays(input: {
       mood: 'confused',
       text: `Jeda ${decimal(lastPause.duration)} detik. Santai, tarik napas, terus lanjut.`,
     }
-  if (lastEvent && elapsed - lastEvent.t < RECENT_SECONDS)
-    return lastEvent.status === 'explained'
-      ? { mood: 'happy', text: `Yes! ${name(lastEvent.id)} beres.` }
-      : { mood: 'curious', text: `${name(lastEvent.id)}? Jelasin lebih banyak, dong.` }
+  if (lastEvent && elapsed - lastEvent.t < RECENT_SECONDS) return { mood: 'happy', text: `Yes! ${name(lastEvent.id)} kebahas.` }
 
   if (!state.confirmed && !state.partial) return { mood: 'listen', text: 'Aku siap dengerin. Mulai kapan aja.' }
   const uncovered = concepts.find((c) => !state.concepts[c.id])
-  if (uncovered) return { mood: 'listen', text: `Lanjut! Habis ini bisa bahas ${uncovered.name}.` }
-  const onlyMentioned = concepts.find((c) => state.concepts[c.id] === 'mentioned')
-  return {
-    mood: 'listen',
-    text: onlyMentioned ? `${onlyMentioned.name} baru disebut, nih. Jelasin dikit lagi, yuk.` : 'Terus, aku nyimak.',
-  }
+  return uncovered
+    ? { mood: 'listen', text: `Lanjut! Habis ini bisa bahas ${uncovered.name}.` }
+    : { mood: 'listen', text: 'Terus, aku nyimak.' }
 }

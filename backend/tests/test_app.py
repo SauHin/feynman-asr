@@ -107,10 +107,11 @@ def test_concept_messages_follow_the_transcript_that_triggers_them(monkeypatch):
     chain = {"id": "chain-rule", "name": "Chain rule", "aliases": [], "description": "Turunan fungsi komposisi."}
     messages = session(8, {"type": "start", "concepts": [chain]})
 
-    # Klien tes mengirim semua audio lalu langsung stop, jadi jumlah batch tidak tetap. Urutan disebut lalu
-    # dijelaskan dites di test_concepts.py. Di sini: status akhirnya dijelaskan, dan kata yang mencentang konsep
-    # sudah terkirim sebagai transkrip sebelum pesan concept-nya.
+    # Satu pesan per konsep, sesudah transkrip yang memuat namanya. Klien tes mengirim semua audio lalu langsung
+    # stop, jadi batch tempat "rule" confirmed tidak tetap, dan waktu pesannya tidak dicek di sini.
     concepts = [i for i, m in enumerate(messages) if m["type"] == "concept"]
-    assert messages[concepts[-1]] == {"type": "concept", "concept_id": "chain-rule", "status": "explained", "t": 5.4}
-    said = next(i for i, m in enumerate(messages) if m["type"] == "transcript" and "turunan" in m["confirmed"])
-    assert said < concepts[-1]
+    assert len(concepts) == 1
+    msg = messages[concepts[0]]
+    assert (msg["concept_id"], msg["status"]) == ("chain-rule", "mentioned")
+    said = next(i for i, m in enumerate(messages) if m["type"] == "transcript" and "rule" in m["confirmed"])
+    assert said < concepts[0]

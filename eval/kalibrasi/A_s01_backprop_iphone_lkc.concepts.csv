@@ -1,7 +1,0 @@
-concept_id,start,end,kalimat
-forward-pass,14.3,23.6,"Langkah pertama namanya forward pass. Input masuk ke network, terus dihitung layer demi layer sampai keluar prediksi di output layer."
-loss-function,26.7,39.5,"Makanya kita bandingin sama label pakai loss function ... Kalau loss-nya besar, berarti modelnya masih banyak salah."
-chain-rule,42.8,65.9,"Di sini kita pakai chain rule dari kalkulus ... sampai ke layer paling awal."
-gradient,66.4,69.9,"Gradient itu nunjukin arah di mana loss naik paling cepat."
-weight-update,70.2,76.7,"Jadi weight-nya kita geser ke arah sebaliknya supaya loss turun. Cara update ini namanya gradient descent."
-learning-rate,78.0,89.5,"Seberapa besar langkahnya diatur sama learning rate ... Kalau terlalu kecil, training-nya jadi lama banget."

@@ -18,7 +18,7 @@ web
 
 ## Product Purpose
 
-Feynman Speech Coach adalah web app lokal untuk berlatih menjelaskan satu konsep secara lisan. Whisper lokal mentranskrip secara real-time, dan checklist konsep berubah saat konsep disebut dan dijelaskan. Setelah sesi, user menerima feedback tentang kelancaran, cakupan konsep, kebenaran isi, dan kesederhanaan penjelasan.
+Feynman Speech Coach adalah web app lokal untuk berlatih menjelaskan satu konsep secara lisan. Whisper lokal mentranskrip secara real-time, dan checklist konsep menyala saat konsep dibahas. Setelah sesi, user menerima feedback tentang kelancaran, cakupan konsep, kebenaran isi, dan kesederhanaan penjelasan.
 
 Masalah yang diselesaikan: mahasiswa merasa sudah paham setelah membaca slide, tetapi gagal saat harus menjelaskan. Belajar sendiri dengan metode Feynman tidak memberi feedback.
 
@@ -40,7 +40,7 @@ Speech adalah inti, LLM hanya pendukung. Semua yang bisa dihitung dari sinyal su
 - ASR wajib lokal (faster-whisper). Tidak boleh ada API speech recognition eksternal.
 - Gemini Flash (free tier) hanya menerima teks setelah sesi: materi, daftar konsep, transkrip, dan metrik. Peserta harus diberi tahu bahwa input free tier dapat dipakai Google. Izin dosen untuk Gemini masih menunggu konfirmasi.
 - Transkrip live membedakan teks confirmed (sudah pasti) dari teks partial (masih bisa berubah).
-- Checklist konsep punya tiga status: belum, disebut, dijelaskan. Checklist live hanya indikasi, lalu diverifikasi ulang oleh Gemini setelah sesi.
+- Checklist konsep punya dua status: belum dan dibahas. Checklist live hanya menunjukkan cakupan. Kualitas penjelasan dinilai Gemini setelah sesi.
 - Indikator live: speech rate, jumlah filler, peringatan jeda panjang, status (listening/processing), dan latency.
 - Feedback pasca-sesi berisi:
   - metrik kelancaran lokal.
@@ -61,7 +61,7 @@ Speech adalah inti, LLM hanya pendukung. Semua yang bisa dihitung dari sinyal su
 - Batasan visual dari user: tidak memakai font serif, dan tidak memakai teks kapital penuh (label, judul, dan tombol memakai huruf kalimat biasa).
 - Rasa aplikasi edukasi seperti Duolingo: ceria, berwarna, penuh ilustrasi, dan ramah. Tampilan yang kalem dan minimalis sudah ditolak karena membosankan.
 - Maskot: **Si Kapur**, batang kapur hidup yang menulis dan mencentang agenda di papan, dan bereaksi terhadap penjelasan user.
-- Progres ringan boleh: bar progres konsep dan perayaan kecil saat konsep dijelaskan. Tidak ada XP, streak, nyawa, atau badge.
+- Progres ringan boleh: bar progres konsep dan perayaan kecil saat konsep dibahas. Tidak ada XP, streak, nyawa, atau badge.
 - Aplikasi punya mode terang dan gelap dengan toggle, karena dipakai malam hari, siang hari, dan di proyektor saat demo.
 
 ## Evidence on Hand

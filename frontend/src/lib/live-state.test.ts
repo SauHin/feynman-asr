@@ -14,18 +14,13 @@ test('confirmed ditambahkan, partial diganti', () => {
   expect(s.latencyMs).toBe(700)
 })
 
-test('status konsep tidak turun, dan event hanya dicatat saat status naik', () => {
+test('konsep yang sudah dibahas hanya dicatat sekali', () => {
   const s = run([
     { type: 'concept', concept_id: 'a', status: 'mentioned', t: 1 },
     { type: 'concept', concept_id: 'a', status: 'mentioned', t: 2 },
-    { type: 'concept', concept_id: 'a', status: 'explained', t: 3 },
-    { type: 'concept', concept_id: 'a', status: 'mentioned', t: 4 },
   ])
-  expect(s.concepts).toEqual({ a: 'explained' })
-  expect(s.conceptEvents).toEqual([
-    { id: 'a', status: 'mentioned', t: 1 },
-    { id: 'a', status: 'explained', t: 3 },
-  ])
+  expect(s.concepts).toEqual({ a: 'mentioned' })
+  expect(s.conceptEvents).toEqual([{ id: 'a', t: 1 }])
 })
 
 test('jeda menyimpan posisinya di transkrip, filler baru jadi tick, reset mengosongkan sesi', () => {
