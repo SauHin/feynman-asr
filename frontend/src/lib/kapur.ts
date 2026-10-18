@@ -19,8 +19,9 @@ export type KapurTone = 'jingga' | 'kuning' | 'mint' | 'langit' | 'koral' | 'lil
 // top dan bot: gradasi badan; cap dan capHi: tutup elips; dark: properti dan bayangan; ink: mata.
 export type Tone = { top: string; bot: string; dark: string; cap: string; capHi: string; ink: string }
 
-// Warna awal sebelum user memilih sendiri lewat menu Empur di bilah atas.
-export const DEFAULT_TONE: KapurTone = 'jingga'
+// Warna awal sebelum user memilih sendiri lewat menu Empur di bilah atas. Kuning dengan tangan adalah tampilan final
+// Empur (DESIGN.md), sama dengan logo, video, dan slide.
+export const DEFAULT_TONE: KapurTone = 'kuning'
 
 export const TONES: Record<KapurTone, Tone> = {
   jingga: { top: '#FFD84D', bot: '#FF7F3F', dark: '#C2410C', cap: '#FFE27A', capHi: '#FFF1B8', ink: '#2A1A0E' },

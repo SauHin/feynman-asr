@@ -1,0 +1,11 @@
+Oke, jadi topik saya transformer. Transformer itu arsitektur yang sekarang dipakai di hampir semua large language model.
+
+Pertama, kalimat bakal dipecah dulu jadi token sama tokenizer. Tiap token terus diubah jadi vector yang namanya embedding. Karena transformer nggak baca kalimat satu per satu kayak RNN, informasi urutan katanya ditambahin lewat positional encoding.
+
+Nah, bagian paling penting namanya self-attention. Di sini tiap token ngelihat ke semua token lain buat nentuin mana yang relevan. Caranya, tiap token punya tiga vector, yaitu query, key, sama value. Query dari satu token dibandingin sama key dari semua token pakai dot product. Hasilnya jadi attention score.
+
+Score ini terus dimasukin ke softmax, biar jadi weight yang totalnya satu. Terakhir, value dari tiap token dijumlahin sesuai weight tadi. Jadi model bisa tahu, misalnya, kata ganti di satu kalimat itu ngerujuk ke kata yang mana.
+
+Biar bisa nangkep beberapa jenis hubungan sekaligus, attention-nya dijalanin paralel beberapa kali. Ini namanya multi-head attention.
+
+Transformer yang asli punya encoder sama decoder. Encoder ngolah input, terus decoder ngehasilin output token demi token. Model kayak GPT cuma pakai bagian decoder-nya aja. Ya gitu sih gambaran besar transformer.

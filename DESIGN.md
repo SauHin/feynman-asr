@@ -34,8 +34,8 @@ colors:
   pause-bg-malam: "#1c2748"
   pause-ink: "#3656c9"
   pause-ink-malam: "#9db6ff"
-  empur-jingga-top: "#ffd84d"
-  empur-jingga-bottom: "#ff7f3f"
+  empur-kuning-top: "#fff09a"
+  empur-kuning-bottom: "#ffc21a"
 typography:
   hero:
     fontFamily: "'Lexend Variable', system-ui, sans-serif"
@@ -337,7 +337,8 @@ Pil yang terasa bisa ditekan, seperti tombol Continue di Brilliant.
 
 ### Empur (signature)
 Sebatang kapur dalam gaya datar Brilliant: badan silinder dengan gradasi diagonal, tutup elips dua warna, dan tanpa kilau di sisi badan. Komponennya ada di `components/kapur.tsx`, dan pratinjau semua mood ada di `/maskot`.
-- **Warna:** jingga (bawaan), kuning, mint, langit, koral, lilac, dan putih. User memilihnya lewat menu Empur, dan pilihannya disimpan di browser.
+- **Tampilan final:** kuning dengan tangan, sama dengan logo. Ini bawaan aplikasi dan satu-satunya Empur yang dipakai di luar aplikasi: slide, diagram, video, laporan, dan screenshot.
+- **Warna lain:** jingga, mint, langit, koral, lilac, dan putih, hanya sebagai pilihan user lewat menu Empur. Pilihannya disimpan di browser.
 - **Wajah:** tanpa mulut, tanpa alis, dan tanpa pipi merah muda. Semua mata berasal dari satu keluarga pil tinta. Bentuknya diubah lewat kelopak atas yang turun atau miring, sisi bawah yang terangkat seperti pipi tersenyum, dan rotasi. Setiap mata punya titik cahaya putih yang lebih kecil untuk mata yang sempit.
 - **Mood:** melambai, mendengarkan, senang, penasaran, bingung, berpikir, dan bersorak. Tidak ada mood bangga, karena senang dipakai di tempatnya. Setiap mood punya bentuk mata, pose tangan, dan properti sendiri, misalnya gelombang suara, lampu, tanda tanya, awan pikiran, atau konfeti.
 - **Tangan:** sirip gemuk dan pendek yang melengkung. Tangan samping digambar di belakang badan dengan gradasi yang sama, jadi badan dan tangan terlihat satu bentuk. Tangan di depan badan (dagu, tangan yang digenggam) diberi bayangan jatuh datar dan makin terang ke arah tangan. Tangan yang menyentuh kepala keluar dari samping badan, bukan dari depan badan.
@@ -360,6 +361,7 @@ Easing utama `cubic-bezier(0.16, 1, 0.3, 1)`.
 - **Do** tampilkan status konsep dengan bentuk, warna, dan label teks sekaligus: cincin kosong, setengah kuning, centang hijau, dan silang merah.
 - **Do** gambar ilustrasi dan ikon baru sebagai bentuk datar bergradasi, tanpa garis luar, dalam satu gaya dengan Empur.
 - **Do** pakai Lexend untuk semua teks dan huruf kalimat biasa di mana pun.
+- **Do** pakai Empur kuning dengan tangan untuk semua materi di luar aplikasi, misalnya slide, diagram, video, dan laporan.
 - **Do** jaga teks tetap pendek. Katakan setiap fakta sekali, dan lipat rincian di balik `<details>`.
 - **Do** sebut hasil setelah sesi sebagai "feedback", bukan "catatan". "Catatan kuliah" di setup tetap berarti catatan milik user.
 - **Do** uji Siang, Malam, dan lebar layar HP untuk setiap perubahan.

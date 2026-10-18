@@ -1,0 +1,9 @@
+Oke, topik saya deadlock. Sebelum masuk ke deadlock, kita perlu paham dulu bedanya process sama thread. Process itu program yang lagi jalan dan punya memory sendiri. Thread itu unit eksekusi di dalam process, dan beberapa thread bisa share memory yang sama.
+
+Nah, karena thread share memory, bisa muncul race condition. Misalnya dua thread nambahin variable counter barengan. Hasil akhirnya bisa salah, tergantung urutan eksekusinya. Bagian kode yang ngakses data bersama ini namanya critical section.
+
+Buat ngelindungin critical section, kita pakai lock atau mutex. Thread yang mau masuk harus ambil lock dulu, dan thread lain nunggu sampai lock-nya dilepas. Ada juga semaphore, yang bisa ngizinin beberapa thread masuk sekaligus sampai batas tertentu.
+
+Masalahnya, lock bisa bikin deadlock. Contohnya, thread A pegang lock pertama dan nunggu lock kedua. Di saat yang sama, thread B pegang lock kedua dan nunggu lock pertama. Dua-duanya nunggu selamanya, jadi nggak ada yang bisa lanjut.
+
+Deadlock cuma bisa terjadi kalau empat kondisi terpenuhi barengan, yaitu mutual exclusion, hold and wait, no preemption, sama circular wait. Jadi cara paling gampang buat nyegahnya, kita patahin salah satu kondisi. Misalnya, semua thread wajib ambil lock dengan urutan yang sama, biar circular wait nggak mungkin terjadi. Ya gitu sih deadlock.

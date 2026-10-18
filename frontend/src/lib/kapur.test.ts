@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { BACKPROP_CONCEPTS } from '../mocks/backprop'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { kapurSays, setKapurPrefs, useKapurPrefs, type KapurPrefs } from './kapur'
+import { DEFAULT_TONE, kapurSays, setKapurPrefs, useKapurPrefs, type KapurPrefs } from './kapur'
 import { initialLiveState, liveReducer, type LiveAction } from './live-state'
 
 const at = (actions: LiveAction[], elapsed: number, started = true) =>
@@ -73,5 +73,5 @@ test('pilihan Empur tersimpan dan terbaca kembali', () => {
   }
   renderToStaticMarkup(createElement(Probe))
   expect(seen.at(-1)).toEqual({ tone: 'mint', arms: false })
-  setKapurPrefs({ tone: 'jingga', arms: true })
+  setKapurPrefs({ tone: DEFAULT_TONE, arms: true })
 })
