@@ -73,6 +73,12 @@ SAMPLE_RATE = 16_000
 SESSION_SAVE = True
 SESSION_DIR = Path(__file__).resolve().parents[1] / "eval" / "data" / "sesi"
 
+# Draf anotasi Set B (eval/draft_labels.py). Draf memakai model yang berbeda dari aplikasi dan tanpa hotwords, supaya
+# kesalahan sistem yang dievaluasi tidak ikut masuk ke kunci jawaban.
+ANNOT_DRAFT_MODEL = "large-v3"
+# Jeda mulai dari segini dilabeli (PLAN 8.3). Lebih rendah dari FLUENCY_PAUSE_S, supaya E7 bisa menguji ambang lain.
+ANNOT_PAUSE_S = 1.5
+
 # Fine-tuning: pemotong rekaman naskah latih (finetune/segment.py).
 # Potongan dibatasi 20 detik, dekat dengan panjang buffer audio yang ditranskrip ulang saat streaming.
 FT_MAX_SEGMENT_S = 20.0
