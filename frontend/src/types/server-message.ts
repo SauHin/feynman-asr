@@ -31,9 +31,12 @@ export type FluencyMessage = {
   t: number
 }
 
+// session_id: hanya di pesan listening, dan hanya kalau backend menyimpan sesi (config.SESSION_SAVE). Dikirim balik
+// saat meminta feedback, supaya feedback tercatat di sesi yang sama.
 export type StatusMessage = {
   type: 'status'
   state: 'listening' | 'processing' | 'idle'
+  session_id?: string
 }
 
 export type ServerMessage = TranscriptMessage | ConceptMessage | FluencyMessage | StatusMessage

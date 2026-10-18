@@ -42,4 +42,6 @@ export type SessionResult = {
   transcript: { text: string; pauses: { start: number; duration: number; offset: number }[] }
   fluency: FluencyReport
   liveStatus: Record<string, ConceptStatus>
+  // Id sesi tersimpan di backend, kosong kalau backend tidak menyimpan sesi.
+  sessionId?: string
 }

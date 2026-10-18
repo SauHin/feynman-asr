@@ -146,7 +146,7 @@ Aliran data kunci: audio tidak pernah keluar dari laptop. Gemini hanya menerima 
 | Fuzzy match | rapidfuzz | Deteksi "disebut" yang tahan salah eja ASR |
 | Parsing materi | PyMuPDF (PDF), XML di dalam file PPTX dibaca langsung dengan `zipfile` | Hanya teks yang dikirim ke Gemini. python-pptx tidak dipakai karena ikut membawa lxml, Pillow, dan XlsxWriter hanya untuk membaca teks |
 | LLM | Gemini Flash via SDK `google-genai`, output JSON terstruktur | Free tier, tanpa kartu kredit |
-| Penyimpanan | File JSON/SQLite lokal per sesi | Cukup untuk riwayat sesi dan data eksperimen |
+| Penyimpanan | File WAV dan JSON lokal per sesi di `eval/data/sesi/` (`backend/sessions.py`) | Cukup untuk data eksperimen dan analisis user testing. Riwayat sesi di UI belum ada |
 | Evaluasi | jiwer (WER/CER), skrip replay audio, pandas, matplotlib | Metrik standar dan reproducible |
 
 Semua parameter penting (nama model, compute type, ukuran chunk, bahasa, threshold similarity, nama model Gemini) diletakkan di satu file konfigurasi, bukan hardcode.
@@ -291,6 +291,8 @@ Ada tiga jenis rekaman dengan peran berbeda: Set A untuk membandingkan konfigura
 1. Pilih topik di luar 14 topik naskah latih Set T (bagian 8.8). Rekam penjelasan spontanmu sendiri untuk 3–4 topik, lalu transkrip.
 2. Rapikan menjadi naskah 150–250 kata per topik, tetap mempertahankan gaya lisan ("jadi", "nah") dan istilah Inggris. Ini memperkecil jarak antara bacaan dan bicara spontan.
 3. Daftar istilah teknis tiap naskah dicatat terpisah; daftar ini dipakai untuk term WER dan sebagai hotwords di E2.
+
+**Sumber audio Set B.** Aplikasi menyimpan setiap sesi mic di `eval/data/sesi/` selama `config.SESSION_SAVE` menyala. Satu sesi menjadi tiga file: audio yang diterima server (WAV 16 kHz mono), log semua pesan server beserta waktunya, dan catatan setiap permintaan feedback Gemini. Audionya sama persis dengan yang diproses saat sesi, jadi bisa langsung diputar ulang dengan `eval/replay.py`. Untuk Set B, salin WAV sesi dengan nama `B_<speaker>_<topik>_<mic>_<lokasi>.wav`, lalu daftarkan di `metadata.csv`. Log dan catatan feedback dipakai untuk analisis user testing (bagian 9).
 
 **Melabeli Set B:**
 

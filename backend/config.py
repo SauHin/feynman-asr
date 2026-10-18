@@ -1,4 +1,5 @@
 """Semua parameter backend. API key hanya dari .env, tidak pernah di sini."""
+from pathlib import Path
 
 # ASR (faster-whisper). Nama model bisa alias bawaan faster-whisper atau repo
 # Hugging Face berformat CTranslate2. Kandidat E1:
@@ -65,6 +66,12 @@ MATERIAL_MAX_MB = 20
 MATERIAL_MAX_CHARS = 100_000
 
 SAMPLE_RATE = 16_000
+
+# Penyimpanan sesi live (backend/sessions.py): audio yang diterima, log pesan server, dan feedback Gemini. Dipakai
+# sebagai audio Set B dan data analisis user testing (PLAN 8.3, PLAN 9). Folder ini di dalam eval/data/, yang tidak
+# di-commit karena berisi suara peserta. eval/replay.py mematikannya, supaya replay tidak menggandakan rekaman.
+SESSION_SAVE = True
+SESSION_DIR = Path(__file__).resolve().parents[1] / "eval" / "data" / "sesi"
 
 # Fine-tuning: pemotong rekaman naskah latih (finetune/segment.py).
 # Potongan dibatasi 20 detik, dekat dengan panjang buffer audio yang ditranskrip ulang saat streaming.

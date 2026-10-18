@@ -3,7 +3,8 @@ ekstraksi konsep saat setup, dan POST /api/feedback untuk analisis isi setelah S
 
 Klien boleh membuka sesi dengan {"type": "start", "concepts": [...]}, lalu mengirim potongan PCM int16 16 kHz
 mono sebagai pesan biner, dan {"type": "stop"} saat selesai (frontend/src/types/client-message.ts). Server membalas
-pesan JSON sesuai frontend/src/types/server-message.ts.
+pesan JSON sesuai frontend/src/types/server-message.ts. Kalau config.SESSION_SAVE menyala, audio dan log tiap sesi
+disimpan (sessions.py), dan feedback yang membawa session_id dicatat ke sesi yang sama.
 
 Jalankan dari root repo:
     backend/.venv/Scripts/python.exe -m uvicorn app:app --app-dir backend --port 8000
@@ -13,6 +14,7 @@ import json
 import time
 from collections.abc import Callable
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Annotated
 
 import numpy as np
@@ -20,6 +22,7 @@ from fastapi import FastAPI, Form, HTTPException, UploadFile, WebSocket
 
 import config
 import materials
+import sessions
 from analysis import gemini
 from analysis.concepts import ConceptTracker
 from analysis.fluency import Fluency
@@ -72,15 +75,37 @@ def concepts(
         raise HTTPException(502, "Ekstraksi konsep gagal. Konsepnya bisa ditulis sendiri.") from e
 
 
+class FeedbackRequest(gemini.Session):
+    session_id: str | None = None  # dari pesan status listening, untuk mencatat feedback ke sesi yang sama
+
+
+def keep_feedback(session_id: str | None, record: dict) -> None:
+    """Catat feedback ke file sesinya. Gagal mencatat tidak boleh menggagalkan feedback ke user."""
+    if not session_id:
+        return
+    try:
+        if not sessions.add_feedback(session_id, record):
+            print(f"Sesi {session_id!r} tidak tersimpan, feedback-nya tidak dicatat", flush=True)
+    except OSError as e:
+        print(f"Feedback sesi {session_id} gagal dicatat: {e}", flush=True)
+
+
 @app.post("/api/feedback")
-def feedback(session: gemini.Session) -> gemini.Feedback:
+def feedback(session: FeedbackRequest) -> gemini.Feedback:
     if not session.transcript.strip():
         raise HTTPException(422, "Transkripnya masih kosong, jadi belum ada yang bisa dianalisis.")
+    t = time.perf_counter()
+    record = {"at": datetime.now().isoformat(timespec="seconds"), "model": config.GEMINI_MODEL,
+              "request": session.model_dump(exclude={"session_id"})}
     try:
-        return gemini.analyze(session)
+        fb = gemini.analyze(session)
     except gemini.GeminiError as e:
         print(f"Gemini gagal: {e}", flush=True)
+        keep_feedback(session.session_id, record | {"duration_s": round(time.perf_counter() - t, 1), "error": str(e)})
         raise HTTPException(502, "Analisis Gemini gagal. Feedback lokal tetap bisa dipakai.") from e
+    keep_feedback(session.session_id, record | {"duration_s": round(time.perf_counter() - t, 1),
+                                                "feedback": fb.model_dump()})
+    return fb
 
 
 @app.websocket("/ws/transcribe")
@@ -93,22 +118,34 @@ async def transcribe(ws: WebSocket) -> None:
     fluency = Fluency()
     next_fluency = config.FLUENCY_EVERY_S  # waktu audio untuk pesan fluency berkala berikutnya
     tracker: ConceptTracker | None = None  # checklist konsep, ada setelah pesan start
+    # Untuk sessions.save: audio mentah, konsep dari pesan start, dan pesan server beserta waktu kirimnya.
+    session_id = sessions.new_id() if config.SESSION_SAVE else None
+    pcm = bytearray()
+    concepts: list[gemini.Concept] = []
+    sent: list[tuple[float, dict]] = []
+    t0: float | None = None  # detik 0 audio menurut jam server: waktu potongan pertama tiba dikurangi durasinya
+    end, stop_at = "error", None
 
     # Audio diterima terus di task terpisah. Kalau inference lebih lama dari interval, inference
     # berikutnya langsung memproses semua audio yang terkumpul, jadi sistem tidak makin tertinggal.
     async def receive() -> str:
-        nonlocal tracker
+        nonlocal tracker, concepts, t0, end, stop_at
         while True:
             msg = await ws.receive()
             if msg["type"] == "websocket.disconnect":
-                return "disconnect"
+                end, stop_at = "disconnect", time.perf_counter()
+                return end
             if msg.get("bytes"):
                 audio = np.frombuffer(msg["bytes"], dtype=np.int16).astype(np.float32) / 32768
                 chunks.append((audio, time.perf_counter()))
+                if t0 is None:
+                    t0 = chunks[-1][1] - len(audio) / config.SAMPLE_RATE
+                pcm.extend(msg["bytes"])
             elif msg.get("text"):
                 data = json.loads(msg["text"])
                 if data.get("type") == "stop":
-                    return "stop"
+                    end, stop_at = "stop", time.perf_counter()
+                    return end
                 # Pesan start datang sebelum audio, jadi hotwords dan checklist sudah siap sejak inference pertama.
                 if data.get("type") == "start":
                     concepts = [gemini.Concept.model_validate(c) for c in data.get("concepts", [])]
@@ -137,6 +174,10 @@ async def transcribe(ws: WebSocket) -> None:
             st.insert(np.concatenate(taken))
         return heard_at
 
+    async def out(msg: dict) -> None:
+        sent.append((time.perf_counter(), msg))
+        await ws.send_json(msg)
+
     async def run(step: Callable[[], list[Word]]) -> list[Word]:
         nonlocal compute_s
         t = time.perf_counter()
@@ -154,7 +195,7 @@ async def transcribe(ws: WebSocket) -> None:
         words = st.partial or new
         lag = st.audio_end - words[-1].end if words else 0.0
         latency = time.perf_counter() - heard_at + lag
-        await ws.send_json(
+        await out(
             {
                 "type": "transcript",
                 "confirmed": " ".join(w.text for w in new),
@@ -175,33 +216,44 @@ async def transcribe(ws: WebSocket) -> None:
         for i, pause in fluency.add(new):
             if i > start:
                 await send(new[start:i], heard_at)
-            await ws.send_json(fluency.message(st.audio_end, pause))
+            await out(fluency.message(st.audio_end, pause))
             start = i
         await send(new[start:], heard_at, final)
         # Checklist sesudah transkrip, supaya kata yang mencentang konsep sudah tampil di UI.
         if tracker:
             for cid, t in tracker.add(new):
-                await ws.send_json({"type": "concept", "concept_id": cid, "status": "mentioned", "t": round(t, 2)})
+                await out({"type": "concept", "concept_id": cid, "status": "mentioned", "t": round(t, 2)})
         if final or st.audio_end >= next_fluency:
-            await ws.send_json(fluency.message(st.audio_end))
+            await out(fluency.message(st.audio_end))
             next_fluency = st.audio_end + config.FLUENCY_EVERY_S
 
-    await ws.send_json({"type": "status", "state": "listening"})
-    receiver = asyncio.create_task(receive())
-    while not receiver.done():
-        if sum(len(c) for c, _ in chunks) < config.STREAM_INTERVAL_S * config.SAMPLE_RATE:
-            await asyncio.wait({receiver}, timeout=0.05)
-            continue
-        heard_at = take_audio()
-        new = await run(st.process)
-        if not (receiver.done() and receiver.result() == "disconnect"):
-            await publish(new, heard_at)
-    if receiver.result() == "disconnect":
-        return
+    try:
+        await out({"type": "status", "state": "listening"} | ({"session_id": session_id} if session_id else {}))
+        receiver = asyncio.create_task(receive())
+        while not receiver.done():
+            if sum(len(c) for c, _ in chunks) < config.STREAM_INTERVAL_S * config.SAMPLE_RATE:
+                await asyncio.wait({receiver}, timeout=0.05)
+                continue
+            heard_at = take_audio()
+            new = await run(st.process)
+            if not (receiver.done() and receiver.result() == "disconnect"):
+                await publish(new, heard_at)
+        if receiver.result() == "disconnect":
+            return
 
-    await ws.send_json({"type": "status", "state": "processing"})
-    heard_at = take_audio(whole=False)
-    # Selalu dikirim, supaya total compute_s sesi sampai ke klien walau teksnya tidak berubah.
-    await publish(await run(st.finish), heard_at, final=True)
-    await ws.send_json({"type": "status", "state": "idle"})
-    await ws.close()
+        await out({"type": "status", "state": "processing"})
+        heard_at = take_audio(whole=False)
+        # Selalu dikirim, supaya total compute_s sesi sampai ke klien walau teksnya tidak berubah.
+        await publish(await run(st.finish), heard_at, final=True)
+        await out({"type": "status", "state": "idle"})
+        await ws.close()
+    finally:
+        # Juga saat koneksi putus atau error di tengah sesi, supaya audio peserta tidak hilang. Sesi tanpa audio
+        # (misalnya izin mic ditolak) tidak disimpan.
+        if session_id and t0 is not None:
+            sessions.save(session_id, bytes(pcm), {
+                "session_id": session_id, "end": end, "audio_s": round(len(pcm) / 2 / config.SAMPLE_RATE, 3),
+                "stop_at": round((stop_at or time.perf_counter()) - t0, 3),
+                "concepts": [c.model_dump() for c in concepts],
+                "messages": [[round(t - t0, 3), m] for t, m in sent],
+            })

@@ -9,13 +9,15 @@ topik, mic). Ukur hanya saat laptop di mode Performance, karena GPU yang ditahan
 
 Dengan --terms, daftar istilah eval/naskah/<topik>.terms.txt dikirim sebagai daftar konsep saat sesi mulai,
 seperti layar setup, jadi backend memakainya sebagai hotwords (PLAN 8.5 E2). Dengan --concepts, daftar konsep
-lengkap dari file JSON yang dikirim, jadi checklist ikut jalan dan pesan concept tercatat di log (E7).
+lengkap dari file JSON yang dikirim, jadi checklist ikut jalan dan pesan concept tercatat di log (E7). File itu boleh
+berupa log sesi dari aplikasi (eval/data/sesi/<id>.json), supaya replay memakai daftar konsep yang sama dengan sesinya.
 
 Pakai dari root repo dengan Python dari backend/.venv:
     python eval/replay.py --run turbo-base eval/data/A_*.m4a
     python eval/replay.py --run interval-2s --set STREAM_INTERVAL_S=2.0 eval/data/A_*.m4a
     python eval/replay.py --run turbo-terms --terms eval/data/A_*.m4a
     python eval/replay.py --run checklist --concepts eval/naskah/backpropagation.concepts.json eval/data/A_s01_*.m4a
+    python eval/replay.py --run set-b --concepts eval/data/sesi/<id>.json eval/data/B_<file_id>.wav
 """
 import argparse
 import ast
@@ -88,10 +90,15 @@ def sample_gpu_clock(stop: threading.Event, out: list[int]) -> None:
             return
 
 
+def load_pcm(path: Path) -> np.ndarray:
+    # decode_audio membagi sampel int16 dengan 32768, jadi WAV sesi dari aplikasi kembali ke sampel yang sama persis.
+    audio = decode_audio(str(path), sampling_rate=config.SAMPLE_RATE)
+    return np.clip(audio * 32768, -32768, 32767).astype(np.int16)
+
+
 def replay(path: Path, port: int, concepts: list[dict]) -> dict:
     sr = config.SAMPLE_RATE
-    audio = decode_audio(str(path), sampling_rate=sr)
-    pcm = (np.clip(audio, -1, 1) * 32767).astype(np.int16)
+    pcm = load_pcm(path)
     step = int(CHUNK_S * sr)
     messages, clocks, stop = [], [], threading.Event()
     threading.Thread(target=sample_gpu_clock, args=(stop, clocks), daemon=True).start()
@@ -115,7 +122,7 @@ def replay(path: Path, port: int, concepts: list[dict]) -> dict:
         ws.send(json.dumps({"type": "stop"}))
         receiver.join(timeout=120)
     stop.set()
-    return {"file": path.name, "audio_s": len(audio) / sr, "stop_at": round(stop_at, 3),
+    return {"file": path.name, "audio_s": len(pcm) / sr, "stop_at": round(stop_at, 3),
             "concepts": concepts, "messages": messages, "gpu_mhz": clocks}
 
 
@@ -147,11 +154,12 @@ def main() -> None:
         if args.terms:
             concepts[f.stem] = [{"id": t, "name": t, "aliases": [], "description": ""} for t in terms]
         if args.concepts:
-            concepts[f.stem] = json.loads(args.concepts.read_text(encoding="utf-8"))
+            data = json.loads(args.concepts.read_text(encoding="utf-8"))
+            concepts[f.stem] = data["concepts"] if isinstance(data, dict) else data
 
     run_dir = metrics.RUNS / args.run
     run_dir.mkdir(parents=True, exist_ok=True)
-    server = start_server(overrides, args.port)
+    server = start_server({"SESSION_SAVE": False} | overrides, args.port)  # rekamannya sudah ada di eval/data
     try:
         for f in args.files:
             print(f"memutar {f.name}", flush=True)
