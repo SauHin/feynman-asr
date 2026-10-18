@@ -15,6 +15,7 @@ export type LiveState = {
   // Satu entri per filler baru, pada waktu pesan fluency yang melaporkannya.
   fillerTicks: number[]
   pauses: Pause[]
+  sessionId?: string
 }
 
 export type LiveAction = ServerMessage | { type: 'reset' }
@@ -37,7 +38,7 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
     case 'reset':
       return initialLiveState
     case 'status':
-      return { ...state, status: action.state }
+      return { ...state, status: action.state, sessionId: action.session_id ?? state.sessionId }
     case 'transcript':
       return {
         ...state,

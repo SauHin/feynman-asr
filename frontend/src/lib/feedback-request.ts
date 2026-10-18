@@ -16,6 +16,7 @@ export function requestFeedback(session: SessionResult, attempt = 0): Promise<Fe
       concepts: session.concepts,
       transcript: session.transcript.text,
       fluency: session.fluency,
+      session_id: session.sessionId,
     }),
   }).then((r) => (r.ok ? (r.json() as Promise<Feedback>) : Promise.reject(new Error(`HTTP ${r.status}`))))
   requests.set(session, { attempt, feedback })

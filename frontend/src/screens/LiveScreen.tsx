@@ -114,6 +114,7 @@ export default function LiveScreen() {
             long_pauses: state.pauses.map(({ start, duration }) => ({ start, duration })),
           },
           liveStatus: state.concepts,
+          sessionId: state.sessionId,
         }
       : undefined
 

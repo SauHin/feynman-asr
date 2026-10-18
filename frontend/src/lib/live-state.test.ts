@@ -33,3 +33,12 @@ test('jeda menyimpan posisinya di transkrip, filler baru jadi tick, reset mengos
   expect(s.fillerTicks).toEqual([40, 40, 41])
   expect(liveReducer(s, { type: 'reset' })).toBe(initialLiveState)
 })
+
+test('id sesi dari pesan listening bertahan sampai sesi selesai', () => {
+  const s = run([
+    { type: 'status', state: 'listening', session_id: '20261018-140322-a3f9' },
+    { type: 'status', state: 'processing' },
+    { type: 'status', state: 'idle' },
+  ])
+  expect(s.sessionId).toBe('20261018-140322-a3f9')
+})
