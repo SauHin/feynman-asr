@@ -28,6 +28,7 @@ Semua keputusan arsitektur sudah final, termasuk izin Gemini dari Pak Hidayat.
 | LLM analisis isi | Gemini (Flash) via Google AI Studio free tier, tanpa kartu kredit. Model `gemini-3.1-flash-lite`: `gemini-2.5-flash` tidak lagi tersedia untuk akun baru, dan `gemini-3.8-flash` sering gagal karena server sibuk | Final. Diizinkan Pak Hidayat (2026-10-13) |
 | Adaptasi domain | Hotwords/prompt dari materi yang di-upload, ditambah model hasil fine-tuning bila E8 menunjukkan perbaikan | Final |
 | Checklist konsep live | Dua status: belum dan dibahas (nama atau alias disebut, fuzzy match). Kualitas penjelasan dinilai Gemini setelah sesi | Final, diubah 17 Oktober 2026 |
+| Uji noise terkontrol (E4) | Dibatalkan, karena rekaman ambient noise terlalu mahal. Pengaruh kondisi input hanya diuji lewat jenis mic (E3) | Final, 18 Oktober 2026 |
 | Bahasa | Bahasa Indonesia dengan istilah CS dalam bahasa Inggris (code-switching alami) | Final |
 | Deployment | Lokal di laptop (RTX 3050 6 GB); deploy publik di luar scope | Final |
 | Frontend | React + Vite + TypeScript + Tailwind; target kualitas produk, bukan sekadar berjalan | Final |
@@ -234,7 +235,7 @@ Setiap eksperimen harus menjawab satu pertanyaan yang relevan untuk aplikasi; ek
 | Q2 | Seberapa responsif transkripsi real-time? | Semua run (latency dicatat otomatis), terutama E1 dan E6 |
 | Q3 | Ukuran model mana yang memberi trade-off akurasi dan latency terbaik di RTX 3050? | E1 |
 | Q4 | Apakah hotwords dari materi memperbaiki pengenalan istilah teknis dan checklist konsep? | E2, F |
-| Q5 | Seberapa besar pengaruh jenis mic dan noise terhadap akurasi? | E3, E4 |
+| Q5 | Seberapa besar pengaruh jenis mic terhadap akurasi? | E3 |
 | Q6 | Seberapa andal checklist konsep dan metrik kelancaran dibanding penilaian manusia? | E7 |
 | Q7 | Apakah fine-tuning LoRA dengan data latih kecil memperbaiki pengenalan istilah teknis, dan apakah perbaikannya melebihi hotwords? | E8 |
 
@@ -247,12 +248,8 @@ Data dikumpulkan dua kali saja (sesi perpustakaan dan sesi user testing); semua 
 ```mermaid
 flowchart TD
   S1[Sesi perpustakaan] --> A[Set A: naskah, multi-mic]
-  S1 --> N[Ambient noise per mic]
   S2[Sesi user testing + pilot] --> B[Set B: penjelasan spontan]
-  A --> MX[Campur noise: SNR 20/10/5 dB]
-  N --> MX
   A --> RP[Replay 1x ke pipeline streaming dengan konfigurasi X]
-  MX --> RP
   B --> RP
   RP --> LG[Log per run: transkrip, timestamp kata, latency, status checklist]
   LB[Label: teks naskah / transkrip manual + anotasi] --> MT[Skrip metrik]
@@ -271,20 +268,20 @@ Cara membaca diagram:
 
 ### 8.3 Pengumpulan dan pelabelan data
 
-Ada tiga jenis rekaman dengan peran berbeda: Set A untuk membandingkan konfigurasi secara murah dan adil, Set B untuk angka akurasi di kondisi nyata dan untuk menguji fitur, ambient noise untuk membuat kondisi bising secara terkontrol.
+Ada dua jenis rekaman evaluasi dengan peran berbeda: Set A untuk membandingkan konfigurasi secara murah dan adil, dan Set B untuk angka akurasi di kondisi nyata dan untuk menguji fitur. Rekaman ambient noise untuk uji bising terkontrol (E4) dibatalkan pada 18 Oktober 2026 karena terlalu mahal.
 
-|  | Set A — naskah | Set B — spontan | Ambient noise |
-| --- | --- | --- | --- |
-| Isi | Kalimat penjelasan CS dibacakan, 1–2 menit per orang per naskah | Penjelasan bebas 2–4 menit per topik | 5–10 menit suara perpustakaan tanpa pembicara |
-| Kapan | Sesi perpustakaan (bisa ditambah Task 1 user testing) | Task 2 user testing + rekaman pilot | Sesi perpustakaan |
-| Mic | Serentak di mic laptop dan earphone (clip-on bila ada) | Mic laptop (earphone opsional) | Serentak di semua mic yang dipakai Set A |
-| Label | Teks naskah, dikoreksi bila pembaca menyimpang | Transkrip verbatim manual + anotasi konsep, jeda, filler | Tidak perlu |
-| Dipakai di | E1–E6, E8 | F, E2 (checklist), E7, E8 | E4 |
-| Target ukuran | 6–8 pembicara × 2 naskah | 5–8 rekaman | 1 rekaman per mic |
+|  | Set A — naskah | Set B — spontan |
+| --- | --- | --- |
+| Isi | Kalimat penjelasan CS dibacakan, 1–2 menit per orang per naskah | Penjelasan bebas 2–4 menit per topik |
+| Kapan | Sesi perpustakaan (bisa ditambah Task 1 user testing) | Task 2 user testing + rekaman pilot |
+| Mic | Serentak di mic laptop dan earphone (clip-on bila ada) | Mic laptop (earphone opsional) |
+| Label | Teks naskah, dikoreksi bila pembaca menyimpang | Transkrip verbatim manual + anotasi konsep, jeda, filler |
+| Dipakai di | E1–E3, E5, E6, E8 | F, E2 (checklist), E7, E8 |
+| Target ukuran | 6–8 pembicara × 2 naskah | 5–8 rekaman |
 
 **Peran A vs B.** Set A untuk **perbandingan relatif** antar konfigurasi karena kondisinya terkontrol dan labelnya gratis. Set B memberi **angka akurasi utama** di laporan dan memverifikasi bahwa urutan konfigurasi terbaik dari A tetap sama di bicara spontan. WER di A diperkirakan lebih rendah daripada B; selisihnya dilaporkan sebagai temuan.
 
-**Set T (data latih fine-tuning)** terpisah dari ketiga jenis rekaman di atas dan tidak pernah dipakai untuk evaluasi. Detailnya di bagian 8.8.
+**Set T (data latih fine-tuning)** terpisah dari kedua jenis rekaman di atas dan tidak pernah dipakai untuk evaluasi. Detailnya di bagian 8.8.
 
 **Membuat naskah Set A:**
 
@@ -296,21 +293,20 @@ Ada tiga jenis rekaman dengan peran berbeda: Set A untuk membandingkan konfigura
 
 **Melabeli Set B:**
 
-1. Buat draf transkrip dengan Whisper large, lalu koreksi manual kata per kata sambil mendengarkan. Catat penggunaan draf ini di AI Usage Log, dan waspadai bias ikut menerima kesalahan draf.
+1. Buat draf transkrip dengan Whisper large-v3 (`eval/draft_labels.py`, yang juga membuat draf label jeda, filler, dan konsep), lalu koreksi manual kata per kata sambil mendengarkan. Catat penggunaan draf ini di AI Usage Log, dan waspadai bias ikut menerima kesalahan draf.
 2. Tandai filler vokal (misalnya `<eee>`) dan jeda di atas 1,5 detik dengan timestamp (label track Audacity cukup).
 3. Untuk setiap konsep di daftar konsep, catat detik saat konsep pertama kali disebut. Ini kunci jawaban untuk checklist. Catat juga apakah konsep itu dijelaskan, untuk mengecek cakupan versi Gemini.
 
 **Sesi rekaman di perpustakaan kampus:**
 
-- Rekam semua pembicara di sudut atau ruang diskusi paling tenang; ini versi bersih.
-- Rekam ambient perpustakaan terpisah dengan semua mic sekaligus, di posisi, gain, dan format yang sama.
+- Rekam semua pembicara di sudut atau ruang diskusi paling tenang.
 - Minta izin pengelola atau pakai ruang diskusi; semua pembicara mengisi formulir consent sebelum direkam.
 
 **Aturan rekaman untuk semua set:** WAV mono (rekam 48 kHz lalu turunkan ke 16 kHz, atau langsung 16 kHz); noise suppression, echo cancellation, dan auto gain OS/browser dimatikan; posisi mic dicatat.
 
 **Pemisahan kalibrasi dan evaluasi.** Ambang pencocokan checklist dan ambang jeda dikalibrasi hanya dengan rekaman pilot suaramu sendiri. Set B dari peserta hanya dipakai untuk evaluasi, supaya hasilnya tidak bias oleh data yang dipakai untuk menyetel sistem.
 
-**Metadata** disimpan di `eval/data/metadata.csv` dengan kolom: file\_id, set, speaker\_id, topik, mic, lokasi, kondisi noise/SNR, durasi, status consent.
+**Metadata** disimpan di `eval/data/metadata.csv` dengan kolom: file\_id, set, speaker\_id, topik, mic, lokasi, kondisi ruang, durasi, status consent.
 
 ### 8.4 Metrik
 
@@ -352,7 +348,6 @@ Setiap eksperimen mengubah tepat satu variabel dari konfigurasi baseline, lalu h
 | E1 | Q3 | A, mic laptop | small, medium, large-v3-turbo | Konfigurasi baseline lainnya | WER, CER, term recall, latency, RTF, VRAM | Tabel perbandingan model + grafik WER vs latency | Wajib |
 | E2 | Q4 | A, mic laptop; B untuk checklist | Tanpa vs dengan hotwords | Model terbaik E1 | Term recall, WER keseluruhan, recall checklist | Tabel sebelum/sesudah + grafik term recall per topik | Wajib |
 | E3 | Q5 | A, semua mic (serentak) | Laptop, earphone, clip-on bila ada | Konfigurasi final E1–E2 | WER, CER, term recall | Tabel per mic | Wajib |
-| E4 | Q5 | A bersih + A dicampur noise | Bersih, SNR 20, 10, 5 dB | Konfigurasi final, mic laptop | WER, term recall | Grafik WER vs SNR | Bila sempat |
 | E5 | Q3 | A, mic laptop | Bahasa `id`, `en`, auto-detect | Konfigurasi final | WER, WER per jenis token | Tabel per setelan bahasa | Bila sempat |
 | E6 | Q2 | A, mic laptop | Interval 0,5 / 1 / 2 detik | Konfigurasi final | Latency, RTF, WER | Grafik latency vs WER | Opsional |
 | E7 | Q6 | B beranotasi | Tidak ada (validasi fitur) | Konfigurasi final | P/R checklist, detection delay, P/R jeda dan filler | Tabel validasi fitur | Wajib (checklist), bila sempat (jeda/filler) |
@@ -364,7 +359,7 @@ Setiap eksperimen mengubah tepat satu variabel dari konfigurasi baseline, lalu h
 1. E1 untuk memilih model; pertimbangkan akurasi dan latency bersama, bukan WER saja.
 2. E2 dengan model terpilih untuk memutuskan hotwords dipakai atau tidak.
 3. E8 untuk memutuskan apakah `turbo-ft` menggantikan `large-v3-turbo`. Hasil E2 dan E8 membentuk konfigurasi final.
-4. E3 dan E4 dengan konfigurasi final untuk melihat ketahanannya terhadap kondisi input.
+4. E3 dengan konfigurasi final untuk melihat pengaruh jenis mic. E4 (uji bising terkontrol) dibatalkan, dan nomor eksperimen lain tidak diubah.
 5. F di Set B: angka utama yang menjawab "seberapa akurat dan responsif sistem ini untuk user nyata", sekaligus mengecek apakah perbaikan dari E2 dan E8 tetap berlaku di bicara spontan.
 6. E7 di Set B untuk memvalidasi fitur yang dilihat user.
 7. E5 dan E6 bila waktu masih ada.
@@ -373,7 +368,7 @@ Guideline hanya mewajibkan baseline ditambah satu kondisi. Beban kerja terbesar 
 
 ### 8.6 Error analysis
 
-Error analysis diambil dari run F (Set B, konfigurasi final) ditambah contoh mencolok dari E3/E4, dengan minimal 15–20 contoh yang dikategorikan dan ditelusuri dampaknya ke fitur.
+Error analysis diambil dari run F (Set B, konfigurasi final) ditambah contoh mencolok dari E3, dengan minimal 15–20 contoh yang dikategorikan dan ditelusuri dampaknya ke fitur.
 
 1. Skrip metrik menyimpan alignment kata per file (substitution, deletion, insertion) dari jiwer.
 2. Ambil contoh error secara acak per kategori, bukan hanya yang lucu atau ekstrem.
@@ -405,7 +400,6 @@ Eksperimen menghasilkan tiga lapis output: file mentah yang bisa diaudit, satu t
 | G1 | Scatter WER vs latency per model (trade-off) | E1 |
 | T2 | Tanpa vs dengan hotwords: term recall, WER, recall checklist | E2 |
 | T3 | Akurasi per jenis mic | E3 |
-| G2 | WER vs SNR | E4 |
 | T4 | Validasi fitur: P/R checklist, detection delay, P/R jeda dan filler | E7 |
 | T5 | Angka utama: baseline vs final di Set B, termasuk WER istilah Inggris vs bahasa Indonesia | F |
 | G3 | Distribusi latency konfigurasi final | F |
@@ -467,6 +461,8 @@ Setiap naskah hanya dibaca satu orang karena kalimat dan istilah yang beragam le
 ## 9. Rancangan user testing
 
 Target minimal 5 peserta, idealnya 6–8 sebagai cadangan, semuanya mahasiswa CS BINUS yang sesuai target user. Setiap sesi sekitar 30–40 menit, dilakukan setelah MVP stabil.
+
+Draf dokumennya ada di `docs/user-testing/`: formulir consent, kuesioner pre dan post, panduan sesi dengan lembar observasi dan wawancara, dan template anotasi Set B.
 
 **Karakteristik yang dicatat per peserta:** semester, pernah memakai metode Feynman atau tidak, kebiasaan belajar, perangkat/mic yang dipakai, dan topik yang dipilih.
 

@@ -31,6 +31,7 @@ def transcribe_file(
     device: str = config.ASR_DEVICE,
     compute_type: str = config.ASR_COMPUTE_TYPE,
     language: str | None = config.ASR_LANGUAGE,
+    **options,  # opsi lain untuk WhisperModel.transcribe, misalnya vad_filter
 ) -> dict:
     vram_before = gpu_memory_used_mb()
     t0 = time.perf_counter()
@@ -42,7 +43,7 @@ def transcribe_file(
 
     t0 = time.perf_counter()
     segments, _ = model.transcribe(
-        audio, language=language, beam_size=config.ASR_BEAM_SIZE, word_timestamps=True
+        audio, language=language, beam_size=config.ASR_BEAM_SIZE, word_timestamps=True, **options
     )
     segments = list(segments)  # transcribe() mengembalikan generator; inference jalan di sini
     transcribe_s = time.perf_counter() - t0
@@ -50,6 +51,7 @@ def transcribe_file(
 
     return {
         "text": " ".join(s.text.strip() for s in segments),
+        "segments": [s.text.strip() for s in segments],
         "words": [(w.word.strip(), w.start, w.end) for s in segments for w in s.words],
         "audio_s": audio_s,
         "load_s": load_s,
