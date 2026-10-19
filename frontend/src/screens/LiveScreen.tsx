@@ -12,7 +12,7 @@ import { buildSegments, type Segment } from '../lib/transcript-segments'
 import { BACKPROP_CONCEPTS, BACKPROP_TOPIC } from '../mocks/backprop'
 import { WebSocketTranscriptSource } from '../lib/ws-transcript-source'
 import { MockTranscriptSource } from '../mocks/mock-transcript-source'
-import type { Concept, SessionResult, SessionSetup } from '../types/feedback'
+import type { Concept, PreviousSession, SessionResult, SessionSetup } from '../types/feedback'
 
 // Contoh: sesi rekaman yang diputar ulang. Mic: suara user ditranskrip backend lokal (?sumber=mic).
 type Mode = 'contoh' | 'mic'
@@ -41,7 +41,8 @@ const origin = (p: { x: number; y: number }) => `${(p.x / 120) * 100}% ${(p.y / 
 export default function LiveScreen() {
   const [params, setParams] = useSearchParams()
   const location = useLocation()
-  const setup = (location.state as { setup?: SessionSetup } | null)?.setup
+  // previous: sesi sebelumnya kalau layar ini dibuka dari "Jelasin lagi", dibawa ke feedback untuk perbandingan.
+  const { setup, previous } = (location.state as { setup?: SessionSetup; previous?: PreviousSession } | null) ?? {}
   const mode: Mode = params.get('sumber') === 'mic' ? 'mic' : 'contoh'
   const source = useMemo<TranscriptSource>(
     () => (mode === 'mic' ? new WebSocketTranscriptSource() : new MockTranscriptSource()),
@@ -115,6 +116,7 @@ export default function LiveScreen() {
           },
           liveStatus: state.concepts,
           sessionId: state.sessionId,
+          previous,
         }
       : undefined
 

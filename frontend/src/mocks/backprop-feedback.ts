@@ -1,7 +1,7 @@
 // Feedback contoh untuk sesi mock Backpropagation. Naskah buatan untuk mockup UI, bukan hasil Gemini
 // atau data user, dan harus selalu dilabeli sebagai contoh (PRODUCT.md, Evidence on Hand).
 import type { Pause } from '../lib/live-state'
-import type { CoverageStatus, Feedback, FluencyReport } from '../types/feedback'
+import type { Feedback, FluencyReport, PreviousSession } from '../types/feedback'
 import type { ConceptStatus } from '../types/server-message'
 import { BACKPROP_SCRIPT } from './backprop'
 import { FILLERS } from './mock-transcript-source'
@@ -97,7 +97,7 @@ export const BACKPROP_FEEDBACK: Feedback = {
 }
 
 // Sesi pertama yang dibandingkan saat keadaan "ulang".
-export const BACKPROP_PREVIOUS: { coverage: Record<string, CoverageStatus>; fluency: FluencyReport } = {
+export const BACKPROP_PREVIOUS: PreviousSession = {
   coverage: {
     'forward-pass': 'explained_correct',
     'loss-function': 'mentioned',
@@ -105,6 +105,7 @@ export const BACKPROP_PREVIOUS: { coverage: Record<string, CoverageStatus>; flue
     'gradient-descent': 'explained_incorrect',
     'learning-rate': 'not_covered',
   },
+  liveStatus: { 'forward-pass': 'mentioned', 'loss-function': 'mentioned', 'gradient-descent': 'mentioned' },
   fluency: {
     duration: 74,
     wpm: 88,

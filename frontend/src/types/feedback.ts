@@ -44,4 +44,14 @@ export type SessionResult = {
   liveStatus: Record<string, ConceptStatus>
   // Id sesi tersimpan di backend, kosong kalau backend tidak menyimpan sesi.
   sessionId?: string
+  // Sesi sebelumnya dengan konsep yang sama, kalau sesi ini dimulai dari tombol "Jelasin lagi".
+  previous?: PreviousSession
+}
+
+// Yang dibawa dari satu sesi ke sesi berikutnya untuk perbandingan, lewat state router. coverage: penilaian
+// Gemini per id konsep, kosong kalau Gemini gagal atau belum selesai saat user menekan "Jelasin lagi".
+export type PreviousSession = {
+  coverage?: Record<string, CoverageStatus>
+  liveStatus: Record<string, ConceptStatus>
+  fluency: FluencyReport
 }
