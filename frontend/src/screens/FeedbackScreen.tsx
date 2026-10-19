@@ -7,6 +7,7 @@ import { PauseChip, StatusIcon, type Mark } from '../components/marks'
 import { useFeedback } from '../lib/feedback-request'
 import { clock, decimal } from '../lib/format'
 import { useMockState } from '../lib/mock-state'
+import { compareConcepts, COVERAGE_MARK, toPrevious } from '../lib/session-compare'
 import { buildSegments } from '../lib/transcript-segments'
 import { BACKPROP_CONCEPTS, BACKPROP_TOPIC } from '../mocks/backprop'
 import {
@@ -17,19 +18,13 @@ import {
   BACKPROP_TRANSCRIPT,
 } from '../mocks/backprop-feedback'
 import { FILLERS } from '../mocks/mock-transcript-source'
-import type { Concept, CoverageStatus, Feedback, FluencyReport, SessionResult, SessionSetup } from '../types/feedback'
+import type { Concept, Feedback, FluencyReport, PreviousSession, SessionResult, SessionSetup } from '../types/feedback'
 
 const STATES = ['lengkap', 'memuat', 'gagal', 'ulang'] as const
 const MOCK_FILLERS = [...FILLERS]
 const NO_FILLERS: string[] = []
 type View = (typeof STATES)[number]
 
-const COVERAGE_MARK: Record<CoverageStatus, Mark> = {
-  not_covered: 'none',
-  mentioned: 'mentioned',
-  explained_correct: 'explained',
-  explained_incorrect: 'wrong',
-}
 // Empat status dari penilaian Gemini. Agenda live hanya punya belum dan dibahas (lib/format.ts).
 const MARK_TEXT: Record<Mark, string> = {
   none: 'belum',
@@ -54,8 +49,9 @@ export default function FeedbackScreen() {
   const concepts = session?.concepts ?? BACKPROP_CONCEPTS
   const fluency = session?.fluency ?? BACKPROP_FLUENCY
   const feedback = session ? real.feedback : view === 'memuat' || view === 'gagal' ? null : BACKPROP_FEEDBACK
-  const previous = !session && view === 'ulang' ? BACKPROP_PREVIOUS : null
+  const previous = session ? (session.previous ?? null) : view === 'ulang' ? BACKPROP_PREVIOUS : null
   const liveStatus = session?.liveStatus ?? BACKPROP_LIVE_STATUS
+  const comparison = previous && compareConcepts(concepts, previous, { liveStatus, feedback })
   const coverage = feedback?.concept_coverage
   const markOf = (id: string): Mark => {
     const c = coverage?.find((x) => x.concept_id === id)
@@ -87,7 +83,7 @@ export default function FeedbackScreen() {
         <Hero view={view} mood={mood} onRetry={session ? real.retry : () => setParams({ keadaan: 'memuat' })} />
 
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
-          <ScoreCard marks={concepts.map((c) => markOf(c.id))} feedback={feedback} previous={previous} />
+          <ScoreCard marks={concepts.map((c) => markOf(c.id))} feedback={feedback} gained={comparison?.gained ?? 0} />
           <FluencyTiles fluency={fluency} previous={previous?.fluency} concepts={concepts} />
         </div>
 
@@ -129,7 +125,8 @@ export default function FeedbackScreen() {
           </>
         )}
 
-        {previous && feedback && <ComparisonCard concepts={concepts} previous={previous} current={feedback} />}
+        {/* Saat Gemini masih menilai, perbandingan konsep menunggu supaya tidak berganti dari checklist live ke Gemini. */}
+        {comparison && view !== 'memuat' && <ComparisonCard comparison={comparison} />}
 
         {view !== 'gagal' && (
           <div className="mt-4 flex items-center gap-3 text-sm text-ink-3" role="presentation">
@@ -272,7 +269,12 @@ export default function FeedbackScreen() {
           </Link>
           <Link
             to={session ? '/live?sumber=mic' : '/live'}
-            state={session && { setup: { topic: session.topic, concepts: session.concepts } satisfies SessionSetup }}
+            state={
+              session && {
+                setup: { topic: session.topic, concepts: session.concepts } satisfies SessionSetup,
+                previous: toPrevious(session, real.feedback) satisfies PreviousSession,
+              }
+            }
             className="btn btn-go px-8"
           >
             Jelasin lagi
@@ -314,19 +316,8 @@ function Hero({ view, mood, onRetry }: { view: View; mood: 'happy' | 'think' | '
 
 // Ringkasan satu lirikan: jumlah konsep yang benar, deretan tandanya, dan kenaikan dari sesi pertama.
 // Sebelum Gemini selesai, angkanya dari checklist live dan diberi label perkiraan.
-function ScoreCard({
-  marks,
-  feedback,
-  previous,
-}: {
-  marks: Mark[]
-  feedback: Feedback | null
-  previous: typeof BACKPROP_PREVIOUS | null
-}) {
+function ScoreCard({ marks, feedback, gained }: { marks: Mark[]; feedback: Feedback | null; gained: number }) {
   const correct = marks.filter((m) => m === 'explained').length
-  const gained = previous && feedback
-    ? correct - Object.values(previous.coverage).filter((s) => s === 'explained_correct').length
-    : 0
   return (
     <section className="flex flex-col justify-between gap-4 rounded-[24px] bg-gradient-to-b from-card to-done/15 p-5">
       <div>
@@ -445,22 +436,14 @@ function Sparkle({ className = '' }: { className?: string }) {
   )
 }
 
-function ComparisonCard({
-  concepts,
-  previous,
-  current,
-}: {
-  concepts: Concept[]
-  previous: typeof BACKPROP_PREVIOUS
-  current: Feedback
-}) {
-  const now = (id: string) => current.concept_coverage.find((c) => c.concept_id === id)?.status ?? 'not_covered'
+function ComparisonCard({ comparison }: { comparison: ReturnType<typeof compareConcepts> }) {
   return (
-    <Card title="Dibanding sesi lalu">
+    <Card
+      title="Dibanding sesi lalu"
+      note={comparison.by === 'live' ? 'Belum semua sesi dinilai Gemini, jadi ini pakai centang live.' : undefined}
+    >
       <ul className="grid gap-2 sm:grid-cols-2">
-        {concepts.map((c) => {
-          const was = COVERAGE_MARK[previous.coverage[c.id] ?? 'not_covered']
-          const is = COVERAGE_MARK[now(c.id)]
+        {comparison.rows.map(({ concept: c, was, is }) => {
           return (
             <li key={c.id} className="rounded-2xl bg-card px-4 py-3">
               <p className="font-semibold leading-tight">{c.name}</p>
