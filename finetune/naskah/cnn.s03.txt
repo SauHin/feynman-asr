@@ -1,0 +1,11 @@
+Oke, sekarang aku mau jelasin tentang convolutional neural network, atau biasa disingkat CNN. CNN ini biasanya dipakai buat data gambar, misalnya image classification.
+
+Nah bedanya sama network biasa, CNN nggak langsung nyambungin semua pixel ke semua neuron. Dia pakai yang namanya convolution. Jadi ada filter kecil yang disebut kernel, yang digeser di atas gambar. Di tiap posisi, nilai filter-nya dikali sama bagian gambar di bawahnya, terus hasilnya dijumlahin.
+
+Hasil dari convolution ini namanya feature map. Filter di layer awal biasanya cuma nangkep pola sederhana kayak garis atau tepi. Nah makin dalam layer-nya, pola yang ditangkep makin kompleks, misalnya bentuk mata atau roda gitu.
+
+Seberapa jauh filter digeser tiap langkah diatur sama yang namanya stride. Terus biar ukuran output-nya nggak makin kecil, pinggiran gambar bisa ditambahin nol. Nah ini namanya padding.
+
+Habis convolution, biasanya ada activation function kayak ReLU, terus pooling. Kalo pooling itu ngecilin ukuran feature map. Yang paling sering dipakai adalah max pooling, jadi dari tiap area kecil kita ambil nilai paling besarnya aja.
+
+Terus di bagian akhir, feature map-nya di-flatten, terus masuk ke fully connected layer buat nentuin kelasnya. Keuntungan dari CNN ini, jumlah parameter-nya jauh lebih sedikit, karena satu filter dipakai di seluruh gambar. Nah itu cara kerja CNN.
