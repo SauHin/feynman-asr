@@ -1,0 +1,896 @@
+{
+  "run": "turbo-ft-20261117-1640",
+  "base_model": "openai/whisper-large-v3-turbo",
+  "lora": {
+    "r": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "targets": [
+      "q_proj",
+      "v_proj"
+    ]
+  },
+  "training": {
+    "lr": 0.0005,
+    "warmup_steps": 10,
+    "max_epochs": 5,
+    "patience": 2,
+    "batch": 4,
+    "accum": 2,
+    "seed": 0
+  },
+  "data": {
+    "val_topics": [
+      "decision-tree",
+      "sql-join"
+    ],
+    "skipped_recordings": [
+      "T_s02_deadlock_laptop_kos",
+      "T_s02_overfitting_laptop_kos",
+      "T_s04_database-index_laptop_rumah",
+      "T_s04_linear-regression_laptop_rumah"
+    ],
+    "train_segments": 81,
+    "train_minutes": 20.6,
+    "val_segments": 18,
+    "val_minutes": 4.8,
+    "speakers": [
+      "s01",
+      "s02",
+      "s03",
+      "s04"
+    ],
+    "recordings": [
+      "T_s01_k-means_laptop_kos",
+      "T_s01_precision-recall_laptop_kos",
+      "T_s01_transaction_laptop_kos",
+      "T_s01_transformer_laptop_kos",
+      "T_s02_database-index_laptop_kos",
+      "T_s02_linear-regression_laptop_kos",
+      "T_s02_sql-join_laptop_kos",
+      "T_s03_cnn_laptop_kos",
+      "T_s03_decision-tree_laptop_kos",
+      "T_s03_er-diagram_laptop_kos",
+      "T_s03_git-branch_laptop_kos",
+      "T_s03_hash-table_laptop_kos",
+      "T_s04_deadlock_laptop_rumah",
+      "T_s04_overfitting_laptop_rumah",
+      "T_s04_sql-join_laptop_rumah"
+    ]
+  },
+  "val_wer_note": "decoding greedy di transformers, normalisasi sama dengan finetune/segment.py",
+  "segments": [
+    {
+      "split": "train",
+      "rec": "T_s01_k-means_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, sekarang aku mau jelasin mengenai k-means clustering. Nah ini beda sama supervised learning, k-means itu unsupervised learning, jadi datanya nggak punya label sama sekali. Tujuan kita itu buat ngelompokin data yang mirip ke dalam cluster yang sama.",
+      "start": "0.0",
+      "end": "19.63"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_k-means_laptop_kos",
+      "file": "002.wav",
+      "text": "Nah pertama, kita tentuin dulu nilai k, yaitu jumlah cluster yang kita mau. Terus kita pilih k titik secara random sebagai centroid awal.",
+      "start": "19.63",
+      "end": "32.57"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_k-means_laptop_kos",
+      "file": "003.wav",
+      "text": "Centroid itu titik tengah dari tiap cluster-nya. Habis itu ada dua langkah yang diulang terus. Langkah pertama namanya assignment. Tiap data bakal dimasukin ke cluster dengan centroid paling deket, biasanya pakai Euclidean distance.",
+      "start": "32.57",
+      "end": "52.35"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_k-means_laptop_kos",
+      "file": "004.wav",
+      "text": "Langkah kedua namanya update, dimana Tiap centroid dipindah ke rata-rata semua data di cluster-nya. Dua langkah ini bakal diulang terus sampe centroid-nya udah nggak pindah lagi. Kalau udah gitu, berarti algoritmanya udah converge.",
+      "start": "52.35",
+      "end": "71.41"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_k-means_laptop_kos",
+      "file": "005.wav",
+      "text": "Masalahnya, hasil k-means bisa beda-beda tergantung pilihan centroid awalnya. Makanya ada teknik inisialisasi yang milih centroid awal yang saling berjauhan. Terus gimana caranya milih nilai k yang pas?",
+      "start": "71.41",
+      "end": "89.24"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_k-means_laptop_kos",
+      "file": "006.wav",
+      "text": "Salah satu caranya yaitu elbow method. Kita coba beberapa nilai k, terus kita lihat inertia-nya, yaitu total jarak data ke centroid-nya.",
+      "start": "89.24",
+      "end": "102.29"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_k-means_laptop_kos",
+      "file": "007.wav",
+      "text": "Nilai k yang akan dipilih ada di titik di mana penurunan inertia-nya mulai melambat, jadi bentuknya kayak siku. Ya gitu sih buat k-means.",
+      "start": "102.29",
+      "end": "116.34"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_precision-recall_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, sekarang aku mau jelasin mengenai precision dan recall. Dua metric ini dipakai buat ngukur performa model classification, terutama kalau datanya imbalanced. Kita mulai dari confusion matrix dulu.",
+      "start": "0.0",
+      "end": "16.44"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_precision-recall_laptop_kos",
+      "file": "002.wav",
+      "text": "Misalnya ada model yang deteksi email spam. Kalau email spam ditebak spam, itu true positive. Kalau email biasa ditebak spam, itu false positive.",
+      "start": "16.44",
+      "end": "31.66"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_precision-recall_laptop_kos",
+      "file": "003.wav",
+      "text": "Kalau email spam lolos dan ditebak bukan spam, itu false negative. Terus email biasa yang ditebak bukan spam namanya true negative. Accuracy itu jumlah tebakan yang bener dibagi semua data.",
+      "start": "31.66",
+      "end": "50.72"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_precision-recall_laptop_kos",
+      "file": "004.wav",
+      "text": "Masalahnya, kalau cuma sedikit email yang spam, model yang selalu bilang bukan spam aja udah bakal dapet accuracy tinggi. Makanya kita butuh precision sama recall.",
+      "start": "50.72",
+      "end": "65.73"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_precision-recall_laptop_kos",
+      "file": "005.wav",
+      "text": "Precision itu dari semua yang ditebak positive, berapa yang beneran positive. Sedangkan recall itu dari semua yang aslinya positive, berapa yang berhasil ketangkep.",
+      "start": "65.73",
+      "end": "79.44"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_precision-recall_laptop_kos",
+      "file": "006.wav",
+      "text": "Jadi precision tinggi artinya jarang salah tuduh, sedangkan recall tinggi artinya jarang ada yang kelewat. Dua-duanya biasanya tarik-tarikan.",
+      "start": "79.44",
+      "end": "91.47"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_precision-recall_laptop_kos",
+      "file": "007.wav",
+      "text": "Kalau threshold-nya kita naikin, precision biasanya naik tapi recall turun, begitu juga sebaliknya. Buat ngegabungin keduanya, kita pakai F1 score, yaitu harmonic mean dari precision dan recall.",
+      "start": "91.47",
+      "end": "109.29"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_precision-recall_laptop_kos",
+      "file": "008.wav",
+      "text": "Jadi metric yang dipilih tergantung kasusnya. Buat deteksi penyakit misalnya, recall biasanya lebih penting. Ya kurang lebih gitu.",
+      "start": "109.29",
+      "end": "119.26"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transaction_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, topik saya itu transaction di database. Jadi transaction itu sekumpulan operasi yang harus dianggep sebagai suatu kesatuan.",
+      "start": "0.0",
+      "end": "12.42"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transaction_laptop_kos",
+      "file": "002.wav",
+      "text": "Contohnya itu saat transfer uang, saldo akun pengirim akan dikurangi, terus saldo akun penerimanya akan ditambah.",
+      "start": "12.42",
+      "end": "21.61"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transaction_laptop_kos",
+      "file": "003.wav",
+      "text": "Nah dua operasi ini harus antara berhasil dua-duanya, atau gagal dua-duanya. Transaction yang bener itu harus memenuhi sifat ACID.",
+      "start": "21.61",
+      "end": "34.68"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transaction_laptop_kos",
+      "file": "004.wav",
+      "text": "Yang pertama atomicity, artinya semua operasi dijalanin semua atau nggak sama sekali. Jadi kalo di tengah jalan ada error, database bakal ngelakuin rollback, dimana semua perubahan bakal dibatalin.",
+      "start": "34.68",
+      "end": "52.1"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transaction_laptop_kos",
+      "file": "005.wav",
+      "text": "Tapi kalau semuanya berhasil, baru kita commit. Yang kedua consistency, artinya habis transaction selesai, data harus tetap memenuhi semua aturan, misalnya constraint dan foreign key.",
+      "start": "52.1",
+      "end": "67.61"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transaction_laptop_kos",
+      "file": "006.wav",
+      "text": "Yang ketiga isolation, artinya transaction yang jalan barengan itu nggak boleh saling ganggu. Yang keempat durability, artinya data yang udah di-commit nggak boleh hilang, walaupun server-nya tiba-tiba mati.",
+      "start": "67.61",
+      "end": "85.09"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transaction_laptop_kos",
+      "file": "007.wav",
+      "text": "Biasanya ini dijamin pakai log. Nah biasanya masalah muncul waktu banyak transaction jalan barengan. Contohnya dirty read, yaitu transaction ngebaca data yang belum di-commit sama transaction lain.",
+      "start": "85.09",
+      "end": "102.14"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transaction_laptop_kos",
+      "file": "008.wav",
+      "text": "Kalau transaction lain itu akhirnya rollback, berarti data yang kita baca nggak pernah benar-benar ada. Buat ngatur ini, database punya isolation level, mulai dari read uncommitted sampai serializable.",
+      "start": "102.14",
+      "end": "117.28"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transaction_laptop_kos",
+      "file": "009.wav",
+      "text": "Makin tinggi level-nya, makin aman, cuma makin lambat. Nah gitu buat transaction.",
+      "start": "117.28",
+      "end": "127.05"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transformer_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, jadi topik saya transformer. Transformer itu arsitektur yang sekarang dipakai di hampir semua large language model. Pertama, kalimat bakal dipecah dulu jadi token sama tokenizer.",
+      "start": "0.0",
+      "end": "16.23"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transformer_laptop_kos",
+      "file": "002.wav",
+      "text": "Tiap token terus diubah jadi vector yang namanya embedding. Karena transformer nggak baca kalimat satu per satu kayak RNN, informasi urutan katanya ditambahin lewat positional encoding.",
+      "start": "16.23",
+      "end": "32.23"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transformer_laptop_kos",
+      "file": "003.wav",
+      "text": "Nah, bagian paling penting namanya self-attention. Di sini tiap token ngelihat ke semua token lain buat nentuin mana yang relevan.",
+      "start": "32.23",
+      "end": "43.0"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transformer_laptop_kos",
+      "file": "004.wav",
+      "text": "Caranya, tiap token punya tiga vector, yaitu query, key, sama value. Query dari satu token dibandingin sama key dari semua token pakai dot product.",
+      "start": "43.0",
+      "end": "56.67"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transformer_laptop_kos",
+      "file": "005.wav",
+      "text": "Hasilnya jadi attention score. Score ini terus dimasukin ke softmax, biar jadi weight yang totalnya satu.",
+      "start": "56.67",
+      "end": "66.37"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transformer_laptop_kos",
+      "file": "006.wav",
+      "text": "Terakhir, value dari tiap token dijumlahin sesuai weight tadi. Jadi model bisa tahu, misalnya, kata ganti di satu kalimat itu ngerujuk ke kata yang mana.",
+      "start": "66.37",
+      "end": "80.29"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transformer_laptop_kos",
+      "file": "007.wav",
+      "text": "Biar bisa nangkep beberapa jenis hubungan sekaligus, attention-nya dijalanin paralel beberapa kali. Ini namanya multi-head attention. Transformer yang asli punya encoder sama decoder.",
+      "start": "80.29",
+      "end": "95.59"
+    },
+    {
+      "split": "train",
+      "rec": "T_s01_transformer_laptop_kos",
+      "file": "008.wav",
+      "text": "Encoder ngolah input, terus decoder ngehasilin output token demi token. Model kayak GPT cuma pakai bagian decoder-nya aja. Ya gitu sih gambaran besar transformer.",
+      "start": "95.59",
+      "end": "110.46"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_database-index_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, kali ini saya bahas index di database. Bayangin kita punya table user yang isinya jutaan row, terus kita jalanin query SELECT pakai WHERE buat nyari satu email. Kalau nggak ada index, database harus ngecek row satu per satu dari awal sampai akhir. Ini namanya full table scan.",
+      "start": "0.0",
+      "end": "19.11"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_database-index_laptop_kos",
+      "file": "002.wav",
+      "text": "Makin besar table-nya, makin lambat query-nya. Index itu struktur data tambahan yang nyimpen nilai kolom tertentu dalam keadaan udah terurut, plus pointer ke row aslinya. Mirip daftar istilah di bagian belakang buku teks.",
+      "start": "19.11",
+      "end": "36.19"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_database-index_laptop_kos",
+      "file": "003.wav",
+      "text": "Kita nggak baca bukunya dari depan, tapi langsung lompat ke halaman yang kita cari. Kebanyakan database pakai B-tree buat index. B-tree itu tree yang seimbang, jadi jumlah langkah buat nyari data tetap sedikit walaupun datanya banyak banget. Kompleksitasnya logaritmik.",
+      "start": "36.19",
+      "end": "55.61"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_database-index_laptop_kos",
+      "file": "004.wav",
+      "text": "Primary key biasanya otomatis dapet index. Foreign key yang sering dipakai buat join juga sebaiknya dikasih index, biar join antar table nggak lambat. Tapi index ada harganya.",
+      "start": "55.61",
+      "end": "69.69"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_database-index_laptop_kos",
+      "file": "005.wav",
+      "text": "Tiap kali kita insert, update, atau delete data, index-nya juga harus ikut di-update. Index juga makan storage tambahan. Jadi jangan semua kolom dikasih index, cukup kolom yang sering muncul di WHERE, join, atau ORDER BY. Ya gitu sih konsep index.",
+      "start": "69.69",
+      "end": "87.5"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_linear-regression_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, kali ini saya mau jelasin linear regression. Linear regression itu model paling dasar di machine learning buat prediksi nilai kontinu, misalnya prediksi harga rumah dari luas tanahnya. Idenya, kita cari garis lurus yang paling pas sama data kita. Garis ini punya dua parameter, yaitu slope sama intercept.",
+      "start": "0.0",
+      "end": "19.34"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_linear-regression_laptop_kos",
+      "file": "002.wav",
+      "text": "Slope nentuin seberapa miring garisnya, sedangkan intercept itu nilai prediksi waktu input-nya nol. Input-nya bisa disebut feature, dan nilai yang mau ditebak disebut target. Kalau feature-nya lebih dari satu, namanya multiple linear regression.",
+      "start": "19.34",
+      "end": "35.94"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_linear-regression_laptop_kos",
+      "file": "003.wav",
+      "text": "Tiap feature punya weight sendiri, jadi bentuknya bukan garis lagi, tapi bidang. Nah, gimana caranya tahu garis kita udah bagus atau belum? Kita hitung residual, yaitu selisih antara nilai asli sama hasil prediksi. Terus semua residual dikuadratin dan dirata-rata.",
+      "start": "35.94",
+      "end": "55.44"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_linear-regression_laptop_kos",
+      "file": "004.wav",
+      "text": "Ini namanya mean squared error, dan biasanya dipakai sebagai cost function. Tujuan training-nya adalah nyari slope dan intercept yang bikin cost function sekecil mungkin.",
+      "start": "55.44",
+      "end": "68.17"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_linear-regression_laptop_kos",
+      "file": "005.wav",
+      "text": "Bisa pakai rumus langsung yang namanya normal equation, atau pakai gradient descent kalau datanya besar. Terakhir, buat ngecek seberapa bagus model-nya, kita bisa pakai R squared. Makin dekat ke satu, makin banyak variasi data yang bisa dijelasin sama model.",
+      "start": "68.17",
+      "end": "87.32"
+    },
+    {
+      "split": "train",
+      "rec": "T_s02_linear-regression_laptop_kos",
+      "file": "006.wav",
+      "text": "Ya gitu aja sih linear regression.",
+      "start": "87.32",
+      "end": "89.86"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_cnn_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, sekarang aku mau jelasin tentang convolutional neural network, atau biasa disingkat CNN. CNN ini biasanya dipakai buat data gambar, misalnya image classification.",
+      "start": "0.0",
+      "end": "14.09"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_cnn_laptop_kos",
+      "file": "002.wav",
+      "text": "Nah bedanya sama network biasa, CNN nggak langsung nyambungin semua pixel ke semua neuron. Dia pakai yang namanya convolution. Jadi ada filter kecil yang disebut kernel, yang digeser di atas gambar.",
+      "start": "14.09",
+      "end": "29.7"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_cnn_laptop_kos",
+      "file": "003.wav",
+      "text": "Di tiap posisi, nilai filter-nya dikali sama bagian gambar di bawahnya, terus hasilnya dijumlahin. Hasil dari convolution ini namanya feature map. Filter di layer awal biasanya cuma nangkep pola sederhana kayak garis atau tepi.",
+      "start": "29.7",
+      "end": "47.53"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_cnn_laptop_kos",
+      "file": "004.wav",
+      "text": "Nah makin dalam layer-nya, pola yang ditangkep makin kompleks, misalnya bentuk mata atau roda gitu.",
+      "start": "47.53",
+      "end": "54.91"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_cnn_laptop_kos",
+      "file": "005.wav",
+      "text": "Seberapa jauh filter digeser tiap langkah diatur sama yang namanya stride. Terus biar ukuran output-nya nggak makin kecil, pinggiran gambar bisa ditambahin nol. Nah ini namanya padding.",
+      "start": "54.91",
+      "end": "69.71"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_cnn_laptop_kos",
+      "file": "006.wav",
+      "text": "Habis convolution, biasanya ada activation function kayak ReLU, terus pooling. Kalo pooling itu ngecilin ukuran feature map. Yang paling sering dipakai adalah max pooling, jadi dari tiap area kecil kita ambil nilai paling besarnya aja.",
+      "start": "69.71",
+      "end": "87.84"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_cnn_laptop_kos",
+      "file": "007.wav",
+      "text": "Terus di bagian akhir, feature map-nya di-flatten, terus masuk ke fully connected layer buat nentuin kelasnya. Keuntungan dari CNN ini, jumlah parameter-nya jauh lebih sedikit, karena satu filter dipakai di seluruh gambar. Nah itu cara kerja CNN.",
+      "start": "87.84",
+      "end": "107.56"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_er-diagram_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, sekarang aku mau jelasin ER diagram, atau entity relationship diagram. ER diagram itu gambaran rancangan database sebelum kita bikin table-nya. Ada tiga komponen utama.",
+      "start": "0.0",
+      "end": "13.94"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_er-diagram_laptop_kos",
+      "file": "002.wav",
+      "text": "Yang pertama entity, yaitu objek yang datanya mau kita simpan, misalnya mahasiswa atau mata kuliah. Biasanya digambar pakai kotak. Yang kedua attribute, yaitu informasi yang dimiliki entity, misalnya nama, alamat, atau tanggal lahir.",
+      "start": "13.94",
+      "end": "31.52"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_er-diagram_laptop_kos",
+      "file": "003.wav",
+      "text": "Yang ketiga relationship, yaitu hubungan antar entity, misalnya mahasiswa mengambil mata kuliah. Tiap entity harus punya attribute yang unik buat ngebedain satu data dengan data lain. Attribute ini nanti jadi primary key.",
+      "start": "31.52",
+      "end": "49.08"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_er-diagram_laptop_kos",
+      "file": "004.wav",
+      "text": "Nah, relationship punya yang namanya cardinality, yaitu berapa banyak data yang bisa saling terhubung. Ada one to one, misalnya satu orang cuma punya satu KTP. Ada one to many, misalnya satu dosen bisa ngajar banyak kelas.",
+      "start": "49.08",
+      "end": "65.04"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_er-diagram_laptop_kos",
+      "file": "005.wav",
+      "text": "Terus ada many to many, misalnya satu mahasiswa ambil banyak mata kuliah, dan satu mata kuliah diambil banyak mahasiswa. Waktu diubah jadi table, relationship one to many cukup ditulis pakai foreign key di sisi many. Tapi many to many nggak bisa langsung.",
+      "start": "65.04",
+      "end": "84.06"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_er-diagram_laptop_kos",
+      "file": "006.wav",
+      "text": "Kita butuh table tambahan yang namanya junction table, yang isinya foreign key ke dua table tadi. Gitu deh ER diagram.",
+      "start": "84.06",
+      "end": "92.26"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_git-branch_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, aku mau jelasin cara kerja Git, terutama branch dan merge. Git itu version control system, jadi semua perubahan di project kita kecatet dan bisa dibalikin kapan aja. Unit dasarnya namanya commit.",
+      "start": "0.5",
+      "end": "16.96"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_git-branch_laptop_kos",
+      "file": "002.wav",
+      "text": "Commit itu snapshot dari file-file kita di satu waktu, lengkap sama pesan yang jelasin apa yang berubah. Semua commit ini disimpen di repository. Nah, biar bisa kerja bareng tanpa saling ganggu, kita pakai branch. Branch itu cabang dari history commit.",
+      "start": "16.96",
+      "end": "36.11"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_git-branch_laptop_kos",
+      "file": "003.wav",
+      "text": "Misalnya main branch isinya kode yang udah stabil, terus aku bikin branch baru buat ngerjain fitur login. Semua commit ku bakal masuk ke branch itu dulu, jadi main branch tetap aman.",
+      "start": "36.11",
+      "end": "50.86"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_git-branch_laptop_kos",
+      "file": "004.wav",
+      "text": "Kalau fiturnya udah selesai, branch-nya digabung balik ke main pakai merge. Biasanya lewat pull request di GitHub, biar teman satu tim bisa review kodenya sebelum di-merge. Tapi kadang dua orang bisa ngubah baris yang sama di file yang sama.",
+      "start": "50.86",
+      "end": "70.24"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_git-branch_laptop_kos",
+      "file": "005.wav",
+      "text": "Git nggak tahu mana yang bener, jadi muncul merge conflict. Kita harus buka file-nya, pilih perubahan mana yang dipakai, terus commit hasilnya.",
+      "start": "70.24",
+      "end": "79.86"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_git-branch_laptop_kos",
+      "file": "006.wav",
+      "text": "Buat sinkron sama remote repository, kita pakai push buat ngirim commit, dan pull buat ngambil commit terbaru dari teman. Ada juga rebase, yang mindahin commit kita ke atas commit terbaru, biar history-nya lurus. Kurang lebih gitu alurnya.",
+      "start": "79.86",
+      "end": "99.1"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_hash-table_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, kali ini aku bakal hash table. Hash table itu struktur data buat nyimpen pasangan key dan value, dan bisa nyari data dengan cepat banget. Di dalamnya, hash table itu sebenernya array biasa.",
+      "start": "0.0",
+      "end": "16.5"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_hash-table_laptop_kos",
+      "file": "002.wav",
+      "text": "Tiap slot di array ini sering disebut bucket. Pertanyaannya, gimana caranya kita tahu sebuah key harus disimpen di bucket yang mana? Di sini kita pakai hash function. Hash function nerima key, misalnya string nama, terus ngeluarin angka.",
+      "start": "16.5",
+      "end": "35.67"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_hash-table_laptop_kos",
+      "file": "003.wav",
+      "text": "Angka ini kita modulo sama ukuran array, dan hasilnya jadi index bucket-nya. Jadi waktu mau nyari lagi, kita tinggal hitung hash-nya, terus langsung lompat ke bucket itu. Makanya rata-rata waktu lookup-nya konstan.",
+      "start": "35.67",
+      "end": "52.03"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_hash-table_laptop_kos",
+      "file": "004.wav",
+      "text": "Masalahnya, dua key yang beda bisa dapet index yang sama. Ini namanya collision. Cara paling umum buat ngatasin collision namanya chaining, jadi tiap bucket nyimpen linked list berisi semua data yang jatuh ke situ.",
+      "start": "52.03",
+      "end": "68.5"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_hash-table_laptop_kos",
+      "file": "005.wav",
+      "text": "Cara lainnya juga bisa open addressing. Kalau bucket-nya udah keisi, kita cari bucket kosong berikutnya. Makin penuh array-nya, makin sering collision.",
+      "start": "68.5",
+      "end": "78.8"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_hash-table_laptop_kos",
+      "file": "006.wav",
+      "text": "Perbandingan antara jumlah data dan jumlah bucket ini namanya load factor. Kalau load factor udah lewat batas tertentu, array-nya diperbesar, terus semua data di-rehash ke array yang baru.",
+      "start": "78.8",
+      "end": "93.59"
+    },
+    {
+      "split": "train",
+      "rec": "T_s03_hash-table_laptop_kos",
+      "file": "007.wav",
+      "text": "Kalau hash function-nya jelek, worst case-nya bisa jadi lambat banget. Gitu cara kerja hash table.",
+      "start": "93.59",
+      "end": "100.74"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_deadlock_laptop_rumah",
+      "file": "001.wav",
+      "text": "Oke, topik saya deadlock. Sebelum masuk ke deadlock, kita perlu paham dulu bedanya process sama thread. Process itu program yang lagi jalan dan punya memory sendiri. Thread itu unit eksekusi di dalam process, dan beberapa thread bisa share memory yang sama.",
+      "start": "2.78",
+      "end": "19.3"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_deadlock_laptop_rumah",
+      "file": "002.wav",
+      "text": "Nah, karena thread share memory, bisa muncul race condition. Misalnya dua thread nambahin variable counter barengan. Hasil akhirnya bisa salah, tergantung urutan eksekusinya. Bagian kode yang ngakses data bersama ini namanya critical section.",
+      "start": "19.3",
+      "end": "36.51"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_deadlock_laptop_rumah",
+      "file": "003.wav",
+      "text": "Buat ngelindungin critical section, kita pakai lock atau mutex. Thread yang mau masuk harus ambil lock dulu, dan thread yang lain nunggu sampai lock-nya dilepas. Ada juga semaphore, yang bisa ngizinin beberapa thread masuk sekaligus sampai batas tertentu.",
+      "start": "36.51",
+      "end": "54.12"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_deadlock_laptop_rumah",
+      "file": "004.wav",
+      "text": "Masalahnya, lock bisa bikin deadlock. Contohnya, thread A pegang lock pertama dan nunggu lock kedua. Di saat yang sama, thread B pegang lock kedua dan nunggu lock pertama. Dua-duanya nunggu selamanya, jadi nggak ada yang bisa lanjut.",
+      "start": "54.12",
+      "end": "68.4"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_deadlock_laptop_rumah",
+      "file": "005.wav",
+      "text": "Deadlock cuma bisa terjadi kalau empat kondisi terpenuhi barengan, yaitu mutual exclusion, hold and wait, no preemption, sama circular wait. Jadi cara paling gampang buat nyenggahnya, kita patahin salah satu kondisi.",
+      "start": "68.4",
+      "end": "84.38"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_deadlock_laptop_rumah",
+      "file": "006.wav",
+      "text": "Misalnya, semua thread wajib ambil lock dengan urutan yang sama, biar circular wait nggak mungkin terjadi. Ya gitu sih deadlock.",
+      "start": "84.38",
+      "end": "93.62"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_overfitting_laptop_rumah",
+      "file": "001.wav",
+      "text": "Oke, kali ini saya mau bahas overfitting. Overfitting itu kondisi waktu model terlalu hafal sama training data, sampai noise-nya juga ikut dipelajari. Hasilnya, akurasi di training set tinggi banget, tapi pas dites ke data baru malah jelek. Jadi model-nya nggak bisa generalize.",
+      "start": "2.26",
+      "end": "22.13"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_overfitting_laptop_rumah",
+      "file": "002.wav",
+      "text": "Kebalikannya namanya underfitting. Di sini model-nya terlalu sederhana, jadi pola di datanya aja belum ketangkep. Error-nya tinggi, baik di training set maupun di test set. Nah, cara ngeceknya gampang.",
+      "start": "22.13",
+      "end": "38.39"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_overfitting_laptop_rumah",
+      "file": "003.wav",
+      "text": "Data kita bagi jadi tiga, yaitu training set, validation set, sama test set.",
+      "start": "38.39",
+      "end": "45.26"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_overfitting_laptop_rumah",
+      "file": "004.wav",
+      "text": "Selama training, kita pantau training loss dan validation loss. Kalau training loss turun terus tapi validation loss mulai naik, itu tandanya model mulai overfit. Ada beberapa cara buat ngatasinnya. Yang pertama regularization, yang ngasih penalti kalau weight-nya terlalu besar.",
+      "start": "45.26",
+      "end": "64.98"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_overfitting_laptop_rumah",
+      "file": "005.wav",
+      "text": "Yang kedua dropout, jadi sebagian neuron dimatikan secara random waktu training, biar modelnya nggak terlalu bergantung sama neuron tertentu. Yang ketiga early stopping, jadi training-nya dihentiin pas validation loss udah nggak membaik lagi.",
+      "start": "64.98",
+      "end": "83.55"
+    },
+    {
+      "split": "train",
+      "rec": "T_s04_overfitting_laptop_rumah",
+      "file": "006.wav",
+      "text": "Terus bisa juga pakai data augmentation, misalnya gambarnya di-flip atau di-rotate, biar variasi datanya nambah. Intinya, kita mau model yang nangkep pola umum, bukan yang ngapalin contoh. Ya gitu sih overfitting.",
+      "start": "83.55",
+      "end": "99.78"
+    },
+    {
+      "split": "val",
+      "rec": "T_s02_sql-join_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, kali ini saya bahas join di SQL. Di database relasional, data biasanya dipecah ke beberapa table biar nggak ada data dobel. Misalnya ada table mahasiswa sama table jurusan.",
+      "start": "0.0",
+      "end": "14.54"
+    },
+    {
+      "split": "val",
+      "rec": "T_s02_sql-join_laptop_kos",
+      "file": "002.wav",
+      "text": "Table mahasiswa nyimpen kolom id jurusan sebagai foreign key, yang ngerujuk ke primary key di table jurusan. Nah, kalau kita mau nampilin nama mahasiswa bareng nama jurusannya, kita harus gabungin dua table itu. Caranya pakai join, dengan kondisi yang ditulis setelah ON.",
+      "start": "14.54",
+      "end": "34.32"
+    },
+    {
+      "split": "val",
+      "rec": "T_s02_sql-join_laptop_kos",
+      "file": "003.wav",
+      "text": "Yang paling sering dipakai itu inner join. Inner join cuma ngambil row yang punya pasangan di kedua table. Jadi mahasiswa yang belum punya jurusan nggak bakal muncul. Kalau kita tetap mau nampilin semua mahasiswa, kita pakai left join.",
+      "start": "34.32",
+      "end": "52.9"
+    },
+    {
+      "split": "val",
+      "rec": "T_s02_sql-join_laptop_kos",
+      "file": "004.wav",
+      "text": "Left join ngambil semua row dari table kiri. Kalau pasangannya nggak ada di table kanan, kolomnya diisi NULL. Right join itu kebalikannya, semua row dari table kanan tetap muncul.",
+      "start": "52.9",
+      "end": "66.24"
+    },
+    {
+      "split": "val",
+      "rec": "T_s02_sql-join_laptop_kos",
+      "file": "005.wav",
+      "text": "Terus ada full outer join, yang ngambil semua row dari kedua table, ada pasangannya atau nggak.",
+      "start": "66.24",
+      "end": "74.55"
+    },
+    {
+      "split": "val",
+      "rec": "T_s02_sql-join_laptop_kos",
+      "file": "006.wav",
+      "text": "Ada juga cross join, yang masangin tiap row di table kiri dengan semua row di table kanan. Hasilnya bisa gede banget, jadi jarang dipakai. Biar join-nya cepat, kolom yang dipakai buat join sebaiknya dikasih index.",
+      "start": "74.55",
+      "end": "92.13"
+    },
+    {
+      "split": "val",
+      "rec": "T_s02_sql-join_laptop_kos",
+      "file": "007.wav",
+      "text": "Ya gitu aja sih konsep join.",
+      "start": "92.13",
+      "end": "94.72"
+    },
+    {
+      "split": "val",
+      "rec": "T_s03_decision-tree_laptop_kos",
+      "file": "001.wav",
+      "text": "Oke, kali ini gua bakal jelasin mengenai Decision tree, model yang bikin keputusan lewat serangkaian pertanyaan, mirip kayak flowchart gitu lah. Model ini bisa dipakai buat classification ataupun regression.",
+      "start": "0.0",
+      "end": "16.82"
+    },
+    {
+      "split": "val",
+      "rec": "T_s03_decision-tree_laptop_kos",
+      "file": "002.wav",
+      "text": "Nah bagian paling atas itu namanya root node. Di setiap node, data dibagi berdasarkan satu feature, misalnya umur di atas tiga puluh atau nggak. Proses pembagian ini namanya split.",
+      "start": "16.82",
+      "end": "30.54"
+    },
+    {
+      "split": "val",
+      "rec": "T_s03_decision-tree_laptop_kos",
+      "file": "003.wav",
+      "text": "Node paling bawah yang udah nggak dibagi lagi namanya leaf node, dan di situ ada hasil prediksinya. Pertanyaannya, feature mana yang dipilih buat split? Kita pilih split yang bikin data di tiap cabang paling homogen.",
+      "start": "30.54",
+      "end": "47.06"
+    },
+    {
+      "split": "val",
+      "rec": "T_s03_decision-tree_laptop_kos",
+      "file": "004.wav",
+      "text": "Terus buat ngukur seberapa campur aduk datanya, ada entropy dan ada Gini impurity. Terus selisih entropy sebelum dan sesudah split disebut information gain. Jadi kita pilih split dengan information gain paling besar.",
+      "start": "47.06",
+      "end": "64.82"
+    },
+    {
+      "split": "val",
+      "rec": "T_s03_decision-tree_laptop_kos",
+      "file": "005.wav",
+      "text": "Masalahnya kalau tree-nya dibiarin tumbuh terus, dia bakal hafal training data dan jadi overfitting. Makanya kita perlu batasi max depth-nya, atau kita pangkas cabang yang nggak terlalu berguna. Cara ini namanya pruning. Satu decision tree biasanya kurang stabil.",
+      "start": "64.82",
+      "end": "84.81"
+    },
+    {
+      "split": "val",
+      "rec": "T_s03_decision-tree_laptop_kos",
+      "file": "006.wav",
+      "text": "Jadi sering dipakai random forest, yaitu gabungan banyak tree yang dilatih pakai sampel data yang beda-beda. Teknik ini namanya bagging, dan hasil akhirnya diambil dari voting semua tree. Kurang lebih gitu decision tree.",
+      "start": "84.81",
+      "end": "101.34"
+    },
+    {
+      "split": "val",
+      "rec": "T_s04_sql-join_laptop_rumah",
+      "file": "001.wav",
+      "text": "Oke, kali ini saya bahas join di SQL. Di database relasional, data biasanya dipecah ke beberapa table biar nggak ada data dobel. Misalnya ada table mahasiswa sama table jurusan.",
+      "start": "1.76",
+      "end": "17.72"
+    },
+    {
+      "split": "val",
+      "rec": "T_s04_sql-join_laptop_rumah",
+      "file": "002.wav",
+      "text": "Table mahasiswa nyimpen kolom id jurusan sebagai foreign key, yang ngerujuk ke primary key di table jurusan. Nah, kalau kita nampilin nama mahasiswa bareng nama jurusannya, kita harus gabungin dua table tersebut. Caranya pakai join, dengan kondisi yang ditulis setelah ON.",
+      "start": "17.72",
+      "end": "36.9"
+    },
+    {
+      "split": "val",
+      "rec": "T_s04_sql-join_laptop_rumah",
+      "file": "003.wav",
+      "text": "Yang paling sering dipakai itu inner join. Inner join cuma ngambil row yang punya pasangan di kedua table. Jadi mahasiswa yang belum punya jurusan nggak bakal muncul. Kalau kita tetap mau nampilin semua mahasiswa, kita pakai left join. Left join ngambil semua row dari table kiri.",
+      "start": "36.9",
+      "end": "55.44"
+    },
+    {
+      "split": "val",
+      "rec": "T_s04_sql-join_laptop_rumah",
+      "file": "004.wav",
+      "text": "Kalau pasangannya nggak ada di table kanan, kolomnya diisinya NULL. Right join itu kebalikannya, semua row dari table kanan tetap muncul. Terus ada full outer join, yang ngambil semua row dari kedua table, ada pasangannya atau nggak.",
+      "start": "55.44",
+      "end": "74.28"
+    },
+    {
+      "split": "val",
+      "rec": "T_s04_sql-join_laptop_rumah",
+      "file": "005.wav",
+      "text": "Ada juga cross join, yang masangin tiap row di table kiri dengan semua row di table kanan. Hasilnya bisa gede banget, jadi jarang dipakai. Biar join-nya cepat, kolom yang dipakai buat join sebaiknya dikasih index. Ya gitu sih konsep join.",
+      "start": "74.28",
+      "end": "91.6"
+    }
+  ],
+  "history": [
+    {
+      "epoch": 0,
+      "train_loss": null,
+      "val_wer": 0.05641025641025641
+    },
+    {
+      "epoch": 1,
+      "train_loss": 0.3536495030635879,
+      "val_wer": 0.06666666666666667
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.10009622981860525,
+      "val_wer": 0.042735042735042736
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.056741874088488874,
+      "val_wer": 0.044444444444444446
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.031847793076719554,
+      "val_wer": 0.037606837606837605
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.01301942610492309,
+      "val_wer": 0.042735042735042736
+    }
+  ],
+  "best_epoch": 4,
+  "versions": {
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.1",
+    "peft": "0.21.2",
+    "ctranslate2": "4.8.2"
+  },
+  "gpu": "NVIDIA L4"
+}
