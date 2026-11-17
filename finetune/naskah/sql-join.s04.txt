@@ -1,0 +1,11 @@
+Oke, kali ini saya bahas join di SQL. Di database relasional, data biasanya dipecah ke beberapa table biar nggak ada data dobel. Misalnya ada table mahasiswa sama table jurusan. Table mahasiswa nyimpen kolom id jurusan sebagai foreign key, yang ngerujuk ke primary key di table jurusan.
+
+Nah, kalau kita mau nampilin nama mahasiswa bareng nama jurusannya, kita harus gabungin dua table itu. Caranya pakai join, dengan kondisi yang ditulis setelah ON.
+
+Yang paling sering dipakai itu inner join. Inner join cuma ngambil row yang punya pasangan di kedua table. Jadi mahasiswa yang belum punya jurusan nggak bakal muncul.
+
+Kalau kita tetap mau nampilin semua mahasiswa, kita pakai left join. Left join ngambil semua row dari table kiri. Kalau pasangannya nggak ada di table kanan, kolomnya diisi NULL. Right join itu kebalikannya, semua row dari table kanan tetap muncul.
+
+Terus ada full outer join, yang ngambil semua row dari kedua table, ada pasangannya atau nggak. Ada juga cross join, yang masangin tiap row di table kiri dengan semua row di table kanan. Hasilnya bisa gede banget, jadi jarang dipakai.
+
+Biar join-nya cepat, kolom yang dipakai buat join sebaiknya dikasih index. Ya gitu sih konsep join.
