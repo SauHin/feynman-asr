@@ -1,0 +1,9 @@
+Oke, kali ini saya mau bahas overfitting. Overfitting itu kondisi waktu model terlalu hafal sama training data, sampai noise-nya juga ikut dipelajari. Hasilnya, akurasi di training set tinggi banget, tapi pas dites ke data baru malah jelek. Jadi model-nya nggak bisa generalize.
+
+Kebalikannya namanya underfitting. Di sini model-nya terlalu sederhana, jadi pola di datanya aja belum ketangkep. Error-nya tinggi, baik di training set maupun di test set.
+
+Nah, cara ngeceknya gampang. Data kita bagi jadi tiga, yaitu training set, validation set, sama test set. Selama training, kita pantau training loss dan validation loss. Kalau training loss terus turun tapi validation loss mulai naik, itu tandanya model mulai overfit.
+
+Ada beberapa cara buat ngatasinnya. Yang pertama regularization, yang ngasih penalti kalau weight-nya terlalu besar. Yang kedua dropout, jadi sebagian neuron dimatiin secara random waktu training, biar model nggak terlalu bergantung sama neuron tertentu. Yang ketiga early stopping, jadi training-nya dihentiin pas validation loss udah nggak membaik lagi.
+
+Terus bisa juga pakai data augmentation, misalnya gambarnya di-flip atau di-rotate, biar variasi datanya nambah. Intinya, kita mau model yang nangkep pola umum, bukan yang ngapalin contoh. Ya gitu sih overfitting.

@@ -23,7 +23,7 @@ Semua keputusan arsitektur sudah final, termasuk izin Gemini dari Pak Hidayat.
 | Topik | Keputusan | Status |
 | --- | --- | --- |
 | Model ASR | Whisper pretrained via faster-whisper, dijalankan lokal | Default `large-v3-turbo` dari pilot 2026-10-13 (`docs/eksperimen/2026-10-13-pilot-model.md`). Fine-tune Indonesia `cahya/faster-whisper-medium-id` lebih buruk untuk istilah Inggris. Dipastikan di E1 |
-| Fine-tuning Whisper | Wajib, walaupun datanya kecil. LoRA pada `large-v3-turbo` dengan 14 naskah latih (±22 menit) yang dibaca tiga anggota tim, lalu dibandingkan dengan hotwords di E8 (bagian 8.8) | Final (2026-10-13). Data latih sedang direkam. Panduan tim ada di `finetune/README.md` |
+| Fine-tuning Whisper | Wajib, walaupun datanya kecil. LoRA pada `large-v3-turbo` dengan 14 naskah latih yang dibaca empat anggota tim (20,6 menit latih dan 4,8 menit validasi), lalu dibandingkan dengan hotwords di E8 (bagian 8.8) | Final (2026-10-13). Rekaman data latih lengkap per 17 November 2026. Panduan tim ada di `finetune/README.md` |
 | Detektor filler terlatih | Dibatalkan; filler dideteksi secara heuristik, detektor terlatih jadi future work | Final |
 | LLM analisis isi | Gemini (Flash) via Google AI Studio free tier, tanpa kartu kredit. Model `gemini-3.1-flash-lite`: `gemini-2.5-flash` tidak lagi tersedia untuk akun baru, dan `gemini-3.8-flash` sering gagal karena server sibuk | Final. Diizinkan Pak Hidayat (2026-10-13) |
 | Adaptasi domain | Hotwords/prompt dari materi yang di-upload, ditambah model hasil fine-tuning bila E8 menunjukkan perbaikan | Final |
@@ -434,27 +434,28 @@ Notebook-nya `finetune/finetune_colab.ipynb`. Semua parameter ada di sel pertama
 | Item | Isi |
 | --- | --- |
 | Naskah | 14 naskah sekitar 190 kata: Machine Learning (7), Basis Data (4), CS umum (3). Gaya lisan, padat istilah Inggris, angka ditulis dengan huruf |
-| Pembaca | Tiga anggota tim (`s01`–`s03`). Setiap naskah dibaca satu orang. Pembaca boleh mengganti kata non-istilah sesuai gaya bicaranya |
-| Ukuran | Sekitar 22 menit audio |
+| Pembaca | Empat anggota tim (`s01`–`s04`). `s02` dan `s04` membaca lima naskah hasil edit yang sama. Naskah lain dibaca satu orang. Pembaca boleh mengganti kata non-istilah sesuai gaya bicaranya |
+| Ukuran | 31,5 menit potongan siap latih. Yang dipakai 25,4 menit: 81 potongan latih (20,6 menit) dan 18 potongan validasi (4,8 menit) |
 | Rekaman | Mic laptop, ruang tenang, satu file per naskah |
 | Pemotongan | `finetune/segment.py` mentranskrip dengan `large-v3-turbo`, menyejajarkan kata dengan naskah, lalu memotong di batas kalimat (maksimal 20 detik) |
 | Label | Naskah hasil edit pembaca. Semua potongan didengar dan dikoreksi. Potongan yang meragukan dibuang |
-| Validasi | Topik `decision-tree` (ML) dan `sql-join` (Basis Data), tidak ikut dilatih |
+| Validasi | Topik `decision-tree` (ML) dan `sql-join` (Basis Data), tidak ikut dilatih. `sql-join` memakai bacaan `s02` dan `s04` |
+| Uji | Tidak diambil dari Set T. WER validasi dipakai untuk memilih epoch, jadi akurasi model diukur di Set A dan Set B lewat E8 |
 
-Setiap naskah hanya dibaca satu orang karena kalimat dan istilah yang beragam lebih berguna daripada tiga suara untuk kalimat yang sama. Whisper sudah dilatih dengan banyak suara. Yang ingin diperbaiki adalah istilah dalam konteks campur bahasa.
+Setiap kalimat hanya dilatih sekali, karena kalimat dan istilah yang beragam lebih berguna daripada banyak suara untuk kalimat yang sama. Whisper sudah dilatih dengan banyak suara. Yang ingin diperbaiki adalah istilah dalam konteks campur bahasa. Karena itu, setiap topik latih `s02` dan `s04` diambil dari satu pembaca saja: `database-index` dan `linear-regression` dari `s02`, serta `deadlock` dan `overfitting` dari `s04`. Rekaman yang dilewati dicatat di `SKIP_RECS` di notebook dan ikut tersimpan di log training. Topik validasi `sql-join` memakai kedua bacaan, karena data validasi tidak dilatih. Dengan dua bacaan itu, data validasi bertambah dari 3,3 menjadi 4,8 menit.
 
 **Aturan anti-kebocoran:**
 
 - 14 topik Set T tidak dipakai untuk naskah Set A, dan naskah evaluasi tidak pernah direkam untuk training.
 - Validasi dipisah per topik, bukan per pembicara, supaya model tidak dinilai dengan kalimat yang pernah dilatih.
-- Suara `s01`–`s03` ikut dilatih, jadi hasil Set A dan Set B mereka dilaporkan terpisah dari pembicara lain.
+- Suara `s01`–`s04` ikut dilatih, jadi hasil Set A dan Set B mereka dilaporkan terpisah dari pembicara lain.
 
 **E8.** Desain 2×2: `large-v3-turbo` vs `turbo-ft`, masing-masing tanpa dan dengan hotwords, di Set A dan Set B dengan replay yang sama. Hotwords dan fine-tuning sama-sama adaptasi domain, jadi E8 menjawab apakah fine-tuning memberi perbaikan tambahan di atas hotwords yang jauh lebih murah. Hasil netral atau negatif tetap dilaporkan. Training tidak diulang-ulang sampai angkanya bagus, dan setiap run dicatat.
 
 **Batasan yang dicatat di laporan:**
 
 - Data latih kecil dan berupa bacaan, bukan bicara spontan.
-- Hanya ada tiga pembicara.
+- Hanya ada empat pembicara.
 - Data validasi kecil, sehingga WER validasi kasar.
 - Naskah latih disusun dengan bantuan AI, lalu dicek tim.
 
@@ -576,7 +577,7 @@ Risiko terbesar adalah perubahan scope dari dosen dan kualitas pengenalan istila
 | Risiko | Dampak | Mitigasi |
 | --- | --- | --- |
 | Fine-tuning tidak memperbaiki akurasi | Model akhir tetap `large-v3-turbo` | Hasil netral atau negatif tetap dilaporkan di E8 beserta dugaan penyebabnya. Hotwords tetap menjadi adaptasi domain utama. Training tidak diulang sampai angkanya bagus. |
-| Data latih bocor ke evaluasi | WER `turbo-ft` terlihat terlalu bagus | Topik Set T dikecualikan dari Set A, validasi dipisah per topik, hasil pembicara `s01`–`s03` dilaporkan terpisah (bagian 8.8). |
+| Data latih bocor ke evaluasi | WER `turbo-ft` terlihat terlalu bagus | Topik Set T dikecualikan dari Set A, validasi dipisah per topik, hasil pembicara `s01`–`s04` dilaporkan terpisah (bagian 8.8). |
 | Label data latih salah | Model belajar kesalahan | Semua potongan didengar dan dikoreksi. `segment.py --check` wajib lolos, dan notebook berhenti bila masih ada potongan berstatus `cek`. |
 | Gemini tidak diizinkan | Analisis isi hilang | Checklist konsep dan metrik kelancaran tetap berjalan lokal; daftar konsep diisi manual oleh user. |
 | Rate limit atau perubahan kebijakan free tier | Feedback gagal saat demo/testing | Retry dengan backoff, fallback feedback lokal, cek limit sebelum user testing, siapkan rekaman demo cadangan. |
