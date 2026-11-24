@@ -1,0 +1,11 @@
+Oke, kali ini saya bahas word error rate atau WER, yang dipakai buat ngukur akurasi sistem speech recognition.
+
+Caranya, hasil ASR yang disebut hypothesis dibandingin kata per kata sama reference, yaitu transkrip benar yang ditulis manusia. Ada tiga jenis kesalahan. Substitution itu kata di reference diganti kata lain. Deletion itu kata di reference hilang. Insertion itu ada kata tambahan yang sebenarnya nggak diucapkan.
+
+Rumusnya, jumlah substitution, deletion, dan insertion dijumlahin, terus dibagi jumlah kata di reference, terus dikali seratus persen. Jadi makin kecil nilai WER, makin bagus sistemnya.
+
+Sebelum ngitung, kita bikin alignment dulu. Reference ditulis di atas, hypothesis di bawah, terus kata yang sama dipakai sebagai jangkar. Kalau ada beberapa alignment, pilih yang kesalahannya paling sedikit. Prinsipnya sama kayak edit distance, tapi dihitung per kata, bukan per huruf.
+
+Contohnya, reference-nya saya ingin memesan tiket kereta ke Bandung. Hypothesis-nya saya ingin pesan tiket kereta Bandung besok. Memesan jadi pesan itu substitution, kata ke yang hilang itu deletion, dan besok itu insertion. Jadi ada tiga kesalahan dari tujuh kata, kira-kira empat puluh tiga persen.
+
+Yang menarik, WER bisa lebih dari seratus persen, karena jumlah insertion nggak dibatasi. Buat ngitung secara otomatis, biasanya dipakai tool sclite. Ya gitu sih konsep word error rate.

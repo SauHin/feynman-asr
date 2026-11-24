@@ -1,0 +1,20 @@
+cpu scheduling
+process
+ready queue
+cpu
+scheduler
+arrival time
+burst time
+first come first served
+shortest job first
+waiting time
+starvation
+preemptive
+shortest remaining time first
+round robin
+time quantum
+highest response ratio next
+response ratio
+gantt chart
+turnaround time
+completion time

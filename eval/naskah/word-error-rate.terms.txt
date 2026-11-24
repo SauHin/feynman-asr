@@ -1,0 +1,12 @@
+word error rate
+wer
+speech recognition
+asr
+hypothesis
+reference
+substitution
+deletion
+insertion
+alignment
+edit distance
+sclite

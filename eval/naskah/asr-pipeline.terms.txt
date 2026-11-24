@@ -1,0 +1,25 @@
+speech recognition
+pipeline
+noisy channel model
+asr
+hidden markov model
+feature extraction
+waveform
+mfcc
+frame
+dft
+mel filter bank
+log
+dct
+energy
+delta
+double delta
+acoustic model
+gmm
+state
+lexicon
+phone
+language model
+n-gram
+decoder
+viterbi

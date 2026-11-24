@@ -14,7 +14,8 @@ Draf untuk peneliti. Dasarnya PLAN 9. Satu sesi per peserta, sekitar 40 menit.
 - [ ] Chrome membuka http://localhost:5173 di tab baru. Tab peserta sebelumnya sudah ditutup.
 - [ ] Mic laptop dipakai, dan pemrosesan suara Windows (*noise suppression*, *echo cancellation*) mati (PLAN 8.3).
 - [ ] Sisa kuota harian Gemini cukup. Satu peserta memakai sekitar 3 panggilan: 1 ekstraksi konsep dan 2 feedback. Tombol coba lagi menambah panggilan. Batas harian: [perlu data].
-- [ ] Naskah Task 1 sudah dicetak dari `eval/naskah/<topik>.txt`.
+- [ ] Naskah Task 1 sudah dicetak dari `eval/naskah/<topik>.txt`, sesuai pembagian di [naskah-dan-topik.md](naskah-dan-topik.md).
+- [ ] Daftar topik Task 2 dan slide dosennya sudah ada di laptop.
 - [ ] Audacity siap merekam Task 1: mono, 16 kHz, WAV.
 - [ ] Formulir consent tercetak, dan link Google Forms pre dan post siap.
 
@@ -37,7 +38,7 @@ Task 1 direkam di luar aplikasi, supaya Task 2 menjadi kontak pertama peserta de
 Sampaikan tugas dengan kalimat yang sama untuk semua peserta:
 
 - Task 1: "Tolong bacakan naskah ini dengan suara keras, dengan kecepatan biasa."
-- Task 2: "Pilih satu topik dari mata kuliah yang sedang kamu ambil. Pakai aplikasi ini untuk latihan menjelaskannya selama 2–4 menit. Kalau punya materinya, boleh diunggah."
+- Task 2: "Pilih satu topik dari daftar ini. Pakai aplikasi ini untuk latihan menjelaskannya selama 2–4 menit. Slide materinya boleh diunggah."
 - Task 3: "Baca feedback-nya, lalu jelaskan topik yang sama sekali lagi."
 
 Selama task:

@@ -1,0 +1,9 @@
+Oke, jadi di sini saya mau jelasin pipeline speech recognition, dari sinyal suara sampai jadi teks.
+
+Idenya pakai noisy channel model. Suara dianggap kalimat asli yang jadi kotor waktu lewat saluran. Tugas sistem ASR adalah nebak kalimat asli yang paling mungkin. Kalimat pemenangnya harus cocok sama bunyinya, dan juga wajar sebagai kalimat.
+
+Nah, sistem klasik pakai hidden Markov model atau HMM, dan punya lima komponen. Yang pertama feature extraction, yang ngubah waveform jadi fitur MFCC. Sinyalnya dipotong jadi frame dua puluh lima milidetik yang geser tiap sepuluh milidetik. Tiap frame diubah pakai DFT, lalu masuk mel filter bank yang niru telinga manusia, lalu diambil log, lalu masuk DCT. Hasilnya dua belas koefisien, ditambah energy, delta, dan double delta. Jadi totalnya ada tiga puluh sembilan angka per frame.
+
+Yang kedua acoustic model. Di sini GMM ngitung peluang sebuah frame dihasilkan oleh satu state HMM. Yang ketiga lexicon, yaitu kamus pengucapan yang nulis tiap kata sebagai deretan phone. Yang keempat language model, biasanya n-gram, yang ngitung peluang sebuah kata berdasarkan kata sebelumnya. Yang terakhir decoder, yang pakai algoritma Viterbi buat milih kalimat dengan skor paling tinggi.
+
+Jadi kalau ada dua kalimat yang bunyinya mirip, language model yang bantu milih kalimat yang lebih masuk akal. Ya kurang lebih gitu sih pipeline speech recognition.

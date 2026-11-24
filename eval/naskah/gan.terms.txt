@@ -1,0 +1,17 @@
+gan
+generative adversarial network
+generative model
+classifier
+label
+input
+training
+network
+generator
+random noise
+discriminator
+binary cross entropy
+minimax game
+gradient
+mode collapse
+fid
+inception score

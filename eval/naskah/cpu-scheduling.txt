@@ -1,0 +1,11 @@
+Oke, kali ini saya bahas CPU scheduling di sistem operasi.
+
+Biasanya ada banyak process yang antre di ready queue, padahal satu CPU cuma bisa ngejalanin satu process dalam satu waktu. Scheduler yang nentuin process mana yang jalan duluan. Tiap process punya arrival time, yaitu kapan dia datang, dan burst time, yaitu berapa lama dia butuh CPU.
+
+Algoritma paling sederhana namanya first come first served. Yang datang duluan dilayani duluan. Masalahnya, kalau process yang panjang datang duluan, process yang pendek jadi nunggu lama.
+
+Shortest job first milih process dengan burst time paling kecil, jadi rata-rata waiting time bisa kecil. Tapi process yang panjang bisa kena starvation. Versi preemptive dari algoritma ini namanya shortest remaining time first. Kalau ada process baru yang sisa waktunya lebih pendek, process yang lagi jalan langsung diganti.
+
+Round robin ngasih tiap process jatah waktu yang sama, namanya time quantum, misalnya dua satuan waktu. Kalau jatahnya habis, process balik ke belakang antrean. Terus ada highest response ratio next. Response ratio dihitung dari waiting time ditambah burst time, lalu dibagi burst time. Process yang nunggu lama nilainya naik terus, jadi nggak kena starvation.
+
+Urutan eksekusinya digambar pakai Gantt chart. Dari situ kita hitung turnaround time, yaitu completion time dikurangi arrival time. Waiting time itu turnaround time dikurangi burst time. Ya gitu sih CPU scheduling.
