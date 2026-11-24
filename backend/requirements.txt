@@ -15,5 +15,7 @@ httpx==0.28.1
 # Materi kuliah saat setup: teks PDF (materials.py), dan upload file lewat form di FastAPI
 pymupdf==1.28.2
 python-multipart==0.0.32
+# Rekaman Set A dari beberapa mic sekaligus (eval/record_mics.py)
+sounddevice==0.5.6
 # Checklist konsep (analysis/concepts.py). Sudah terpasang lewat jiwer, dicantumkan karena dipakai langsung.
 rapidfuzz==3.14.6
