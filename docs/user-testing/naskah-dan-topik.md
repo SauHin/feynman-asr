@@ -29,6 +29,31 @@ Di sesi rekaman, setiap pembicara membaca dua naskah:
 
 Di Task 1 user testing, peserta P1 sampai P5 membaca satu naskah sesuai urutan tabel pertama. P1 membaca `asr-pipeline`, P2 membaca `word-error-rate`, dan seterusnya.
 
+## Cara merekam
+
+Semua naskah direkam dengan `eval/record_mics.py`. Skrip ini merekam beberapa mic sekaligus, lalu menyimpan satu file WAV 16 kHz mono per mic di `eval/data/`. Rekaman yang sudah ada tidak pernah ditimpa.
+
+1. Colok earphone, lalu matikan Audio enhancements untuk kedua mic (Settings > System > Sound > pilih mic).
+2. Lihat nomor setiap mic:
+
+   ```powershell
+   .\backend\.venv\Scripts\python.exe eval\record_mics.py --list
+   ```
+
+3. Rekam dengan nomor dari langkah 2:
+
+   ```powershell
+   .\backend\.venv\Scripts\python.exe eval\record_mics.py --speaker p01 --topik gan --lokasi lab --mic laptop=1 --mic earphone=3
+   ```
+
+4. Pembicara diam sekitar 1 detik, lalu membaca naskah. Tekan Enter setelah selesai.
+5. Kalau output menulis `PERIKSA`, dengarkan file itu. Kalau rekamannya rusak, hapus file-nya, lalu rekam ulang.
+6. Salin baris yang dicetak ke `eval/data/metadata.csv`, lalu isi kolom kondisi dan consent.
+
+Pakai earphone yang sama untuk semua pembicara, dan catat apakah earphone itu berkabel atau Bluetooth. Mic Bluetooth merekam dengan kualitas lebih rendah, dan hal itu memengaruhi hasil E3.
+
+Di Task 1 user testing, pakai mic laptop saja (`--mic laptop=1`). Kalau earphone tidak dicolok, Chrome tetap memakai mic laptop di Task 2.
+
 ## Topik Task 2
 
 Peserta memilih satu topik dari daftar ini, lalu menjelaskannya tanpa naskah. Pertanyaannya diambil dari kisi-kisi UTS. Slide dosen disalin ke laptop tim sebelum sesi.

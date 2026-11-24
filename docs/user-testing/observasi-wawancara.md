@@ -16,7 +16,7 @@ Draf untuk peneliti. Dasarnya PLAN 9. Satu sesi per peserta, sekitar 40 menit.
 - [ ] Sisa kuota harian Gemini cukup. Satu peserta memakai sekitar 3 panggilan: 1 ekstraksi konsep dan 2 feedback. Tombol coba lagi menambah panggilan. Batas harian: [perlu data].
 - [ ] Naskah Task 1 sudah dicetak dari `eval/naskah/<topik>.txt`, sesuai pembagian di [naskah-dan-topik.md](naskah-dan-topik.md).
 - [ ] Daftar topik Task 2 dan slide dosennya sudah ada di laptop.
-- [ ] Audacity siap merekam Task 1: mono, 16 kHz, WAV.
+- [ ] `eval/record_mics.py` siap merekam Task 1 dengan mic laptop saja (lihat [naskah-dan-topik.md](naskah-dan-topik.md)).
 - [ ] Formulir consent tercetak, dan link Google Forms pre dan post siap.
 
 ## Alur sesi
@@ -25,7 +25,7 @@ Draf untuk peneliti. Dasarnya PLAN 9. Satu sesi per peserta, sekitar 40 menit.
 | --- | --- | --- |
 | Consent | 5 menit | Peserta membaca dan menandatangani formulir. Peneliti memberi kode peserta |
 | Pre-questionnaire | 3 menit | Google Forms |
-| Task 1 | 3 menit | Peserta membaca naskah dengan suara keras. Peneliti merekam dengan Audacity, di luar aplikasi |
+| Task 1 | 3 menit | Peserta membaca naskah dengan suara keras. Peneliti merekam dengan `eval/record_mics.py`, di luar aplikasi |
 | Task 2 | 10–12 menit | Setup topik, menjelaskan 2–4 menit, membaca feedback |
 | Task 3 | 6–8 menit | Menjelaskan topik yang sama sekali lagi |
 | Post-questionnaire | 5 menit | Google Forms |
