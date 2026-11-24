@@ -23,7 +23,7 @@ Semua keputusan arsitektur sudah final, termasuk izin Gemini dari Pak Hidayat.
 | Topik | Keputusan | Status |
 | --- | --- | --- |
 | Model ASR | Whisper pretrained via faster-whisper, dijalankan lokal | Default `large-v3-turbo` dari pilot 2026-10-13 (`docs/eksperimen/2026-10-13-pilot-model.md`). Fine-tune Indonesia `cahya/faster-whisper-medium-id` lebih buruk untuk istilah Inggris. Dipastikan di E1 |
-| Fine-tuning Whisper | Wajib, walaupun datanya kecil. LoRA pada `large-v3-turbo` dengan 14 naskah latih yang dibaca empat anggota tim (20,6 menit latih dan 4,8 menit validasi), lalu dibandingkan dengan hotwords di E8 (bagian 8.8) | Final (2026-10-13). Rekaman data latih lengkap per 17 November 2026. Run pertama selesai pada tanggal yang sama (`docs/eksperimen/2026-11-17-finetune-turbo-ft.md`). Panduan tim ada di `finetune/README.md` |
+| Fine-tuning Whisper | Wajib, walaupun datanya kecil. LoRA pada `large-v3-turbo` dengan 14 naskah latih yang dibaca tiga anggota tim (20,6 menit latih dan 4,8 menit validasi), lalu dibandingkan dengan hotwords di E8 (bagian 8.8) | Final (2026-10-13). Rekaman data latih lengkap per 17 November 2026. Run pertama selesai pada tanggal yang sama (`docs/eksperimen/2026-11-17-finetune-turbo-ft.md`). Panduan tim ada di `finetune/README.md` |
 | Detektor filler terlatih | Dibatalkan; filler dideteksi secara heuristik, detektor terlatih jadi future work | Final |
 | LLM analisis isi | Gemini (Flash) via Google AI Studio free tier, tanpa kartu kredit. Model `gemini-3.1-flash-lite`: `gemini-2.5-flash` tidak lagi tersedia untuk akun baru, dan `gemini-3.8-flash` sering gagal karena server sibuk | Final. Diizinkan Pak Hidayat (2026-10-13) |
 | Adaptasi domain | Hotwords/prompt dari materi yang di-upload, ditambah model hasil fine-tuning bila E8 menunjukkan perbaikan | Final |
@@ -434,7 +434,7 @@ Notebook-nya `finetune/finetune_colab.ipynb`. Semua parameter ada di sel pertama
 | Item | Isi |
 | --- | --- |
 | Naskah | 14 naskah sekitar 190 kata: Machine Learning (7), Basis Data (4), CS umum (3). Gaya lisan, padat istilah Inggris, angka ditulis dengan huruf |
-| Pembaca | Empat anggota tim (`s01`–`s04`). `s02` dan `s04` membaca lima naskah hasil edit yang sama. Naskah lain dibaca satu orang. Pembaca boleh mengganti kata non-istilah sesuai gaya bicaranya |
+| Pembaca | Tiga anggota tim dengan empat ID (`s01`–`s04`). `s01` dan `s03` adalah orang yang sama, yaitu koordinator. `s02` dan `s04` adalah dua orang berbeda yang membaca lima naskah hasil edit yang sama. Naskah lain dibaca satu ID. Pembaca boleh mengganti kata non-istilah sesuai gaya bicaranya |
 | Ukuran | 31,5 menit potongan siap latih. Yang dipakai 25,4 menit: 81 potongan latih (20,6 menit) dan 18 potongan validasi (4,8 menit) |
 | Rekaman | Mic laptop, ruang tenang, satu file per naskah |
 | Pemotongan | `finetune/segment.py` mentranskrip dengan `large-v3-turbo`, menyejajarkan kata dengan naskah, lalu memotong di batas kalimat (maksimal 20 detik) |
@@ -455,7 +455,7 @@ Setiap kalimat hanya dilatih sekali, karena kalimat dan istilah yang beragam leb
 **Batasan yang dicatat di laporan:**
 
 - Data latih kecil dan berupa bacaan, bukan bicara spontan.
-- Hanya ada empat pembicara.
+- Hanya ada tiga pembicara. Satu orang (`s01` dan `s03`) menyumbang 14,5 dari 20,6 menit data latih (70%).
 - Data validasi kecil, sehingga WER validasi kasar.
 - Naskah latih disusun dengan bantuan AI, lalu dicek tim.
 

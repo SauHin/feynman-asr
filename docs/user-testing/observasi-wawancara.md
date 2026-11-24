@@ -5,7 +5,7 @@ Draf untuk peneliti. Dasarnya PLAN 9. Satu sesi per peserta, sekitar 40 menit.
 ## Syarat peserta
 
 - Mahasiswa Computer Science BINUS yang sedang mengambil mata kuliah dengan topik yang bisa dijelaskan.
-- Bukan anggota tim (s01, s02, s03). Mereka sudah tahu cara pakai aplikasi, jadi tidak bisa menguji panduan di dalamnya. Suara mereka juga ikut dilatih di `turbo-ft`, sehingga hasil ASR mereka harus dilaporkan terpisah (PLAN 8.8).
+- Bukan anggota tim. Tim terdiri dari tiga orang dengan ID s01 sampai s04, karena s01 dan s03 adalah orang yang sama. Mereka sudah tahu cara pakai aplikasi, jadi tidak bisa menguji panduan di dalamnya. Suara mereka juga ikut dilatih di `turbo-ft`, sehingga hasil ASR mereka harus dilaporkan terpisah (PLAN 8.8).
 
 ## Persiapan sebelum setiap peserta
 
