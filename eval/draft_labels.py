@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 import metrics
-from normalize import VOCAL_FILLER, normalize
+from normalize import is_vocal_filler, normalize
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "backend"))
@@ -43,8 +43,9 @@ def fillers(words: list[Word]) -> list[tuple[float, float, str]]:
     # Filler leksikal hanya kandidat: anotator membuang yang dipakai dengan arti, misalnya "kayak" = "seperti".
     out = []
     for text, start, end in words:
-        w = re.sub(r"[^\w]", "", text.lower())
-        if VOCAL_FILLER.match(w) or w in config.FLUENCY_LEXICAL_FILLERS:
+        raw = re.sub(r"[^\w]", "", text)
+        w = raw.lower()
+        if is_vocal_filler(raw) or w in config.FLUENCY_LEXICAL_FILLERS:
             out.append((start, end, w))
     return out
 

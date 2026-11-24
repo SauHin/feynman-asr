@@ -10,3 +10,8 @@ def test_spelling_variants_become_equal():
 def test_vocal_fillers_are_dropped_but_lexical_fillers_stay():
     assert normalize("Eee jadi, emm, kayak gitu") == ["jadi", "kayak", "gitu"]
     assert normalize("e-learning") == ["e", "learning"]
+
+
+def test_capital_acronyms_are_not_vocal_fillers():
+    assert normalize("Hmm, model HMM-GMM dilatih pakai EM, hmm.") == ["model", "hmm", "gmm", "dilatih", "pakai", "em"]
+    assert normalize("<eee> HMM") == ["hmm"]

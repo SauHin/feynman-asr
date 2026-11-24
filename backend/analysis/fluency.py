@@ -11,8 +11,11 @@ Pause = tuple[float, float]  # (mulai, durasi) dalam detik sejak sesi mulai
 
 
 def is_filler(text: str) -> bool:
-    word = re.sub(r"[^\w]", "", text.lower())
-    return bool(VOCAL_FILLER.match(word)) or word in config.FLUENCY_LEXICAL_FILLERS
+    raw = re.sub(r"[^\w]", "", text)
+    word = raw.lower()
+    # Huruf besar semua berarti singkatan, misalnya HMM (hidden Markov model) atau EM, bukan suara ragu.
+    vocal = bool(VOCAL_FILLER.match(word)) and not raw.isupper()
+    return vocal or word in config.FLUENCY_LEXICAL_FILLERS
 
 
 class Fluency:

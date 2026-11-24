@@ -3,6 +3,7 @@ pipeline
 noisy channel model
 asr
 hidden markov model
+HMM
 feature extraction
 waveform
 mfcc

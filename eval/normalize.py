@@ -13,7 +13,14 @@ VARIANTS = {
 VOCAL_FILLER = re.compile(r"^(e{2,}|eh+|em+|ehm+|hm+|uh+|um+)$")
 
 
+def is_vocal_filler(token: str) -> bool:
+    # Huruf besar semua berarti singkatan, misalnya HMM (hidden Markov model) atau EM, bukan suara ragu.
+    return bool(VOCAL_FILLER.match(token.lower())) and not token.isupper()
+
+
 def normalize(text: str) -> list[str]:
+    # Filler dibuang sebelum huruf kecil, karena hanya huruf besar yang membedakan "HMM" dari "hmm".
+    text = re.sub(r"\w+", lambda m: "" if is_vocal_filler(m.group()) else m.group(), text)
     text = text.lower()
     # ASR kadang menulis "network-nya", kadang "networknya". Imbuhan bertanda hubung disatukan.
     text = re.sub(r"(?<=\w)\s*-\s*(nya|in|an|kan)\b", r"\1", text)
@@ -22,4 +29,4 @@ def normalize(text: str) -> list[str]:
     text = " ".join(re.sub(r"[^\w\s]", " ", text.replace("-", " ")).split())
     for variant, standard in VARIANTS.items():
         text = re.sub(rf"\b{variant}\b", standard, text)
-    return [w for w in text.split() if not VOCAL_FILLER.match(w)]
+    return text.split()
