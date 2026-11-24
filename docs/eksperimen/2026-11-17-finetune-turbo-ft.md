@@ -7,7 +7,7 @@
 | Item | Nilai |
 | --- | --- |
 | Notebook | `finetune/finetune_colab.ipynb` di commit `1860c90`, ditambah perbaikan `torchao` di sel setup (lihat bagian Masalah selama run) |
-| Data latih | 81 potongan dari 12 topik, 20,6 menit, dari `s01` sampai `s04`. Empat rekaman `s02` dan `s04` dilewati lewat `SKIP_RECS`, supaya setiap kalimat hanya dilatih sekali |
+| Data latih | 81 potongan dari 12 topik, 20,6 menit, dari tiga orang dengan empat ID (`s01` sampai `s04`). `s01` dan `s03` adalah orang yang sama dan menyumbang 14,5 menit (70%). Empat rekaman `s02` dan `s04` dilewati lewat `SKIP_RECS`, supaya setiap kalimat hanya dilatih sekali |
 | Data validasi | 18 potongan, 4,8 menit: `decision-tree` (`s03`) dan `sql-join` (`s02` dan `s04`) |
 | Model | `openai/whisper-large-v3-turbo`. LoRA rank 16, alpha 32, dropout 0,05, di `q_proj` dan `v_proj`. Yang dilatih 3.276.800 dari 812.154.880 parameter (0,40%) |
 | Training | Learning rate 5e-4, warmup 10 step, maksimal 5 epoch, patience 2, batch 4 dengan akumulasi gradien 2, fp16, seed 0 |
@@ -39,7 +39,7 @@ Uji cepat dengan `eval/pilot_compare.py` di `A_s01_backprop_iphone_lkc` (101 det
 1. WER validasi turun 1,8 poin, dari 5,6% ke 3,8%.
 2. Di epoch 5, loss latih turun ke 0,013, tetapi WER validasi naik lagi ke 4,3%. Model mulai menghafal data latih.
 3. Label validasi `T_s02_sql-join_laptop_kos` potongan 001 kemungkinan berbeda dengan audionya. Label menulis "saya bahas" dan "data biasanya". `large-v3-turbo` dan `turbo-ft` sama-sama mendengar "saya mau bahas" dan "datanya biasa". Potongan ini perlu didengar ulang.
-4. Di rekaman pilot, `turbo-ft` belum lebih baik. WER naik dari 12,4% ke 13,4%, dan term recall turun dari 41/45 ke 39/45. Selisihnya hanya beberapa kata di satu rekaman, jadi belum bisa disimpulkan.
+4. Di rekaman pilot, `turbo-ft` belum lebih baik. WER naik dari 12,4% ke 13,4%, dan term recall turun dari 41/45 ke 39/45. Selisihnya hanya beberapa kata di satu rekaman, jadi belum bisa disimpulkan. Hasil ini muncul walaupun suara pembicaranya mengisi 70% data latih. Mic dan ruangannya berbeda: rekaman pilot memakai iPhone di tempat ramai, sedangkan data latih memakai mic laptop di ruang tenang.
 5. Ada yang membaik. "lambe" menjadi "label", dan "terima kasih" palsu di akhir rekaman hilang.
 6. Ada juga yang memburuk. "epoch" menjadi "epok" dua kali, dan "forward pass" menjadi "forward test". "epoch", "forward pass", dan "backpropagation" tidak pernah muncul di label latih.
 7. `turbo-ft` menulis "bener" dan "sampe", sesuai gaya label latih. Naskah rujukan menulis "benar" dan "sampai", jadi perbedaan ejaan ini ikut menaikkan WER walaupun bukan salah dengar.
@@ -53,6 +53,7 @@ Uji cepat dengan `eval/pilot_compare.py` di `A_s01_backprop_iphone_lkc` (101 det
 - Data validasi hanya 18 potongan, jadi selisih WER antar-epoch masih kasar.
 - Epoch terbaik dipilih dengan data validasi yang sama, jadi 3,8% cenderung terlalu bagus. Angka evaluasi model diambil dari E8 di Set A dan Set B.
 - Rekaman pilot adalah suara `s01`, yang ikut dilatih. Hasil uji cepat bukan hasil evaluasi.
+- Data latih hanya berasal dari tiga orang, dan 70% di antaranya dari satu orang.
 
 ## Masalah selama run
 

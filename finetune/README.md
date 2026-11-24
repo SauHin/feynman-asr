@@ -18,7 +18,7 @@ Hasil akhirnya adalah model `turbo-ft`. Model ini bisa menggantikan `large-v3-tu
 
 | Istilah | Arti |
 | --- | --- |
-| Pembaca | Orang yang membaca dan merekam naskah. Ada empat pembaca (`s01` sampai `s04`), sesuai tabel pembagian naskah di langkah 0 |
+| Pembaca | Orang yang membaca dan merekam naskah. Ada empat ID pembaca (`s01` sampai `s04`) dari tiga orang, sesuai tabel pembagian naskah di langkah 0 |
 | Koordinator | Orang yang menjalankan training dan memasang model. Koordinator juga pembaca, dengan ID `s01` |
 | Naskah | Teks penjelasan satu topik CS, sekitar 190 kata, di `finetune/naskah/<topik>.txt` |
 | Naskah hasil edit | Salinan naskah yang sudah disesuaikan dengan gaya bicara satu pembaca, `finetune/naskah/<topik>.<id>.txt` |
@@ -84,6 +84,8 @@ Tujuan: semua pembaca punya repo dan environment Python yang sama dengan backend
 | `s02` | Pembaca | `overfitting`, `linear-regression`, `database-index`, `sql-join`, `deadlock` |
 | `s03` | Pembaca | `cnn`, `decision-tree`, `er-diagram`, `git-branch`, `hash-table` |
 | `s04` | Pembaca | Sama dengan `s02`, dengan naskah hasil edit yang sama |
+
+`s01` dan `s03` adalah orang yang sama, yaitu koordinator. `s02` dan `s04` adalah dua orang berbeda.
 
 Supaya tidak ada kalimat yang dilatih dua kali, notebook mengambil setiap topik latih `s02` dan `s04` dari satu pembaca saja. `database-index` dan `linear-regression` diambil dari `s02`, sedangkan `deadlock` dan `overfitting` diambil dari `s04`. Dengan begitu, setiap pembaca menyumbang satu topik Machine Learning dan satu topik lain. Rekaman yang dilewati tercantum di `SKIP_RECS`, di sel parameter notebook. Topik `sql-join` memakai kedua bacaan, karena topik ini hanya dipakai untuk validasi.
 
@@ -343,7 +345,7 @@ Tujuan: memastikan model hasil training berjalan di laptop dengan backend yang s
 
 4. Untuk memakai model di aplikasi, ubah `ASR_MODEL` di `backend/config.py` jadi `"finetune/models/turbo-ft"`. Path ini relatif terhadap root repo, karena backend dijalankan dari sana.
 
-Evaluasi lengkapnya membandingkan `large-v3-turbo` dengan `turbo-ft`, masing-masing tanpa dan dengan hotwords, di Set A dan Set B. Hasil Set A dari empat pembaca (`s01` sampai `s04`) dilaporkan terpisah, karena suara mereka ikut dilatih.
+Evaluasi lengkapnya membandingkan `large-v3-turbo` dengan `turbo-ft`, masing-masing tanpa dan dengan hotwords, di Set A dan Set B. Hasil Set A dari ketiga pembaca (ID `s01` sampai `s04`) dilaporkan terpisah, karena suara mereka ikut dilatih.
 
 Selesai kalau: perintah uji menulis WER dan term recall tanpa error.
 
