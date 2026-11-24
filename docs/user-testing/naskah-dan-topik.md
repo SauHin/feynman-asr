@@ -8,7 +8,7 @@ Naskah ini dibaca di sesi rekaman Set A dan di Task 1 user testing. Isinya ada d
 
 | Topik | Mata kuliah | Kata | Istilah |
 | --- | --- | --- | --- |
-| `asr-pipeline` | Speech Recognition, kisi soal 1 | 210 | 25 |
+| `asr-pipeline` | Speech Recognition, kisi soal 1 | 210 | 26 |
 | `word-error-rate` | Speech Recognition, kisi soal 5 | 201 | 12 |
 | `gan` | Deep Learning | 199 | 17 |
 | `cpu-scheduling` | Sistem Operasi | 215 | 20 |

@@ -67,6 +67,7 @@ Koreksi draf kata per kata sambil mendengarkan. Aturan penulisan:
 - Tulis yang benar-benar diucapkan, termasuk kalimat yang diulang atau tidak selesai.
 - Istilah Inggris ditulis dengan ejaan Inggris yang benar. Contoh: "weight-nya", bukan "wetnya".
 - Filler vokal ditulis sesuai bunyinya: `eee`, `emm`, `hmm`. `eval/normalize.py` membuang bentuk ini dari perhitungan WER.
+- Singkatan ditulis dengan huruf besar semua, misalnya HMM dan EM. Huruf besar inilah yang membedakan singkatan HMM dari filler `hmm`. Aturan ini juga berlaku di daftar istilah.
 - Filler leksikal seperti "kayak" dan "gitu" ditulis biasa. Kata ini tetap dihitung di WER.
 - Tidak perlu tanda baca khusus. Normalisasi membuang tanda baca sebelum WER dihitung.
 
@@ -127,7 +128,7 @@ dropout,Dropout,,explained_incorrect,"dijelaskan tanpa menyebut nama, bilang neu
 
 ## 4. Daftar istilah (`.terms.txt`)
 
-Draf berisi nama dan alias konsep. Tambahkan semua istilah teknis lain yang diucapkan di transkrip referensi. Istilah yang tidak pernah diucapkan tidak memengaruhi term recall, jadi boleh dibiarkan. Satu istilah per baris, huruf kecil, tanpa akhiran "-nya". Formatnya sama dengan `eval/naskah/backpropagation.terms.txt`. Daftar ini dipakai untuk term recall di F.
+Draf berisi nama dan alias konsep. Tambahkan semua istilah teknis lain yang diucapkan di transkrip referensi. Istilah yang tidak pernah diucapkan tidak memengaruhi term recall, jadi boleh dibiarkan. Satu istilah per baris, huruf kecil kecuali singkatan seperti HMM, tanpa akhiran "-nya". Formatnya sama dengan `eval/naskah/backpropagation.terms.txt`. Daftar ini dipakai untuk term recall di F.
 
 `eval/metrics.py` saat ini hanya membaca daftar istilah dari `eval/naskah/<topik>.terms.txt`. Pembacaan `<file_id>.terms.txt` ditambahkan saat skrip F dibuat.
 

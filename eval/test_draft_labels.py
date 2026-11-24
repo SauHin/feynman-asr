@@ -7,6 +7,7 @@ WORDS = [("Jadi", 0.0, 0.3), ("eee", 0.5, 0.9), ("chain", 1.0, 1.3), ("rule-nya"
 def test_pauses_and_filler_candidates():
     assert pauses(WORDS) == [(1.9, 4.0, "jeda")]
     assert fillers(WORDS) == [(0.5, 0.9, "eee"), (4.3, 4.6, "kayak")]
+    assert fillers([("HMM", 0.0, 0.3), ("Hmm,", 0.4, 0.6)]) == [(0.4, 0.6, "hmm")]
 
 
 def test_first_mention_is_where_the_name_or_alias_ends():

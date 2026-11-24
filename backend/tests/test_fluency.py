@@ -22,6 +22,7 @@ def test_speech_rate_ignores_long_pauses():
 def test_fillers():
     assert is_filler("Eee,") and is_filler("gitu.") and is_filler("Emm")
     assert not is_filler("jadi") and not is_filler("e")
+    assert not is_filler("HMM") and not is_filler("EM,") and is_filler("Hmm.")
     f = Fluency()
     f.add(words((0.0, 0.3, "emm"), (0.4, 0.8, "kayak"), (0.9, 1.2, "jadi")))
     assert f.message(1.2) == {"type": "fluency", "wpm": 150, "filler_count": 2, "t": 1.2}
