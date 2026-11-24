@@ -38,7 +38,7 @@ Peserta memilih satu topik dari daftar ini, lalu menjelaskannya tanpa naskah. Pe
 | 1 | HMM dan Viterbi | Speech Recognition | Jelaskan cara kerja HMM, dan cara algoritma Viterbi mencari path terbaik. | `Automatic Speech Recognition.pptx`, slide 14–43 |
 | 2 | Phonetics dan spectrogram | Speech Recognition | Jelaskan cara suara manusia dihasilkan, dan cara membaca spectrogram. | `Phonetics.pptx`, slide 20–57 |
 | 3 | Autoencoder dan deteksi anomali | Deep Learning | Jelaskan cara kerja autoencoder, dan cara memakainya untuk deteksi anomali. | `Autoencoders and Representation Learning.pptx`, slide 5–28 |
-| 4 | MLP untuk regression dan classification | Deep Learning | Jelaskan perbedaan output dan loss MLP untuk regression dan classification, termasuk MSE dan MAE. | `Regression and Classification with MLP.pptx`, slide 5–24 |
+| 4 | MLP untuk regression dan classification | Deep Learning | Jelaskan perbedaan output dan loss MLP untuk regression dan classification, termasuk MSE dan MAE. | `Regression and Classification with MLP.pptx`, slide 9–19 |
 | 5 | Process, PCB, dan context switch | Sistem Operasi | Jelaskan apa yang terjadi saat CPU berpindah dari satu process ke process lain. | Tidak ada slide. Pakai mode tanpa materi, atau tempel catatan OS |
 
 Cadangan untuk peserta keenam dan seterusnya:
@@ -49,5 +49,5 @@ Cadangan untuk peserta keenam dan seterusnya:
 ## Aturan
 
 - Topik Task 2 harus berbeda dari naskah Task 1 peserta yang sama. Kalau sama, penjelasan spontannya ikut meniru naskah. Kedua daftar di atas tidak punya topik yang sama, jadi aturan ini otomatis terpenuhi.
-- Untuk topik 4, slide 25–29 tidak diunggah. Slide itu membahas precision dan recall, yang termasuk topik Set T.
+- Untuk topik 4, hanya slide 9–19 yang diunggah. Pada uji 24 November 2026, rentang 5–24 membuat Gemini menggabungkan MSE dan MAE ke dalam satu konsep "Loss Function", padahal kisi-kisi menanyakan keduanya. Dengan slide 9–19, MSE dan MAE muncul sebagai konsep sendiri. Rentang ini juga tidak memuat slide 25–29 tentang precision dan recall, yang termasuk topik Set T.
 - Topik 5 tidak punya slide dosen, jadi daftar konsepnya dibuat Gemini tanpa materi. Layar setup menandai hal ini.
