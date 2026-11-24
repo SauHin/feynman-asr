@@ -1,0 +1,11 @@
+Oke, jadi sekarang saya mau jelasin GAN, singkatan dari generative adversarial network.
+
+GAN itu termasuk generative model. Kalau classifier cuma nebak label dari sebuah input, generative model mempelajari sebaran data. Jadi model ini bisa bikin sampel baru yang mirip data training, misalnya foto wajah orang yang sebenarnya nggak ada.
+
+Di dalam GAN ada dua network yang saling melawan. Generator nerima random noise, terus bikin sampel palsu. Discriminator nerima sampel asli atau palsu, terus ngeluarin peluang sampel itu asli. Analoginya kayak pemalsu uang lawan polisi. Dua-duanya makin pintar karena saling ngalahin.
+
+Training-nya gantian. Pertama, discriminator dilatih pakai binary cross entropy. Sampel asli dikasih label satu, sampel palsu dikasih label nol. Habis itu, generator dilatih supaya sampel palsunya dinilai asli, jadi labelnya satu. Karena tujuan dua network ini bertolak belakang, prosesnya disebut minimax game.
+
+Training yang bagus itu harus seimbang. Kalau discriminator terlalu kuat, generator nggak dapet gradient yang berguna. Masalah lain namanya mode collapse, yaitu waktu generator cuma bikin satu jenis sampel yang bisa nipu discriminator. Kalau sudah seimbang, discriminator cuma bisa nebak kayak lempar koin.
+
+Kualitas hasilnya diukur pakai FID, yang makin kecil makin bagus, atau Inception Score, yang makin besar makin bagus. Ya kurang lebih gitu sih GAN.
